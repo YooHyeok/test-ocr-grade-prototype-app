@@ -331,7 +331,16 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .grade-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(255px,1fr)); gap: 14px; margin-top: 14px; align-items: stretch; }
 .grade-col { display: flex; flex-direction: column; min-width: 0; }
 .grade-col-body { flex: 1; display: flex; flex-direction: column; gap: 11px; }
-.grade-col-body > .scan-sheet, .grade-col-body > .manual-box { flex: 1; }
+.grade-col-body > .print-sheet, .grade-col-body > .manual-box { flex: 1; }
+.grade-col-body .print-sheet { padding: 16px 18px; border: 1px solid #e6e2d8; border-radius: 12px; background: var(--white); }
+.grade-col-body .print-head { gap: 8px; padding-bottom: 9px; margin-bottom: 12px; border-bottom: 1.5px solid #1f1c17; }
+.grade-col-body .print-head strong { font-size: 14px; }.grade-col-body .print-head span { font-size: 10px; }
+.grade-col-body .print-sub { margin-bottom: 11px; font-size: 10.5px; }
+.grade-col-body .print-line { gap: 9px; padding: 8px 0; }
+.grade-col-body .print-q { font-size: 11px; }
+.grade-col-body .print-ans { min-width: 58px; font-size: 12.5px; }
+.grade-col-body .print-mark { width: 28px; font-size: 21px; }
+.grade-col-body .print-score { margin-top: 14px; font-size: 19px; }
 .manual-box { padding: 13px 14px; border: 1px solid var(--line); border-radius: 12px; }
 .scan-sheet { position: relative; padding: 18px 20px 40px; border: 1px solid #e6dfce; border-radius: 12px; color: #4a463d; background: repeating-linear-gradient(#fffdf6 0 30px,#efe9d8 31px); box-shadow: 0 6px 16px rgba(58,70,64,.08); font-family: "Gowun Dodum"; }
 .scan-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding-bottom: 11px; margin-bottom: 6px; border-bottom: 2px solid #b9b2a0; }
@@ -385,6 +394,24 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .print-ans { min-width: 120px; font-size: 16px; }
 .print-mark { width: 42px; text-align: center; color: #d83f36; font-size: 30px; }
 .print-score { display: block; margin-top: 22px; color: #d83f36; font-size: 26px; font-weight: 700; text-align: right; }
+.grade-actions-end { display: flex; flex: none; gap: 8px; align-items: center; }
+.print-preview-modal { width: min(1200px,96vw); max-height: 94vh; overflow-y: auto; }
+.print-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 14px; margin: 14px 0 18px; }
+.print-option { display: flex; flex-direction: column; gap: 9px; padding: 12px; border: 2px solid var(--line); border-radius: 12px; background: var(--white); text-align: left; }
+.print-option:hover { border-color: #b7c2bd; }
+.print-option.selected { border-color: var(--green); box-shadow: 0 0 0 3px rgba(29,118,88,.12); }
+.po-label { color: #404a45; font-size: 12px; font-weight: 700; }
+.po-label b { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-right: 4px; border-radius: 50%; background: var(--green); color: var(--white); font-size: 11px; vertical-align: middle; }
+.po-preview { overflow: hidden; border: 1px solid #e6e2d8; border-radius: 8px; background: var(--white); pointer-events: none; }
+.po-preview .print-sheet { padding: 15px 17px; }
+.po-preview .print-head { gap: 8px; padding-bottom: 8px; margin-bottom: 11px; border-bottom: 1.5px solid #1f1c17; }
+.po-preview .print-head strong { font-size: 13px; }.po-preview .print-head span { font-size: 9px; }
+.po-preview .print-sub { margin-bottom: 9px; font-size: 9.5px; }
+.po-preview .print-line { gap: 8px; padding: 7px 0; }
+.po-preview .print-q { font-size: 10px; }
+.po-preview .print-ans { min-width: 56px; font-size: 11px; }
+.po-preview .print-mark { width: 24px; font-size: 18px; }
+.po-preview .print-score { margin-top: 12px; font-size: 17px; }
 .detail-meta { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0 2px; }
 .detail-meta span { padding: 5px 10px; border-radius: 999px; background: #f1f4f1; color: #56635e; font-size: 12px; }
 .detail-meta .status-chip.review { color: #b4541d; background: #fdebdb; }

@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=28" />
+    <link rel="stylesheet" href="./styles.css?v=31" />
   </head>
   <body>
     <aside class="sidebar">
@@ -15,7 +15,7 @@
       <nav class="main-nav" id="desktopNav">
         <button class="nav-link active teacher-only" type="button" data-page="dashboard" data-tooltip="대시보드"><span>⌂</span>대시보드</button>
         <button class="nav-link teacher-only" type="button" data-page="templates" data-tooltip="시험지 관리"><span>▧</span>시험지 관리</button>
-        <button class="nav-link teacher-only" type="button" data-page="records" data-tooltip="채점 기록"><span>▤</span>채점 기록</button>
+        <button class="nav-link teacher-only" type="button" data-page="records" data-tooltip="채점 관리"><span>▤</span>채점 관리</button>
         <button class="nav-link teacher-only" type="button" data-page="students" data-tooltip="학생 관리"><span>♧</span>학생 관리</button>
         <button class="nav-link teacher-only" type="button" data-page="categories" data-tooltip="그룹 관리"><span>▦</span>그룹 관리</button>
         <button class="nav-link teacher-only" type="button" data-page="settings" data-tooltip="설정"><span>⚙</span>설정</button>
@@ -54,14 +54,14 @@
         </section>
         <section class="quick-grid">
           <button class="quick-card" type="button" data-page="templates"><span>▧</span><strong>시험지 관리</strong><small>양식 이미지와 OCR 영역 설정</small></button>
-          <button class="quick-card" type="button" data-page="records"><span>▤</span><strong>채점 기록</strong><small>전체 시험지 이력 확인</small></button>
+          <button class="quick-card" type="button" data-page="records"><span>▤</span><strong>채점 관리</strong><small>전체 시험지 이력 확인</small></button>
           <button class="quick-card" type="button" data-page="students"><span>♧</span><strong>학생 관리</strong><small>클래스별 학생 관리</small></button>
           <button class="quick-card" type="button" data-page="categories"><span>▦</span><strong>그룹 관리</strong><small>학교급 · 과목 · 단원 분류</small></button>
         </section>
       </section>
 
       <section class="app-page" data-page-panel="records">
-        <div class="section-heading"><div><p class="eyebrow">GRADING ARCHIVE</p><h2>채점 기록</h2><p>학원, 클래스, 카테고리, 학생별로 시험지 원본과 결과를 관리합니다.</p></div></div>
+        <div class="section-heading"><div><p class="eyebrow">GRADING ARCHIVE</p><h2>채점 관리</h2><p>학원, 클래스, 카테고리, 학생별로 시험지 원본과 결과를 관리합니다.</p></div></div>
         <div class="filter-panel">
           <label class="search-box"><span>⌕</span><input id="recordSearch" type="search" placeholder="학생 이름 또는 시험지 검색" /></label>
           <select id="academyFilter"><option value="all">전체 학원</option><option>라온 과학학원</option><option>브릿지 사이언스</option></select>
@@ -69,7 +69,7 @@
           <select id="categoryFilter"><option value="all">전체 카테고리</option><option>화학 I · 산화 환원</option><option>중등 화학 · 이온</option><option>통합과학 · 물질</option></select>
           <select id="statusFilter"><option value="all">전체 상태</option><option>검토 필요</option><option>채점 완료</option></select>
         </div>
-        <div class="record-meta"><p>총 <strong id="recordCount">0</strong>건의 채점 기록</p><button type="button">최신순 ⌄</button></div>
+        <div class="record-meta"><p>총 <strong id="recordCount">0</strong>건의 채점 관리</p><button type="button">최신순 ⌄</button></div>
         <div class="table-wrap"><table><thead><tr><th>채점일</th><th>학생</th><th>학원 / 클래스</th><th>시험 카테고리</th><th>시험지</th><th>점수</th><th>상태</th><th></th></tr></thead><tbody id="recordBody"></tbody></table></div>
       </section>
 
@@ -205,6 +205,15 @@
         <p class="capture-help">원본 시험지 이미지는 유지하고, 정답·오답 표시는 별도 좌표 데이터로 화면 위에 겹쳐 표시합니다.</p>
       </section>
     </div>
+    <div class="modal-backdrop hidden" id="printPreviewModal">
+      <section class="result-modal print-preview-modal" role="dialog" aria-modal="true" aria-labelledby="printPreviewTitle">
+        <button class="modal-close" type="button" data-close-print aria-label="닫기">×</button>
+        <p class="eyebrow mint">PRINT PREVIEW</p><h2 id="printPreviewTitle">인쇄 미리보기</h2>
+        <p class="capture-help">인쇄할 시험지를 선택한 뒤 인쇄하세요. 선택한 한 종류만 출력됩니다.</p>
+        <div class="print-options" id="printOptions"></div>
+        <div class="modal-actions"><button class="secondary-button" type="button" data-close-print>취소</button><button class="primary-button" type="button" data-do-print>선택 인쇄</button></div>
+      </section>
+    </div>
     <div class="modal-backdrop hidden preview-backdrop" id="templatePreviewModal">
       <section class="template-preview-modal" role="dialog" aria-modal="true" aria-labelledby="templatePreviewTitle">
         <header><div><p class="eyebrow mint">TEST PAPER EDITOR</p><input class="template-title-input" id="templatePreviewTitle" value="산화 환원 미니테스트" aria-label="시험지 양식명" /></div><div class="preview-actions"><button class="primary-button hidden" type="button" data-save-new-template>저장</button><button class="secondary-button" type="button" data-print-template>인쇄</button><button class="modal-close-inline" type="button" data-close-template-preview aria-label="닫기">×</button></div></header>
@@ -224,6 +233,6 @@
       </section>
     </div>
     <div id="printArea" aria-hidden="true"></div>
-    <script src="./app.js?v=28"></script>
+    <script src="./app.js?v=31"></script>
   </body>
 </html>

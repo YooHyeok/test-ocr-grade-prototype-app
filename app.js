@@ -14,7 +14,7 @@ let myPapers = [
   { id:6, title:"물질의 규칙성 주간 테스트", category:"통합과학 · 물질", uploaded:"04.27 18:30", date:"2026-04-27", status:"채점 완료", score:95 },
   { id:7, title:"산과 염기 개념 점검", category:"중등 화학 · 산과 염기", uploaded:"04.18 13:22", date:"2026-04-18", status:"채점 완료", score:70 }
 ];
-const pageTitles = { dashboard:"대시보드", records:"채점 기록", templates:"시험지 관리", students:"학생 관리", categories:"그룹 관리", settings:"설정", "my-papers":"내 시험지" };
+const pageTitles = { dashboard:"대시보드", records:"채점 관리", templates:"시험지 관리", students:"학생 관리", categories:"그룹 관리", settings:"설정", "my-papers":"내 시험지" };
 const pageSubtitles = {
   dashboard:"",
   records:"학원, 클래스, 카테고리, 학생별로 시험지 원본과 결과를 관리합니다.",
@@ -81,7 +81,7 @@ function renderRecords() {
 filters.forEach((filter) => filter.addEventListener("input", renderRecords));
 recordBody.addEventListener("click", (event) => {
   const printButton = event.target.closest("[data-print-record]");
-  if (printButton) { printRecord(currentRecords[Number(printButton.dataset.printRecord)]); return; }
+  if (printButton) { openPrintPreview(currentRecords[Number(printButton.dataset.printRecord)]); return; }
   const row = event.target.closest("[data-record-index]");
   if (!row) return;
   openExamDetail(currentRecords[Number(row.dataset.recordIndex)]);
@@ -446,7 +446,7 @@ const examAnswerBank = {
 };
 /**
  * 채점된 시험지 이미지(목업)를 만든다. photo=true면 학생 업로드 사진처럼 보이게 한다.
- * @param {object} record - 채점 기록 형태의 객체
+ * @param {object} record - 채점 관리 형태의 객체
  * @param {boolean} photo - 학생 업로드 사진 스타일 여부
  * @returns {string} 시험지 이미지 HTML
  */
@@ -458,9 +458,9 @@ function buildScanPaper(record, photo) {
   return `<div class="scan-sheet ${photo ? "scan-photo" : ""}"><div class="scan-head"><strong>${record.paper}</strong><span>이름: ${record.student}</span></div>${lines}<b class="scan-score">${record.score}</b></div>`;
 }
 /**
- * 내 시험지(myPapers) 항목을 채점 기록 형태로 변환한다.
+ * 내 시험지(myPapers) 항목을 채점 관리 형태로 변환한다.
  * @param {object} paper - myPapers 항목
- * @returns {object} 채점 기록 형태 객체
+ * @returns {object} 채점 관리 형태 객체
  */
 function paperToRecord(paper) {
   return { student: document.querySelector("#profileName").textContent || "학생", grade:"-", academy:"라온 과학학원", className:"-", category: paper.category, paper: paper.title, date: paper.uploaded, score: paper.score ?? 0, status: paper.status };
@@ -477,9 +477,9 @@ function showResultScan(paper) {
 let gradingRecord = null;
 const wrongAnswers = ["미정","해당없음","오답 표기","판독 불가"];
 /**
- * 채점 기록에 문항별 채점 상태를 1회 생성한다.
+ * 채점 관리에 문항별 채점 상태를 1회 생성한다.
  * 완료 상태면 정답/오답을 그대로, 아니면 자동채점(명확 인식 정답만 ○)을 기본 적용한다.
- * @param {object} record - 채점 기록
+ * @param {object} record - 채점 관리
  * @returns {Array<object>} 문항별 채점 상태 배열
  */
 function ensureGrading(record) {
@@ -499,7 +499,7 @@ function ensureGrading(record) {
 }
 /**
  * 현재 ○ 개수로 점수를 계산한다.
- * @param {object} record - 채점 기록
+ * @param {object} record - 채점 관리
  * @returns {number} 0~100 점수
  */
 function gradedScore(record) {
@@ -508,7 +508,7 @@ function gradedScore(record) {
 }
 /**
  * 채점된 시험지 이미지(원본 + ○/× 마크) HTML을 만든다.
- * @param {object} record - 채점 기록
+ * @param {object} record - 채점 관리
  * @param {Array<string|null>} marks - 문항별 마크 배열("o"/"x"/null)
  * @param {number} score - 표시할 점수
  * @returns {string} 시험지 이미지 HTML
@@ -535,16 +535,16 @@ function renderGrading() {
   const autoSummary = notDone > 0
     ? `명확히 인식된 정답 <b>${autoCount}</b>문항을 자동으로 ○ 처리했어요.<br>채점이 완료되지 않은 <b>${notDone}</b>문항은 가운데에서 수동으로 채점해 주세요.`
     : `명확히 인식된 정답 <b>${autoCount}</b>문항을 자동으로 ○ 처리했어요.<br>모든 문항 채점이 완료되었어요.`;
-  document.querySelector("#autoResult").innerHTML = `${scanHTML(record, autoMarks, autoScore)}<p class="auto-summary">${autoSummary}</p>`;
+  document.querySelector("#autoResult").innerHTML = `${buildPrintSheet(record, autoMarks, autoScore)}<p class="auto-summary">${autoSummary}</p>`;
   const rows = list.map((item,index) => `<div class="grade-row"><div class="grade-q"><span class="qn">${index + 1}</span><div><p>${item.question}</p><small>인식 답안: <b>${item.studentAnswer}</b> <em class="rec ${item.recognized ? "ok" : "warn"}">${item.recognized ? "명확 인식" : "확인 필요"}</em></small></div></div><div class="grade-actions"><button type="button" class="mark-btn o ${item.mark === "o" ? "active" : ""}" data-mark="o" data-q="${index}" aria-label="${index + 1}번 정답">○</button><button type="button" class="mark-btn x ${item.mark === "x" ? "active" : ""}" data-mark="x" data-q="${index}" aria-label="${index + 1}번 오답">×</button></div></div>`).join("");
   document.querySelector("#manualControl").innerHTML = `<div class="manual-box"><div class="grade-list">${rows}</div></div>`;
-  document.querySelector("#manualResult").innerHTML = scanHTML(record, list.map((item) => item.mark), manualScore);
+  document.querySelector("#manualResult").innerHTML = buildPrintSheet(record, list.map((item) => item.mark), manualScore);
   const done = record.status === "채점 완료";
-  document.querySelector("#gradeFooter").innerHTML = `<span class="grade-note">${done ? "채점 완료됨 · 언제든 수정 가능" : "평가자가 완료를 눌러야 채점 완료됩니다"}</span><button type="button" class="primary-button" data-complete>${done ? "다시 완료" : "채점 완료"}</button>`;
+  document.querySelector("#gradeFooter").innerHTML = `<span class="grade-note">${done ? "채점 완료됨 · 언제든 수정 가능" : "평가자가 완료를 눌러야 채점 완료됩니다"}</span><div class="grade-actions-end"><button type="button" class="secondary-button" data-open-print>🖨 인쇄</button><button type="button" class="primary-button" data-complete>${done ? "다시 완료" : "채점 완료"}</button></div>`;
 }
 /**
  * 채점 모달을 연다.
- * @param {object} record - 채점 기록 한 건
+ * @param {object} record - 채점 관리 한 건
  * @returns {void}
  */
 function openExamDetail(record) {
@@ -572,20 +572,75 @@ examDetailModal.addEventListener("click", (event) => {
   if (event.target.closest("[data-complete]")) { gradingRecord.status = "채점 완료"; gradingRecord.score = gradedScore(gradingRecord); renderRecords(); renderGrading(); return; }
 });
 /**
- * 원본 시험지에 채점 표시(○/×)를 얹은 이미지를 만들어 인쇄한다.
- * @param {object} record - 채점 기록
+ * 인쇄/미리보기용 3종(원본·자동채점·수동채점) 변형 데이터를 만든다.
+ * @param {object} record - 채점 관리
+ * @returns {Array<{key:string,label:string,marks:Array,score:(number|null)}>}
+ */
+function gradeVariants(record) {
+  const list = ensureGrading(record);
+  const autoMarks = list.map((item) => (item.recognized && item.isCorrect) ? "o" : null);
+  const autoScore = Math.round(autoMarks.filter((mark) => mark === "o").length / list.length * 100);
+  return [
+    { key:"original", label:"채점되지 않은 원본 시험지", marks: list.map(() => null), score: null },
+    { key:"auto", label:"자동채점된 시험지", marks: autoMarks, score: autoScore },
+    { key:"manual", label:"수동채점까지 완료된 시험지", marks: list.map((item) => item.mark), score: gradedScore(record) }
+  ];
+}
+/**
+ * 원본 시험지에 채점 표시(○/×)를 얹은 인쇄용 시트 HTML을 만든다.
+ * @param {object} record - 채점 관리
+ * @param {Array<string|null>} marks - 문항별 마크 배열
+ * @param {(number|null)} score - 표시할 점수(null이면 미표시)
+ * @returns {string} 인쇄 시트 HTML
+ */
+function buildPrintSheet(record, marks, score) {
+  const lines = record.grading.map((item,index) => `<div class="print-line"><span class="print-q">${index + 1}. ${item.question}</span><span class="print-ans">${item.studentAnswer}</span><b class="print-mark">${marks[index] === "o" ? "○" : marks[index] === "x" ? "×" : ""}</b></div>`).join("");
+  const scoreTag = (score === null || score === undefined) ? "" : `<b class="print-score">${score}점</b>`;
+  return `<div class="print-sheet"><div class="print-head"><div><strong>${record.paper}</strong><span>${record.category}</span></div><span>${record.student}</span></div><p class="print-sub">다음 문항의 답을 빈칸에 작성하세요.</p>${lines}${scoreTag}</div>`;
+}
+/**
+ * 선택한 변형을 인쇄한다.
+ * @param {object} record - 채점 관리
+ * @param {Array<string|null>} marks - 문항별 마크 배열
+ * @param {(number|null)} score - 점수
  * @returns {void}
  */
-function printRecord(record) {
-  if (!record) return;
-  const list = ensureGrading(record);
-  const score = gradedScore(record);
-  const lines = list.map((item,index) => `<div class="print-line"><span class="print-q">${index + 1}. ${item.question}</span><span class="print-ans">${item.studentAnswer}</span><b class="print-mark">${item.mark === "o" ? "○" : item.mark === "x" ? "×" : ""}</b></div>`).join("");
-  document.querySelector("#printArea").innerHTML = `<div class="print-sheet"><div class="print-head"><div><strong>${record.paper}</strong><span>${record.category}</span></div><span>${record.student} · ${record.className}</span></div><p class="print-sub">다음 문항의 답을 빈칸에 작성하세요.</p>${lines}<b class="print-score">${score}점</b></div>`;
+function printVariant(record, marks, score) {
+  document.querySelector("#printArea").innerHTML = buildPrintSheet(record, marks, score);
   document.body.classList.add("print-record");
   window.print();
 }
 window.addEventListener("afterprint", () => document.body.classList.remove("print-record"));
+let printRecordRef = null;
+let printSelectedIndex = 2;
+/**
+ * 인쇄 미리보기 모달을 연다.
+ * @param {object} record - 채점 관리
+ * @returns {void}
+ */
+function openPrintPreview(record) {
+  if (!record) return;
+  printRecordRef = record;
+  printSelectedIndex = 2;
+  renderPrintPreview();
+  document.querySelector("#printPreviewModal").classList.remove("hidden");
+}
+/**
+ * 인쇄 미리보기 3종 카드를 다시 그린다.
+ * @returns {void}
+ */
+function renderPrintPreview() {
+  const record = printRecordRef;
+  document.querySelector("#printOptions").innerHTML = gradeVariants(record).map((variant,index) => `<button type="button" class="print-option ${index === printSelectedIndex ? "selected" : ""}" data-print-option="${index}"><span class="po-label"><b>${index + 1}</b> ${variant.label}</span><div class="po-preview">${buildPrintSheet(record, variant.marks, variant.score)}</div></button>`).join("");
+}
+const printPreviewModal = document.querySelector("#printPreviewModal");
+document.querySelectorAll("[data-close-print]").forEach((button) => button.addEventListener("click", () => printPreviewModal.classList.add("hidden")));
+printPreviewModal.addEventListener("click", (event) => {
+  if (event.target === printPreviewModal) { printPreviewModal.classList.add("hidden"); return; }
+  const option = event.target.closest("[data-print-option]");
+  if (option) { printSelectedIndex = Number(option.dataset.printOption); renderPrintPreview(); return; }
+  if (event.target.closest("[data-do-print]")) { const variant = gradeVariants(printRecordRef)[printSelectedIndex]; printPreviewModal.classList.add("hidden"); printVariant(printRecordRef, variant.marks, variant.score); return; }
+});
 document.querySelector("#studentCards").addEventListener("click", (event) => {
   const button = event.target.closest("[data-student-detail]");
   if (!button) return;
