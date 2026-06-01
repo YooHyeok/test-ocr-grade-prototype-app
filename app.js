@@ -408,8 +408,16 @@ document.querySelector("#modalRegionAliases").addEventListener("input", (event) 
   if (key === "H") box.style.height=`${constrained}px`;
 }));
 document.querySelector("[data-close-result]").addEventListener("click", () => document.querySelector("#resultModal").classList.add("hidden"));
+const mobileQuery = globalThis.matchMedia("(max-width: 600px)");
+let desktopRole = "admin";
+/**
+ * 화면 모드(선생님/학생)를 적용한다. 모바일 폭에서는 항상 학생 모드로 고정한다.
+ * @param {string} nextRole - 적용할 역할("admin" 또는 "student")
+ * @returns {void}
+ */
 function applyRole(nextRole) {
-  role=nextRole; const student=role === "student";
+  if (!mobileQuery.matches) desktopRole=nextRole;
+  role=mobileQuery.matches ? "student" : nextRole; const student=role === "student";
   document.body.classList.toggle("student-mode", student);
   document.querySelectorAll("[data-role]").forEach((item) => item.classList.toggle("active", item.dataset.role === role));
   document.querySelector("#profileName").textContent=student ? "박서윤" : "김선생";
@@ -422,9 +430,19 @@ function applyRole(nextRole) {
 }
 document.querySelectorAll("[data-role]").forEach((button) => button.addEventListener("click", () => applyRole(button.dataset.role)));
 document.querySelector("[data-collapsed-role-toggle]").addEventListener("click", () => applyRole(role === "student" ? "admin" : "student"));
+/**
+ * 뷰포트가 모바일/데스크톱 사이로 바뀔 때 역할을 다시 적용한다.
+ * 모바일이면 학생 모드로, 데스크톱이면 마지막으로 선택한 데스크톱 역할로 복귀한다.
+ * @returns {void}
+ */
+function syncRoleToViewport() {
+  applyRole(mobileQuery.matches ? "student" : desktopRole);
+}
+mobileQuery.addEventListener("change", syncRoleToViewport);
 document.querySelector("[data-sidebar-toggle]").addEventListener("click", (event) => {
   const collapsed=document.body.classList.toggle("sidebar-collapsed");
   event.currentTarget.setAttribute("aria-expanded",String(!collapsed));
   event.currentTarget.setAttribute("aria-label",collapsed ? "사이드바 펼치기" : "사이드바 접기");
 });
 renderRecords(); renderStaticCards(); renderTemplateList(); renderAnswerOverview(); updateHistoryPeriodOptions(); syncOuterTemplatePreview(); setInlineEditMode(false);
+syncRoleToViewport();
