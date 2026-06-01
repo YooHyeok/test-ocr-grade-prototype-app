@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=8" />
+    <link rel="stylesheet" href="./styles.css?v=20" />
   </head>
   <body>
     <aside class="sidebar">
@@ -17,7 +17,7 @@
         <button class="nav-link teacher-only" type="button" data-page="records" data-tooltip="채점 기록"><span>▤</span>채점 기록</button>
         <button class="nav-link teacher-only" type="button" data-page="templates" data-tooltip="시험지 관리"><span>▧</span>시험지 관리</button>
         <button class="nav-link teacher-only" type="button" data-page="students" data-tooltip="학생 관리"><span>♧</span>학생 관리</button>
-        <button class="nav-link teacher-only" type="button" data-page="categories" data-tooltip="시험 카테고리"><span>▦</span>시험 카테고리</button>
+        <button class="nav-link teacher-only" type="button" data-page="categories" data-tooltip="그룹 관리"><span>▦</span>그룹 관리</button>
         <button class="nav-link teacher-only" type="button" data-page="settings" data-tooltip="설정"><span>⚙</span>설정</button>
         <button class="nav-link student-only" type="button" data-page="my-papers" data-tooltip="내 시험지"><span>▤</span>내 시험지</button>
         <button class="nav-link student-only" type="button" data-open-upload data-tooltip="시험지 첨부"><span>＋</span>시험지 첨부</button>
@@ -35,10 +35,8 @@
 
     <main class="page-shell">
       <header class="topbar">
-        <div><h1 id="pageTitle">대시보드</h1></div>
+        <div class="topbar-titles"><h1 id="pageTitle">대시보드</h1><p id="pageSubtitle"></p></div>
         <div class="header-actions">
-          <button class="icon-button" type="button" aria-label="알림">♧<span class="notification-dot"></span></button>
-          <button class="primary-button header-manage" type="button" data-page="templates"><span>▧</span> 시험지 관리</button>
           <button class="primary-button header-new-template hidden" type="button" data-new-template>＋ 새 시험지 양식</button>
         </div>
       </header>
@@ -58,7 +56,7 @@
           <button class="quick-card" type="button" data-page="records"><span>▤</span><strong>채점 기록</strong><small>전체 시험지 이력 확인</small></button>
           <button class="quick-card" type="button" data-page="templates"><span>▧</span><strong>시험지 관리</strong><small>양식 이미지와 OCR 영역 설정</small></button>
           <button class="quick-card" type="button" data-page="students"><span>♧</span><strong>학생 관리</strong><small>클래스별 학생 관리</small></button>
-          <button class="quick-card" type="button" data-page="categories"><span>▦</span><strong>시험 카테고리</strong><small>학교급 · 과목 · 단원 분류</small></button>
+          <button class="quick-card" type="button" data-page="categories"><span>▦</span><strong>그룹 관리</strong><small>학교급 · 과목 · 단원 분류</small></button>
         </section>
       </section>
 
@@ -81,16 +79,24 @@
       </section>
 
       <section class="app-page" data-page-panel="templates">
-        <div class="template-page-tools"><p>시험지 양식을 만들고, 문항별 OCR 인식 영역과 기준 답안을 함께 설정합니다.</p><div class="template-tabs" role="tablist" aria-label="시험지 관리 보기">
+        <div class="template-page-tools"><div class="template-tabs" role="tablist" aria-label="시험지 관리 보기">
           <button class="active" type="button" data-template-tab="editor">양식 편집</button>
           <button type="button" data-template-tab="answers">답안만 보기</button>
         </div></div>
-        <div class="template-workspace" data-template-panel="editor">
-          <aside class="template-list">
-            <div class="template-list-title"><strong>등록된 시험지</strong><small>3개 양식</small></div>
-            <div id="templateListItems"></div>
-          </aside>
-          <section class="template-canvas-card">
+        <div class="template-workspace">
+          <div class="template-side">
+            <aside class="template-list">
+              <div class="template-list-title"><strong>등록된 시험지</strong><small>3개 양식</small></div>
+              <div id="templateListItems"></div>
+            </aside>
+            <aside class="region-editor" data-template-panel="editor">
+              <p class="eyebrow mint">OCR REGION SUMMARY</p><h3><span id="selectedQuestion">1</span>번 문항 요약</h3>
+              <div class="coordinate-grid"><label>X<input value="72" /></label><label>Y<input value="186" /></label><label>W<input value="420" /></label><label>H<input value="54" /></label></div>
+              <p class="capture-help">좌표는 시험지 원본 이미지 기준으로 저장됩니다. 학생이 올린 사진은 원근 보정 후 같은 좌표로 OCR 영역을 잘라냅니다.</p>
+              <button class="primary-button full-button" type="button" data-toggle-inline-edit>미리보기에서 편집</button>
+            </aside>
+          </div>
+          <section class="template-canvas-card" data-template-panel="editor">
             <div class="canvas-toolbar"><div><strong>시험지 양식 미리보기</strong><small>편집하기를 누르면 이 화면에서 문항과 OCR 영역을 바로 수정할 수 있습니다.</small></div><div class="canvas-actions"><button class="primary-button" type="button" data-toggle-inline-edit>편집하기</button><button class="secondary-button" type="button" data-inline-cancel>인쇄</button></div></div>
             <div class="template-canvas-viewport">
             <div class="template-canvas" id="printableTemplate">
@@ -109,26 +115,18 @@
               <div class="paper-question" data-paper-question="5"><label><span>5.</span><input class="paper-question-input" value="산소를 잃는 반응을 쓰시오." data-paper-question-input="5" /></label><label class="ocr-region" data-region="5"><span>답 작성 영역 5</span><input class="paper-answer-input" value="환원" placeholder="기준 답안을 직접 입력" data-paper-answer-input="5" /></label></div>
             </div>
             </div>
+            <div class="canvas-footer"><button class="add-question" type="button" data-add-inline-question>＋ 문항 추가</button></div>
           </section>
-          <aside class="region-editor">
-            <p class="eyebrow mint">OCR REGION SUMMARY</p><h3><span id="selectedQuestion">1</span>번 문항 요약</h3>
-            <label>문항 질문<input id="regionQuestion" value="전자를 잃는 반응을 무엇이라고 하는가?" /></label>
-            <label>기준 정답<input id="regionAnswer" value="산화" /></label>
-            <label>허용 표기 변형<input id="regionAliases" value="산화 반응" /></label>
-            <div class="coordinate-grid"><label>X<input value="72" /></label><label>Y<input value="186" /></label><label>W<input value="420" /></label><label>H<input value="54" /></label></div>
-            <p class="capture-help">좌표는 시험지 원본 이미지 기준으로 저장됩니다. 학생이 올린 사진은 원근 보정 후 같은 좌표로 OCR 영역을 잘라냅니다.</p>
-            <button class="primary-button full-button" type="button" data-toggle-inline-edit>미리보기에서 편집</button>
-          </aside>
-        </div>
-        <div class="answer-overview hidden" data-template-panel="answers">
-          <div class="answer-overview-heading"><div><h3>시험지별 기준 답안</h3><p>OCR 영역 설정 없이 문항별 정답과 허용 표기만 빠르게 확인합니다.</p></div><select id="answerTemplateFilter" aria-label="시험지 선택"></select></div>
-          <div class="answer-overview-list" id="answerOverviewList"></div>
+          <div class="answer-overview hidden" data-template-panel="answers">
+            <div class="answer-overview-heading"><div><h3>시험지별 기준 답안</h3><p>OCR 영역 설정 없이 문항별 정답과 허용 표기만 빠르게 확인합니다.</p></div></div>
+            <div class="answer-overview-list" id="answerOverviewList"></div>
+          </div>
         </div>
       </section>
 
 
       <section class="app-page" data-page-panel="categories">
-        <div class="section-heading"><div><p class="eyebrow">EXAM CATEGORIES</p><h2>시험 카테고리</h2><p>학교급, 과목, 단원을 기준으로 시험지를 체계적으로 분류합니다.</p></div><button class="primary-button">＋ 카테고리 추가</button></div>
+        <div class="section-heading"><div><p class="eyebrow">EXAM CATEGORIES</p><h2>그룹 관리</h2><p>학교급, 과목, 단원을 기준으로 시험지를 체계적으로 분류합니다.</p></div><button class="primary-button">＋ 카테고리 추가</button></div>
         <div class="category-board" id="categoryCards"></div>
         <section class="teacher-assignment-card">
           <div class="assignment-heading"><div><h3>클래스별 담당 선생님</h3><p>시험 카테고리와 클래스를 기준으로 담당 선생님을 지정합니다.</p></div><button class="secondary-button" type="button">＋ 담당 연결</button></div>
@@ -211,6 +209,6 @@
         </div>
       </section>
     </div>
-    <script src="./app.js?v=2"></script>
+    <script src="./app.js?v=17"></script>
   </body>
 </html>

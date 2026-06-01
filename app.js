@@ -14,7 +14,16 @@ let myPapers = [
   { id:6, title:"물질의 규칙성 주간 테스트", category:"통합과학 · 물질", uploaded:"04.27 18:30", date:"2026-04-27", status:"채점 완료", score:95 },
   { id:7, title:"산과 염기 개념 점검", category:"중등 화학 · 산과 염기", uploaded:"04.18 13:22", date:"2026-04-18", status:"채점 완료", score:70 }
 ];
-const pageTitles = { dashboard:"대시보드", records:"채점 기록", templates:"시험지 관리", students:"학생 관리", categories:"시험 카테고리", settings:"설정", "my-papers":"내 시험지" };
+const pageTitles = { dashboard:"대시보드", records:"채점 기록", templates:"시험지 관리", students:"학생 관리", categories:"그룹 관리", settings:"설정", "my-papers":"내 시험지" };
+const pageSubtitles = {
+  dashboard:"",
+  records:"학원, 클래스, 카테고리, 학생별로 시험지 원본과 결과를 관리합니다.",
+  templates:"시험지 양식을 만들고, 문항별 OCR 인식 영역과 기준 답안을 함께 설정합니다.",
+  students:"학원과 클래스별 학생 계정, 최근 성적, 업로드 현황을 관리합니다.",
+  categories:"학교급, 과목, 단원을 기준으로 시험지를 체계적으로 분류합니다.",
+  settings:"학원 정보와 채점 정책을 관리합니다.",
+  "my-papers":"올린 시험지를 확인하고, 준비가 끝났을 때 직접 채점을 시작하세요."
+};
 let role = "admin";
 let cameraStream;
 let paperPage = 1;
@@ -42,7 +51,7 @@ function showPage(name) {
   document.querySelectorAll("[data-page-panel]").forEach((panel) => panel.classList.toggle("active", panel.dataset.pagePanel === name));
   document.querySelectorAll("[data-page]").forEach((button) => button.classList.toggle("active", button.dataset.page === name));
   document.querySelector("#pageTitle").textContent = pageTitles[name] || "케미체크";
-  document.querySelector(".header-manage").classList.toggle("hidden",name === "templates");
+  document.querySelector("#pageSubtitle").textContent = pageSubtitles[name] || "";
   document.querySelector(".header-new-template").classList.toggle("hidden",name !== "templates");
   window.scrollTo({ top:0, behavior:"smooth" });
 }
@@ -67,8 +76,6 @@ function renderStaticCards() {
   document.querySelector("#categoryCards").innerHTML = ["중등 과학|화학 반응 · 이온 · 기체","통합과학|물질의 규칙성 · 화학 변화","화학 I|몰 · 산화 환원 · 중화 반응"].map((item) => { const [title,units]=item.split("|"); return `<article class="category-card"><span>▦</span><h3>${title}</h3><p>${units}</p><button>카테고리 관리</button></article>`; }).join("");
 }
 function renderAnswerOverview() {
-  const filter=document.querySelector("#answerTemplateFilter");
-  filter.innerHTML=templates.map((template) => `<option value="${template.id}" ${template.id === selectedTemplateId ? "selected" : ""}>${template.name}</option>`).join("");
   document.querySelector("#answerOverviewList").innerHTML=Object.entries(templateRegions).map(([number,region]) => `<article class="answer-overview-item"><strong>${number}번</strong><p>${region.question}</p><small>정답: <b>${region.answer || "미입력"}</b>${region.aliases ? ` · 허용: ${region.aliases}` : ""}</small></article>`).join("");
 }
 function renderTemplateList() {
@@ -81,17 +88,14 @@ function createQuestionMarkup(number) {
 }
 function bindTemplateRegionInputs() {
   document.querySelectorAll("[data-region]").forEach((button) => button.addEventListener("click", () => selectRegion(button)));
-  document.querySelectorAll("[data-paper-question-input]").forEach((input) => input.addEventListener("input", () => { const number=input.dataset.paperQuestionInput; templateRegions[number].question=input.value; if (document.querySelector("#selectedQuestion").textContent === number) document.querySelector("#regionQuestion").value=input.value; }));
+  document.querySelectorAll("[data-paper-question-input]").forEach((input) => input.addEventListener("input", () => { const number=input.dataset.paperQuestionInput; templateRegions[number].question=input.value; }));
   document.querySelectorAll("[data-paper-answer-input]").forEach((input) => input.addEventListener("focus", () => input.closest("[data-region]").click()));
-  document.querySelectorAll("[data-paper-answer-input]").forEach((input) => input.addEventListener("input", () => { const number=input.dataset.paperAnswerInput; templateRegions[number].answer=input.value; if (document.querySelector("#selectedQuestion").textContent === number) document.querySelector("#regionAnswer").value=input.value; }));
+  document.querySelectorAll("[data-paper-answer-input]").forEach((input) => input.addEventListener("input", () => { const number=input.dataset.paperAnswerInput; templateRegions[number].answer=input.value; }));
 }
 function selectRegion(button) {
   const region=templateRegions[button.dataset.region];
   document.querySelectorAll("[data-region]").forEach((item) => item.classList.toggle("active", item === button));
   document.querySelector("#selectedQuestion").textContent=button.dataset.region;
-  document.querySelector("#regionQuestion").value=region.question;
-  document.querySelector("#regionAnswer").value=region.answer;
-  document.querySelector("#regionAliases").value=region.aliases;
   const coordinateInputs=document.querySelectorAll(".coordinate-grid input");
   [region.x,region.y,region.w,region.h].forEach((value,index) => coordinateInputs[index].value=value);
 }
@@ -117,7 +121,7 @@ function renderModalQuestions(selectedNumber=1) {
 function syncOuterTemplatePreview() {
   const outer=document.querySelector("#printableTemplate");
   outer.querySelectorAll(".paper-question,.add-question").forEach((item) => item.remove());
-  outer.insertAdjacentHTML("beforeend",Object.keys(templateRegions).map((number) => createQuestionMarkup(number)).join("") + '<button class="add-question" type="button" data-add-inline-question>＋ 문항 추가</button>');
+  outer.insertAdjacentHTML("beforeend",Object.keys(templateRegions).map((number) => createQuestionMarkup(number)).join(""));
   outer.querySelectorAll("input,textarea").forEach((input) => input.setAttribute("readonly",""));
   outer.querySelectorAll("select").forEach((select) => select.setAttribute("disabled",""));
   outer.querySelectorAll("[data-region],input,select,button").forEach((element) => element.setAttribute("tabindex","-1"));
@@ -148,9 +152,9 @@ function setInlineEditMode(enabled) {
 function bindInlineTemplateEditor() {
   const outer=document.querySelector("#printableTemplate");
   outer.querySelectorAll("[data-region]").forEach((label) => label.addEventListener("click", () => selectRegion(label)));
-  outer.querySelectorAll("[data-paper-question-input]").forEach((input) => input.addEventListener("input", () => { const number=input.dataset.paperQuestionInput; templateRegions[number].question=input.value; document.querySelector("#regionQuestion").value=input.value; }));
+  outer.querySelectorAll("[data-paper-question-input]").forEach((input) => input.addEventListener("input", () => { const number=input.dataset.paperQuestionInput; templateRegions[number].question=input.value; }));
   outer.querySelectorAll("[data-paper-answer-input]").forEach((input) => input.addEventListener("focus", () => selectRegion(input.closest("[data-region]"))));
-  outer.querySelectorAll("[data-paper-answer-input]").forEach((input) => input.addEventListener("input", () => { const number=input.dataset.paperAnswerInput; templateRegions[number].answer=input.value; document.querySelector("#regionAnswer").value=input.value; }));
+  outer.querySelectorAll("[data-paper-answer-input]").forEach((input) => input.addEventListener("input", () => { const number=input.dataset.paperAnswerInput; templateRegions[number].answer=input.value; }));
   outer.querySelectorAll("[data-resize-region]").forEach((handle) => handle.addEventListener("pointerdown", (event) => startRegionResize(event,handle,false)));
   outer.querySelectorAll("[data-delete-question]").forEach((button) => button.addEventListener("click", () => {
     if (Object.keys(templateRegions).length === 1) return;
@@ -162,13 +166,6 @@ function bindInlineTemplateEditor() {
     syncOuterTemplatePreview();
     setInlineEditMode(true);
   }));
-  outer.querySelector("[data-add-inline-question]")?.addEventListener("click", () => {
-    const number=Object.keys(templateRegions).length + 1;
-    templateRegions[number]={ question:"문항 질문을 입력하세요.", answer:"", aliases:"", x:72, y:100 + number * 89, w:420, h:54 };
-    syncOuterTemplatePreview();
-    setInlineEditMode(true);
-    selectRegion(document.querySelector(`#printableTemplate [data-region="${number}"]`));
-  });
 }
 function startRegionResize(event,handle,isModal=true) {
   event.preventDefault();
@@ -300,20 +297,6 @@ document.querySelectorAll("[data-period]").forEach((button) => button.addEventLi
 document.querySelector("#historyPeriod").addEventListener("change", () => { paperPage=1; renderMyPapers(); });
 document.querySelector("#historyStatus").addEventListener("change", () => { paperPage=1; renderMyPapers(); });
 bindTemplateRegionInputs();
-document.querySelector("#regionQuestion").addEventListener("input", (event) => {
-  const number=document.querySelector("#selectedQuestion").textContent;
-  templateRegions[number].question=event.target.value;
-  document.querySelector(`[data-paper-question-input="${number}"]`).value=event.target.value;
-});
-document.querySelector("#regionAnswer").addEventListener("input", (event) => {
-  const number=document.querySelector("#selectedQuestion").textContent;
-  templateRegions[number].answer=event.target.value;
-  document.querySelector(`[data-paper-answer-input="${number}"]`).value=event.target.value;
-});
-document.querySelector("#regionAliases").addEventListener("input", (event) => {
-  const number=document.querySelector("#selectedQuestion").textContent;
-  templateRegions[number].aliases=event.target.value;
-});
 function createBlankTemplate() {
   const id=Date.now();
   const name="새 쪽지시험";
@@ -336,7 +319,6 @@ document.querySelectorAll("[data-template-tab]").forEach((button) => button.addE
   document.querySelectorAll("[data-template-panel]").forEach((panel) => panel.classList.toggle("hidden",panel.dataset.templatePanel !== button.dataset.templateTab));
   if (button.dataset.templateTab === "answers") renderAnswerOverview();
 }));
-document.querySelector("#answerTemplateFilter").addEventListener("change", (event) => { selectedTemplateId=Number(event.target.value); renderTemplateList(); renderAnswerOverview(); });
 document.querySelectorAll("[data-toggle-inline-edit]").forEach((button) => button.addEventListener("click", () => setInlineEditMode(!inlineEditing)));
 document.querySelector("[data-inline-cancel]").addEventListener("click", () => {
   if (!inlineEditing) { window.print(); return; }
@@ -345,7 +327,14 @@ document.querySelector("[data-inline-cancel]").addEventListener("click", () => {
   reloadPersistedTemplate();
   setInlineEditMode(false);
 });
-document.querySelector("#templateListItems").addEventListener("click", (event) => { const button=event.target.closest("[data-template-id]"); if (!button) return; selectedTemplateId=Number(button.dataset.templateId); renderTemplateList(); });
+document.querySelector("#templateListItems").addEventListener("click", (event) => { const button=event.target.closest("[data-template-id]"); if (!button) return; selectedTemplateId=Number(button.dataset.templateId); renderTemplateList(); renderAnswerOverview(); });
+document.querySelector("[data-add-inline-question]").addEventListener("click", () => {
+  const number=Object.keys(templateRegions).length + 1;
+  templateRegions[number]={ question:"문항 질문을 입력하세요.", answer:"", aliases:"", x:72, y:100 + number * 89, w:420, h:54 };
+  syncOuterTemplatePreview();
+  setInlineEditMode(true);
+  selectRegion(document.querySelector(`#printableTemplate [data-region="${number}"]`));
+});
 const templatePreviewModal=document.querySelector("#templatePreviewModal");
 function openTemplateEditor(isNew=false) {
   const preview=document.querySelector("#printableTemplate").cloneNode(true);
@@ -413,6 +402,26 @@ document.querySelector("#modalRegionAliases").addEventListener("input", (event) 
   if (key === "W") box.style.width=`${constrained}px`;
   if (key === "H") box.style.height=`${constrained}px`;
 }));
+document.querySelectorAll(".region-editor .coordinate-grid input").forEach((input, index) => {
+  const key=["X","Y","W","H"][index];
+  input.addEventListener("input", (event) => {
+    const number=document.querySelector("#selectedQuestion").textContent;
+    const box=document.querySelector(`#printableTemplate [data-region="${number}"]`);
+    if (!box) return;
+    const value=Number(event.target.value) || 0;
+    const paper=box.closest(".template-canvas");
+    const paperRect=paper.getBoundingClientRect();
+    const boxRect=box.getBoundingClientRect();
+    const paperStyle=getComputedStyle(paper);
+    let constrained=value;
+    if (key === "W") constrained=Math.min(Math.max(160,value),Math.max(160,Math.floor(paperRect.right - parseFloat(paperStyle.paddingRight) - boxRect.left)));
+    if (key === "H") constrained=Math.min(Math.max(34,value),Math.max(34,Math.floor(paperRect.bottom - parseFloat(paperStyle.paddingBottom) - boxRect.top)));
+    templateRegions[number][key.toLowerCase()]=constrained;
+    event.target.value=constrained;
+    if (key === "W") box.style.width=`${constrained}px`;
+    if (key === "H") box.style.height=`${constrained}px`;
+  });
+});
 document.querySelector("[data-close-result]").addEventListener("click", () => document.querySelector("#resultModal").classList.add("hidden"));
 const mobileQuery = globalThis.matchMedia("(max-width: 600px)");
 let desktopRole = "admin";
