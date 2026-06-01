@@ -30,7 +30,7 @@ button { cursor: pointer; border: 0; }
   display: flex; flex-direction: column;
   background: #29443b; color: #eef6f1;
 }
-.sidebar-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.sidebar-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 45px; }
 .sidebar-toggle { display: grid; width: 32px; height: 32px; place-content: center; gap: 4px; border-radius: 7px; background: rgba(255,255,255,.08); }
 .sidebar-toggle:hover { background: rgba(255,255,255,.15); }.sidebar-toggle i { display: block; width: 15px; height: 2px; border-radius: 2px; background: #d9e7e2; }
 .brand, .profile-button { display: flex; align-items: center; gap: 11px; }
@@ -69,7 +69,7 @@ button { cursor: pointer; border: 0; }
 .sidebar-collapsed .page-shell { margin-left: 68px; }
 .sidebar-collapsed .brand, .sidebar-collapsed .academy-mini, .sidebar-collapsed .mode-switch, .sidebar-collapsed .profile-button span:not(.avatar) { display: none; }
 .sidebar-collapsed .sidebar-head { justify-content: center; }
-.sidebar-collapsed .main-nav { margin-top: 23px; }
+.sidebar-collapsed .main-nav { margin-top: 48px; }
 .sidebar-collapsed .nav-link { display: flex; align-items: center; justify-content: center; gap: 0; min-height: 44px; padding: 0; font-size: 0; line-height: 1; }
 .sidebar-collapsed .nav-link span { width: 18px; font-size: 16px; line-height: 1; }
 .sidebar-collapsed .student-only { display: none; }
