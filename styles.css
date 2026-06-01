@@ -368,6 +368,13 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
   .paper-thumb { min-height: 126px; }
   .student-mode #mobileNav { grid-template-columns: 1fr 1fr; }
   .student-mode #mobileNav .student-only { display: grid; }
+  /* 모바일 접속 시 JS 실행 여부와 무관하게 학생 모드 메뉴/화면만 노출 */
+  #mobileNav { grid-template-columns: 1fr 1fr; }
+  #mobileNav .teacher-only { display: none; }
+  #mobileNav .student-only { display: grid; }
+  .header-manage, .header-new-template { display: none; }
+  .app-page.active { display: none; }
+  .app-page[data-page-panel="my-papers"] { display: block; }
   footer { padding-bottom: 10px; }
 }
 

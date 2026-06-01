@@ -438,7 +438,8 @@ document.querySelector("[data-collapsed-role-toggle]").addEventListener("click",
 function syncRoleToViewport() {
   applyRole(mobileQuery.matches ? "student" : desktopRole);
 }
-mobileQuery.addEventListener("change", syncRoleToViewport);
+if (mobileQuery.addEventListener) mobileQuery.addEventListener("change", syncRoleToViewport);
+else mobileQuery.addListener(syncRoleToViewport);
 document.querySelector("[data-sidebar-toggle]").addEventListener("click", (event) => {
   const collapsed=document.body.classList.toggle("sidebar-collapsed");
   event.currentTarget.setAttribute("aria-expanded",String(!collapsed));
