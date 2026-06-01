@@ -316,6 +316,9 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
   .brand span, .brand strong, .nav-link { font-size: 0; }
   .nav-link { display: grid; place-items: center; min-height: 44px; padding: 0; line-height: 1; }
   .nav-link span { width: 100%; height: 100%; display: grid; place-items: center; font-size: 16px; line-height: 1; }
+  .student-only { display: none; }
+  .student-mode .teacher-only { display: none; }
+  .student-mode .student-only { display: grid; place-items: center; min-height: 44px; }
   .academy-mini, .profile-button span:not(.avatar) { display: none; }
   .mode-switch { display: none; }
   .page-shell { margin-left: 67px; padding: 24px 20px; }
