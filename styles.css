@@ -70,8 +70,10 @@ button { cursor: pointer; border: 0; }
 .sidebar-collapsed .brand, .sidebar-collapsed .academy-mini, .sidebar-collapsed .mode-switch, .sidebar-collapsed .profile-button span:not(.avatar) { display: none; }
 .sidebar-collapsed .sidebar-head { justify-content: center; }
 .sidebar-collapsed .main-nav { margin-top: 23px; }
-.sidebar-collapsed .nav-link { display: grid; min-height: 44px; place-items: center; padding: 0; font-size: 0; line-height: 1; }
-.sidebar-collapsed .nav-link span { display: grid; width: 100%; height: 100%; place-items: center; font-size: 16px; line-height: 1; }
+.sidebar-collapsed .nav-link { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 0; font-size: 0; line-height: 1; }
+.sidebar-collapsed .nav-link span { width: 18px; font-size: 16px; line-height: 1; }
+.sidebar-collapsed .student-only { display: none; }
+.student-mode.sidebar-collapsed .student-only { display: flex; }
 .sidebar-collapsed .profile-button { justify-content: center; }
 .sidebar-collapsed .collapsed-role-toggle { position: relative; display: grid; width: 34px; height: 34px; place-items: center; margin: 9px auto 0; border-radius: 50%; color: #eff8f5; background: rgba(255,255,255,.12); font-size: 17px; }
 .sidebar-collapsed .collapsed-role-toggle:hover { background: rgba(255,255,255,.2); }
@@ -314,11 +316,11 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
   .sidebar { width: 67px; padding-inline: 11px; }
   .brand, .nav-link:not(.active) { color: transparent; }
   .brand span, .brand strong, .nav-link { font-size: 0; }
-  .nav-link { display: grid; place-items: center; min-height: 44px; padding: 0; line-height: 1; }
-  .nav-link span { width: 100%; height: 100%; display: grid; place-items: center; font-size: 16px; line-height: 1; }
+  .nav-link { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 0; line-height: 1; }
+  .nav-link span { width: 18px; font-size: 16px; line-height: 1; }
   .student-only { display: none; }
   .student-mode .teacher-only { display: none; }
-  .student-mode .student-only { display: grid; place-items: center; min-height: 44px; }
+  .student-mode .student-only { display: flex; }
   .academy-mini, .profile-button span:not(.avatar) { display: none; }
   .mode-switch { display: none; }
   .page-shell { margin-left: 67px; padding: 24px 20px; }
