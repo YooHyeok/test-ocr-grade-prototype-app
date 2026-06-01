@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=22" />
+    <link rel="stylesheet" href="./styles.css?v=28" />
   </head>
   <body>
     <aside class="sidebar">
@@ -196,7 +196,12 @@
         <button class="modal-close" type="button" data-close-detail aria-label="닫기">×</button>
         <p class="eyebrow mint">GRADING RESULT</p><h2 id="detailTitle">채점 결과</h2>
         <div class="detail-meta" id="detailMeta"></div>
-        <div class="detail-layout"><div class="detail-image" id="detailImage"></div><div class="detail-paper" id="detailPaper"></div></div>
+        <div class="grade-layout">
+          <section class="grade-col"><h4 class="grade-h">자동채점 결과</h4><div class="grade-col-body" id="autoResult"></div></section>
+          <section class="grade-col"><h4 class="grade-h">수동채점</h4><div class="grade-col-body" id="manualControl"></div></section>
+          <section class="grade-col"><h4 class="grade-h">수동채점 결과</h4><div class="grade-col-body" id="manualResult"></div></section>
+        </div>
+        <div class="grade-footer" id="gradeFooter"></div>
         <p class="capture-help">원본 시험지 이미지는 유지하고, 정답·오답 표시는 별도 좌표 데이터로 화면 위에 겹쳐 표시합니다.</p>
       </section>
     </div>
@@ -218,6 +223,7 @@
         </div>
       </section>
     </div>
-    <script src="./app.js?v=22"></script>
+    <div id="printArea" aria-hidden="true"></div>
+    <script src="./app.js?v=28"></script>
   </body>
 </html>

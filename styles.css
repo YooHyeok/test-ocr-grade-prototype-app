@@ -327,9 +327,13 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .red-mark, .red-score { position: absolute; color: #d83f36; font-family: "Gowun Dodum"; transform: rotate(-9deg); }.red-mark { right: 70px; font-size: 44px; }.mark-a { top: 110px; }.mark-b { top: 171px; }.mark-c { top: 233px; }.red-score { right: 30px; bottom: 30px; border-bottom: 2px solid #d83f36; font-size: 35px; }
 .record-row { cursor: pointer; }
 .record-row:hover td { background: #f6f9f6; }
-.exam-detail-modal { width: min(840px,100%); max-height: 90vh; overflow-y: auto; }
-.detail-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 16px; margin-top: 13px; align-items: start; }
-.scan-sheet { position: relative; padding: 18px 20px 40px; border: 1px solid #e6dfce; border-radius: 6px; color: #4a463d; background: repeating-linear-gradient(#fffdf6 0 30px,#efe9d8 31px); box-shadow: 0 6px 16px rgba(58,70,64,.08); font-family: "Gowun Dodum"; }
+.exam-detail-modal { width: min(1160px,96vw); max-height: 94vh; overflow-y: auto; }
+.grade-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(255px,1fr)); gap: 14px; margin-top: 14px; align-items: stretch; }
+.grade-col { display: flex; flex-direction: column; min-width: 0; }
+.grade-col-body { flex: 1; display: flex; flex-direction: column; gap: 11px; }
+.grade-col-body > .scan-sheet, .grade-col-body > .manual-box { flex: 1; }
+.manual-box { padding: 13px 14px; border: 1px solid var(--line); border-radius: 12px; }
+.scan-sheet { position: relative; padding: 18px 20px 40px; border: 1px solid #e6dfce; border-radius: 12px; color: #4a463d; background: repeating-linear-gradient(#fffdf6 0 30px,#efe9d8 31px); box-shadow: 0 6px 16px rgba(58,70,64,.08); font-family: "Gowun Dodum"; }
 .scan-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding-bottom: 11px; margin-bottom: 6px; border-bottom: 2px solid #b9b2a0; }
 .scan-head strong { font-size: 15px; }.scan-head span { color: #7a7363; font-size: 12px; }
 .scan-line { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
@@ -339,12 +343,54 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .scan-score { position: absolute; right: 16px; bottom: 11px; border-bottom: 2px solid #d83f36; color: #d83f36; font-size: 29px; font-weight: 700; transform: rotate(-8deg); }
 .scan-photo { transform: rotate(-1.1deg); border-color: #d8d0bd; box-shadow: 0 14px 32px rgba(0,0,0,.18); }
 .scan-photo::after { content: "학생 업로드 사진"; position: absolute; top: 8px; right: 9px; padding: 2px 7px; border-radius: 4px; background: rgba(29,118,88,.12); color: var(--green); font-family: "IBM Plex Sans KR"; font-size: 9px; font-weight: 700; letter-spacing: .3px; }
+.grade-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 11px; }
+.grade-toolbar .secondary-button { padding: 9px 13px; font-size: 12px; }
+.grade-toolbar small { flex: 1; min-width: 140px; color: var(--muted); font-size: 11px; }
+.grade-list { display: grid; gap: 8px; }
+.grade-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; }
+.grade-q { display: flex; gap: 9px; align-items: flex-start; min-width: 0; }
+.grade-q .qn { display: grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; background: #eef2ef; color: #56635e; font-size: 11px; font-weight: 700; }
+.grade-q p { margin: 0 0 2px; color: #404a45; font-size: 12.5px; }
+.grade-q small { color: var(--muted); font-size: 11px; }.grade-q small b { color: #2c4a8c; }
+.rec { margin-left: 4px; padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; font-style: normal; }
+.rec.ok { color: var(--green); background: #e2f1ea; }
+.rec.warn { color: #b4541d; background: #fdebdb; }
+.grade-actions { display: flex; flex: none; gap: 6px; }
+.mark-btn { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--white); color: #b8bfba; font-size: 19px; font-weight: 700; }
+.mark-btn:hover { border-color: #b7c2bd; }
+.mark-btn.active { color: #d83f36; border-color: #e7b4af; }
+.grade-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.grade-note { color: var(--muted); font-size: 11px; }
+.grade-footer .primary-button { flex: none; padding: 10px 17px; }
+.grade-section { margin-bottom: 0; }
+.grade-h { margin: 0 0 11px; padding-left: 9px; border-left: 3px solid var(--green); color: #404a45; font-size: 12.5px; font-weight: 700; line-height: 1.1; letter-spacing: .2px; }
+.auto-section { padding: 13px 14px; border: 1px solid #e2ece7; border-radius: 12px; background: #f5faf7; }
+.manual-section { flex: 1; padding: 13px 14px; border: 1px solid var(--line); border-radius: 12px; }
+.auto-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.auto-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.auto-chip b { font-size: 13px; }
+.auto-chip.auto-ok { color: var(--green); background: #e2f1ea; }
+.auto-chip.auto-pending { color: #8a8178; background: #ece8df; }
+.auto-summary { margin: 9px 0 0; color: var(--muted); font-size: 11.5px; }.auto-summary b { color: #404a45; }
+.row-actions { display: flex; gap: 5px; align-items: center; justify-content: flex-end; }
+.print-record-btn { width: 30px; height: 30px; border-radius: 7px; background: #eef2ef; color: #56635e; font-size: 13px; line-height: 1; }
+.print-record-btn:hover { background: #e0e8e3; }
+#printArea { display: none; }
+.print-sheet { padding: 38px 42px; color: #1f1c17; font-family: "Gowun Dodum"; }
+.print-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; padding-bottom: 14px; margin-bottom: 22px; border-bottom: 2px solid #1f1c17; }
+.print-head strong { display: block; font-size: 21px; }.print-head span { color: #555; font-size: 13px; }
+.print-sub { margin: 0 0 16px; font-size: 13px; }
+.print-line { display: flex; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid #d8d8d8; }
+.print-q { flex: 1; font-size: 15px; }
+.print-ans { min-width: 120px; font-size: 16px; }
+.print-mark { width: 42px; text-align: center; color: #d83f36; font-size: 30px; }
+.print-score { display: block; margin-top: 22px; color: #d83f36; font-size: 26px; font-weight: 700; text-align: right; }
 .detail-meta { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0 2px; }
 .detail-meta span { padding: 5px 10px; border-radius: 999px; background: #f1f4f1; color: #56635e; font-size: 12px; }
 .detail-meta .status-chip.review { color: #b4541d; background: #fdebdb; }
 .detail-meta .status-chip.done { color: var(--green); background: #e2f1ea; }
 .detail-meta .score-chip { color: var(--white); background: var(--green); font-weight: 700; }
-.detail-paper { margin-top: 13px; border: 1px solid #ebe6da; border-radius: 12px; overflow: hidden; background: #fffdf8; }
+.detail-paper { display: flex; flex-direction: column; }
 .detail-paper .dp-head { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; border-bottom: 1px dashed #d9d2c2; font-family: "Gowun Dodum"; }
 .detail-paper .dp-head strong { font-size: 15px; color: #4a463f; }
 .detail-paper .dp-head .dp-score { color: #d83f36; font-family: "Gowun Dodum"; font-size: 26px; font-weight: 700; }
@@ -450,4 +496,9 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
   #printableTemplate .paper-classification select { border: 0; color: #333; background: transparent; appearance: none; font-size: 13px; font-weight: 700; }
   #printableTemplate .student-name-region { display: grid; min-height: 34px; gap: 1px; border: 0; border-radius: 0; color: #333; background: transparent; white-space: nowrap; }
   #printableTemplate .student-name-region input { height: 16px; border-bottom: 1px solid #777; color: transparent; }
+}
+@media print {
+  body.print-record #printableTemplate, body.print-record #printableTemplate * { visibility: hidden; }
+  body.print-record #printArea { display: block; position: absolute; inset: 0; }
+  body.print-record #printArea, body.print-record #printArea * { visibility: visible; }
 }

@@ -76,10 +76,16 @@ function renderRecords() {
   const filtered = records.filter((record) => (!query || `${record.student} ${record.paper}`.toLowerCase().includes(query)) && (academy === "all" || record.academy === academy) && (className === "all" || record.className === className) && (category === "all" || record.category === category) && (status === "all" || record.status === status));
   currentRecords = filtered;
   document.querySelector("#recordCount").textContent = filtered.length;
-  recordBody.innerHTML = filtered.map((record,index) => `<tr class="record-row" data-record-index="${index}"><td>${record.date}</td><td class="student-cell"><strong>${record.student}</strong><span>${record.grade}</span></td><td>${record.academy}<br>${record.className}</td><td>${record.category}</td><td class="paper-cell"><strong>${record.paper}</strong><span>단답형 시험</span></td><td class="score">${record.score}<small> / 100</small></td><td><span class="status ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span></td><td><button class="detail-button" type="button">⋯</button></td></tr>`).join("");
+  recordBody.innerHTML = filtered.map((record,index) => `<tr class="record-row" data-record-index="${index}"><td>${record.date}</td><td class="student-cell"><strong>${record.student}</strong><span>${record.grade}</span></td><td>${record.academy}<br>${record.className}</td><td>${record.category}</td><td class="paper-cell"><strong>${record.paper}</strong><span>단답형 시험</span></td><td class="score">${record.score}<small> / 100</small></td><td><span class="status ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span></td><td class="row-actions"><button class="print-record-btn" type="button" data-print-record="${index}" aria-label="인쇄">🖨</button><button class="detail-button" type="button">⋯</button></td></tr>`).join("");
 }
 filters.forEach((filter) => filter.addEventListener("input", renderRecords));
-recordBody.addEventListener("click", (event) => { const row = event.target.closest("[data-record-index]"); if (!row) return; openExamDetail(currentRecords[Number(row.dataset.recordIndex)]); });
+recordBody.addEventListener("click", (event) => {
+  const printButton = event.target.closest("[data-print-record]");
+  if (printButton) { printRecord(currentRecords[Number(printButton.dataset.printRecord)]); return; }
+  const row = event.target.closest("[data-record-index]");
+  if (!row) return;
+  openExamDetail(currentRecords[Number(row.dataset.recordIndex)]);
+});
 
 function renderStaticCards() {
   document.querySelector("#studentCards").innerHTML = ["박서윤|고2 화학 I|최근 평균 88점","김민준|고2 화학 I|검토 필요 1건","이도윤|중3 화학 심화|최근 평균 94점","한지우|고1 통합과학 A|최근 평균 86점"].map((item) => { const [name,group,note]=item.split("|"); return `<article class="manage-card"><span class="avatar">${name[0]}</span><div><h3>${name}</h3><p>${group}</p><small>${note}</small></div><button type="button" data-student-detail="${name}">상세 보기</button></article>`; }).join("");
@@ -468,26 +474,118 @@ function showResultScan(paper) {
   document.querySelector("#resultScan").innerHTML = buildScanPaper(paperToRecord(paper), true);
   document.querySelector("#resultModal").classList.remove("hidden");
 }
+let gradingRecord = null;
+const wrongAnswers = ["미정","해당없음","오답 표기","판독 불가"];
 /**
- * 채점 결과 상세 모달을 채워 표시한다.
+ * 채점 기록에 문항별 채점 상태를 1회 생성한다.
+ * 완료 상태면 정답/오답을 그대로, 아니면 자동채점(명확 인식 정답만 ○)을 기본 적용한다.
+ * @param {object} record - 채점 기록
+ * @returns {Array<object>} 문항별 채점 상태 배열
+ */
+function ensureGrading(record) {
+  if (record.grading) return record.grading;
+  const set = examAnswerBank[record.category] || examAnswerBank["화학 I · 산화 환원"];
+  const correctCount = Math.max(0,Math.min(set.length,Math.round((record.score || 0) / 100 * set.length)));
+  const done = record.status === "채점 완료";
+  record.grading = set.map(([question,answer],index) => {
+    const isCorrect = index < correctCount;
+    const recognized = index !== 1;
+    let mark = null;
+    if (done) mark = isCorrect ? "o" : "x";
+    else if (recognized && isCorrect) mark = "o";
+    return { question, answer, recognized, isCorrect, studentAnswer: isCorrect ? answer : wrongAnswers[index % wrongAnswers.length], mark };
+  });
+  return record.grading;
+}
+/**
+ * 현재 ○ 개수로 점수를 계산한다.
+ * @param {object} record - 채점 기록
+ * @returns {number} 0~100 점수
+ */
+function gradedScore(record) {
+  const list = ensureGrading(record);
+  return Math.round(list.filter((item) => item.mark === "o").length / list.length * 100);
+}
+/**
+ * 채점된 시험지 이미지(원본 + ○/× 마크) HTML을 만든다.
+ * @param {object} record - 채점 기록
+ * @param {Array<string|null>} marks - 문항별 마크 배열("o"/"x"/null)
+ * @param {number} score - 표시할 점수
+ * @returns {string} 시험지 이미지 HTML
+ */
+function scanHTML(record, marks, score) {
+  const lines = record.grading.map((item,index) => `<div class="scan-line"><span class="scan-q">${index + 1}. ${item.question}</span><span class="scan-ans">${item.studentAnswer}</span><b class="scan-mark">${marks[index] === "o" ? "○" : marks[index] === "x" ? "×" : ""}</b></div>`).join("");
+  const scoreTag = (score === null || score === undefined) ? "" : `<b class="scan-score">${score}</b>`;
+  return `<div class="scan-sheet"><div class="scan-head"><strong>${record.paper}</strong><span>이름: ${record.student}</span></div>${lines}${scoreTag}</div>`;
+}
+/**
+ * 채점 모달(자동채점 결과 / 수동채점 / 수동채점 결과)을 다시 그린다.
+ * @returns {void}
+ */
+function renderGrading() {
+  const record = gradingRecord;
+  const list = ensureGrading(record);
+  const manualScore = gradedScore(record);
+  const autoMarks = list.map((item) => (item.recognized && item.isCorrect) ? "o" : null);
+  const autoCount = autoMarks.filter((mark) => mark === "o").length;
+  const autoScore = Math.round(autoCount / list.length * 100);
+  const notDone = list.filter((item) => !item.mark).length;
+  document.querySelector("#detailTitle").textContent = record.paper;
+  document.querySelector("#detailMeta").innerHTML = `<span>${record.student} · ${record.grade}</span><span>${record.academy} · ${record.className}</span><span>${record.category}</span><span class="status-chip ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span><span class="score-chip">${manualScore}점</span>`;
+  const autoSummary = notDone > 0
+    ? `명확히 인식된 정답 <b>${autoCount}</b>문항을 자동으로 ○ 처리했어요.<br>채점이 완료되지 않은 <b>${notDone}</b>문항은 가운데에서 수동으로 채점해 주세요.`
+    : `명확히 인식된 정답 <b>${autoCount}</b>문항을 자동으로 ○ 처리했어요.<br>모든 문항 채점이 완료되었어요.`;
+  document.querySelector("#autoResult").innerHTML = `${scanHTML(record, autoMarks, autoScore)}<p class="auto-summary">${autoSummary}</p>`;
+  const rows = list.map((item,index) => `<div class="grade-row"><div class="grade-q"><span class="qn">${index + 1}</span><div><p>${item.question}</p><small>인식 답안: <b>${item.studentAnswer}</b> <em class="rec ${item.recognized ? "ok" : "warn"}">${item.recognized ? "명확 인식" : "확인 필요"}</em></small></div></div><div class="grade-actions"><button type="button" class="mark-btn o ${item.mark === "o" ? "active" : ""}" data-mark="o" data-q="${index}" aria-label="${index + 1}번 정답">○</button><button type="button" class="mark-btn x ${item.mark === "x" ? "active" : ""}" data-mark="x" data-q="${index}" aria-label="${index + 1}번 오답">×</button></div></div>`).join("");
+  document.querySelector("#manualControl").innerHTML = `<div class="manual-box"><div class="grade-list">${rows}</div></div>`;
+  document.querySelector("#manualResult").innerHTML = scanHTML(record, list.map((item) => item.mark), manualScore);
+  const done = record.status === "채점 완료";
+  document.querySelector("#gradeFooter").innerHTML = `<span class="grade-note">${done ? "채점 완료됨 · 언제든 수정 가능" : "평가자가 완료를 눌러야 채점 완료됩니다"}</span><button type="button" class="primary-button" data-complete>${done ? "다시 완료" : "채점 완료"}</button>`;
+}
+/**
+ * 채점 모달을 연다.
  * @param {object} record - 채점 기록 한 건
  * @returns {void}
  */
 function openExamDetail(record) {
   if (!record) return;
-  const set = examAnswerBank[record.category] || examAnswerBank["화학 I · 산화 환원"];
-  const total = set.length;
-  const correct = Math.max(0,Math.min(total,Math.round(record.score / 100 * total)));
-  document.querySelector("#detailTitle").textContent = record.paper;
-  document.querySelector("#detailMeta").innerHTML = `<span>${record.student} · ${record.grade}</span><span>${record.academy} · ${record.className}</span><span>${record.category}</span><span>${record.date}</span><span class="status-chip ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span><span class="score-chip">${record.score}점</span>`;
-  const rows = set.map(([question,answer],index) => { const ok = index < correct; return `<div class="dp-row ${ok ? "ok" : "no"}"><span class="dp-q">${index + 1}. ${question}</span><span class="dp-a">${answer}</span><b class="dp-mark">${ok ? "○" : "×"}</b></div>`; }).join("");
-  document.querySelector("#detailImage").innerHTML = buildScanPaper(record, false);
-  document.querySelector("#detailPaper").innerHTML = `<div class="dp-head"><strong>${record.paper}</strong><span class="dp-score">${record.score}</span></div>${rows}`;
+  gradingRecord = record;
+  ensureGrading(record);
+  renderGrading();
   document.querySelector("#examDetailModal").classList.remove("hidden");
+}
+/**
+ * 완료된 기록은 채점 수정이 즉시 표/이미지에 반영되도록 점수를 동기화한다.
+ * @returns {void}
+ */
+function syncGradedRecord() {
+  if (gradingRecord && gradingRecord.status === "채점 완료") { gradingRecord.score = gradedScore(gradingRecord); renderRecords(); }
 }
 const examDetailModal = document.querySelector("#examDetailModal");
 document.querySelectorAll("[data-close-detail]").forEach((button) => button.addEventListener("click", () => examDetailModal.classList.add("hidden")));
-examDetailModal.addEventListener("click", (event) => { if (event.target === examDetailModal) examDetailModal.classList.add("hidden"); });
+examDetailModal.addEventListener("click", (event) => {
+  if (event.target === examDetailModal) { examDetailModal.classList.add("hidden"); return; }
+  if (!gradingRecord) return;
+  const markButton = event.target.closest("[data-mark]");
+  if (markButton) { const item = gradingRecord.grading[Number(markButton.dataset.q)]; const value = markButton.dataset.mark; item.mark = item.mark === value ? null : value; syncGradedRecord(); renderGrading(); return; }
+  if (event.target.closest("[data-open-print]")) { openPrintPreview(gradingRecord); return; }
+  if (event.target.closest("[data-complete]")) { gradingRecord.status = "채점 완료"; gradingRecord.score = gradedScore(gradingRecord); renderRecords(); renderGrading(); return; }
+});
+/**
+ * 원본 시험지에 채점 표시(○/×)를 얹은 이미지를 만들어 인쇄한다.
+ * @param {object} record - 채점 기록
+ * @returns {void}
+ */
+function printRecord(record) {
+  if (!record) return;
+  const list = ensureGrading(record);
+  const score = gradedScore(record);
+  const lines = list.map((item,index) => `<div class="print-line"><span class="print-q">${index + 1}. ${item.question}</span><span class="print-ans">${item.studentAnswer}</span><b class="print-mark">${item.mark === "o" ? "○" : item.mark === "x" ? "×" : ""}</b></div>`).join("");
+  document.querySelector("#printArea").innerHTML = `<div class="print-sheet"><div class="print-head"><div><strong>${record.paper}</strong><span>${record.category}</span></div><span>${record.student} · ${record.className}</span></div><p class="print-sub">다음 문항의 답을 빈칸에 작성하세요.</p>${lines}<b class="print-score">${score}점</b></div>`;
+  document.body.classList.add("print-record");
+  window.print();
+}
+window.addEventListener("afterprint", () => document.body.classList.remove("print-record"));
 document.querySelector("#studentCards").addEventListener("click", (event) => {
   const button = event.target.closest("[data-student-detail]");
   if (!button) return;
