@@ -299,8 +299,8 @@ document.querySelector("[data-show-records]").addEventListener("click", () => { 
 document.querySelector("#myPaperCards").addEventListener("click", (event) => {
   const deleteButton=event.target.closest("[data-delete-paper]"), gradeButton=event.target.closest("[data-grade-paper]"), resultButton=event.target.closest("[data-result-paper]");
   if (deleteButton) { myPapers=myPapers.filter((paper) => paper.id !== Number(deleteButton.dataset.deletePaper)); renderMyPapers(); }
-  if (gradeButton) { const paper=myPapers.find((item) => item.id === Number(gradeButton.dataset.gradePaper)); paper.status="채점 완료"; paper.score=80; renderMyPapers(); document.querySelector("#resultModal").classList.remove("hidden"); }
-  if (resultButton) document.querySelector("#resultModal").classList.remove("hidden");
+  if (gradeButton) { const paper=myPapers.find((item) => item.id === Number(gradeButton.dataset.gradePaper)); paper.status="채점 완료"; paper.score=80; renderMyPapers(); showResultScan(paper); }
+  if (resultButton) { const paper=myPapers.find((item) => item.id === Number(resultButton.dataset.resultPaper)); if (paper) showResultScan(paper); }
 });
 document.querySelector("#paperPagination").addEventListener("click", (event) => { const button=event.target.closest("[data-paper-page]"); if (!button) return; paperPage=Number(button.dataset.paperPage); renderMyPapers(); });
 document.querySelectorAll("[data-period]").forEach((button) => button.addEventListener("click", () => { historyPeriodType=button.dataset.period; document.querySelectorAll("[data-period]").forEach((item) => item.classList.toggle("active", item === button)); updateHistoryPeriodOptions(); }));
@@ -439,6 +439,36 @@ const examAnswerBank = {
   "통합과학 · 물질": [["우주 초기에 만들어진 원소는?","수소"],["별 내부에서 일어나는 반응은?","핵융합"],["지각에 가장 많은 원소는?","산소"],["주기율표의 세로줄을 무엇이라 하는가?","족"],["주기율표의 가로줄을 무엇이라 하는가?","주기"]]
 };
 /**
+ * 채점된 시험지 이미지(목업)를 만든다. photo=true면 학생 업로드 사진처럼 보이게 한다.
+ * @param {object} record - 채점 기록 형태의 객체
+ * @param {boolean} photo - 학생 업로드 사진 스타일 여부
+ * @returns {string} 시험지 이미지 HTML
+ */
+function buildScanPaper(record, photo) {
+  const set = examAnswerBank[record.category] || examAnswerBank["화학 I · 산화 환원"];
+  const total = set.length;
+  const correct = Math.max(0,Math.min(total,Math.round(record.score / 100 * total)));
+  const lines = set.map(([question,answer],index) => { const ok = index < correct; return `<div class="scan-line"><span class="scan-q">${index + 1}. ${question}</span><span class="scan-ans">${answer}</span><b class="scan-mark ${ok ? "ok" : "no"}">${ok ? "○" : "×"}</b></div>`; }).join("");
+  return `<div class="scan-sheet ${photo ? "scan-photo" : ""}"><div class="scan-head"><strong>${record.paper}</strong><span>이름: ${record.student}</span></div>${lines}<b class="scan-score">${record.score}</b></div>`;
+}
+/**
+ * 내 시험지(myPapers) 항목을 채점 기록 형태로 변환한다.
+ * @param {object} paper - myPapers 항목
+ * @returns {object} 채점 기록 형태 객체
+ */
+function paperToRecord(paper) {
+  return { student: document.querySelector("#profileName").textContent || "학생", grade:"-", academy:"라온 과학학원", className:"-", category: paper.category, paper: paper.title, date: paper.uploaded, score: paper.score ?? 0, status: paper.status };
+}
+/**
+ * 학생 업로드 사진 기준 채점 결과 모달을 채워 표시한다.
+ * @param {object} paper - myPapers 항목
+ * @returns {void}
+ */
+function showResultScan(paper) {
+  document.querySelector("#resultScan").innerHTML = buildScanPaper(paperToRecord(paper), true);
+  document.querySelector("#resultModal").classList.remove("hidden");
+}
+/**
  * 채점 결과 상세 모달을 채워 표시한다.
  * @param {object} record - 채점 기록 한 건
  * @returns {void}
@@ -451,6 +481,7 @@ function openExamDetail(record) {
   document.querySelector("#detailTitle").textContent = record.paper;
   document.querySelector("#detailMeta").innerHTML = `<span>${record.student} · ${record.grade}</span><span>${record.academy} · ${record.className}</span><span>${record.category}</span><span>${record.date}</span><span class="status-chip ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span><span class="score-chip">${record.score}점</span>`;
   const rows = set.map(([question,answer],index) => { const ok = index < correct; return `<div class="dp-row ${ok ? "ok" : "no"}"><span class="dp-q">${index + 1}. ${question}</span><span class="dp-a">${answer}</span><b class="dp-mark">${ok ? "○" : "×"}</b></div>`; }).join("");
+  document.querySelector("#detailImage").innerHTML = buildScanPaper(record, false);
   document.querySelector("#detailPaper").innerHTML = `<div class="dp-head"><strong>${record.paper}</strong><span class="dp-score">${record.score}</span></div>${rows}`;
   document.querySelector("#examDetailModal").classList.remove("hidden");
 }

@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=21" />
+    <link rel="stylesheet" href="./styles.css?v=22" />
   </head>
   <body>
     <aside class="sidebar">
@@ -190,14 +190,14 @@
       </section>
     </div>
 
-    <div class="modal-backdrop hidden" id="resultModal"><section class="result-modal"><button class="modal-close" type="button" data-close-result>×</button><p class="eyebrow mint">GRADING RESULT</p><h2>채점 결과 미리보기</h2><div class="graded-paper"><span class="paper-title">화학 I 산화 환원 미니테스트</span><span class="answer-line line-a">1. 산화</span><span class="answer-line line-b">2. 환원</span><span class="answer-line line-c">3. 산화수</span><b class="red-mark mark-a">○</b><b class="red-mark mark-b">×</b><b class="red-mark mark-c">○</b><b class="red-score">80</b></div><p class="capture-help">원본 이미지는 유지하고, 정답·오답 표시는 별도 좌표 데이터로 저장해 화면 위에 겹쳐 표시합니다.</p></section></div>
+    <div class="modal-backdrop hidden" id="resultModal"><section class="result-modal"><button class="modal-close" type="button" data-close-result>×</button><p class="eyebrow mint">GRADING RESULT</p><h2>채점 결과</h2><div id="resultScan"></div><p class="capture-help">학생이 업로드한 사진을 원근 보정한 뒤, 등록된 좌표 기준으로 정답·오답을 겹쳐 표시합니다.</p></section></div>
     <div class="modal-backdrop hidden" id="examDetailModal">
       <section class="result-modal exam-detail-modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
         <button class="modal-close" type="button" data-close-detail aria-label="닫기">×</button>
         <p class="eyebrow mint">GRADING RESULT</p><h2 id="detailTitle">채점 결과</h2>
         <div class="detail-meta" id="detailMeta"></div>
-        <div class="detail-paper" id="detailPaper"></div>
-        <p class="capture-help">원본 이미지는 유지하고, 정답·오답 표시는 별도 좌표 데이터로 화면 위에 겹쳐 표시합니다.</p>
+        <div class="detail-layout"><div class="detail-image" id="detailImage"></div><div class="detail-paper" id="detailPaper"></div></div>
+        <p class="capture-help">원본 시험지 이미지는 유지하고, 정답·오답 표시는 별도 좌표 데이터로 화면 위에 겹쳐 표시합니다.</p>
       </section>
     </div>
     <div class="modal-backdrop hidden preview-backdrop" id="templatePreviewModal">
@@ -218,6 +218,6 @@
         </div>
       </section>
     </div>
-    <script src="./app.js?v=21"></script>
+    <script src="./app.js?v=22"></script>
   </body>
 </html>
