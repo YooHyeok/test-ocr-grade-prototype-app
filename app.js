@@ -1,5 +1,5 @@
 const records = [
-  { date:"06.01 16:42", student:"박서윤", grade:"고2", academy:"라온 과학학원", className:"고2 화학 I", category:"화학 I · 산화 환원", paper:"산화 환원 미니테스트", score:90, status:"채점 완료" },
+  { date:"06.01 16:42", student:"유재혁", grade:"고2", academy:"라온 과학학원", className:"고2 화학 I", category:"화학 I · 산화 환원", paper:"산화 환원 미니테스트", score:90, status:"채점 완료" },
   { date:"06.01 16:31", student:"김민준", grade:"고2", academy:"라온 과학학원", className:"고2 화학 I", category:"화학 I · 산화 환원", paper:"산화 환원 미니테스트", score:70, status:"검토 필요" },
   { date:"06.01 15:58", student:"이도윤", grade:"중3", academy:"라온 과학학원", className:"중3 화학 심화", category:"중등 화학 · 이온", paper:"이온과 앙금 생성 반응", score:100, status:"채점 완료" },
   { date:"06.01 15:44", student:"최하린", grade:"중3", academy:"브릿지 사이언스", className:"중3 화학 심화", category:"중등 화학 · 이온", paper:"이온과 앙금 생성 반응", score:75, status:"검토 필요" },
@@ -76,7 +76,7 @@ function renderRecords() {
   const filtered = records.filter((record) => (!query || `${record.student} ${record.paper}`.toLowerCase().includes(query)) && (academy === "all" || record.academy === academy) && (className === "all" || record.className === className) && (category === "all" || record.category === category) && (status === "all" || record.status === status));
   currentRecords = filtered;
   document.querySelector("#recordCount").textContent = filtered.length;
-  recordBody.innerHTML = filtered.map((record,index) => `<tr class="record-row" data-record-index="${index}"><td>${record.date}</td><td class="student-cell"><strong>${record.student}</strong><span>${record.grade}</span></td><td>${record.academy}<br>${record.className}</td><td>${record.category}</td><td class="paper-cell"><strong>${record.paper}</strong><span>단답형 시험</span></td><td class="score">${record.score}<small> / 100</small></td><td><span class="status ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span></td><td class="row-actions"><button class="print-record-btn" type="button" data-print-record="${index}" aria-label="인쇄">🖨</button><button class="detail-button" type="button">⋯</button></td></tr>`).join("");
+  recordBody.innerHTML = filtered.map((record,index) => `<tr class="record-row" data-record-index="${index}"><td>${record.date}</td><td class="student-cell"><strong>${record.student}</strong><span>${record.grade}</span></td><td>${record.academy}<br>${record.className}</td><td>${record.category}</td><td class="paper-cell"><strong>${record.paper}</strong><span>단답형 시험</span></td><td><span class="status ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span></td><td class="row-actions"><button class="print-record-btn" type="button" data-print-record="${index}" aria-label="인쇄">🖨</button><button class="detail-button" type="button">⋯</button></td></tr>`).join("");
 }
 filters.forEach((filter) => filter.addEventListener("input", renderRecords));
 recordBody.addEventListener("click", (event) => {
@@ -88,7 +88,7 @@ recordBody.addEventListener("click", (event) => {
 });
 
 function renderStaticCards() {
-  document.querySelector("#studentCards").innerHTML = ["박서윤|고2 화학 I|최근 평균 88점","김민준|고2 화학 I|검토 필요 1건","이도윤|중3 화학 심화|최근 평균 94점","한지우|고1 통합과학 A|최근 평균 86점"].map((item) => { const [name,group,note]=item.split("|"); return `<article class="manage-card"><span class="avatar">${name[0]}</span><div><h3>${name}</h3><p>${group}</p><small>${note}</small></div><button type="button" data-student-detail="${name}">상세 보기</button></article>`; }).join("");
+  document.querySelector("#studentCards").innerHTML = ["유재혁|고2 화학 I|최근 평균 88점","김민준|고2 화학 I|검토 필요 1건","이도윤|중3 화학 심화|최근 평균 94점","한지우|고1 통합과학 A|최근 평균 86점"].map((item) => { const [name,group,note]=item.split("|"); return `<article class="manage-card"><span class="avatar">${name[0]}</span><div><h3>${name}</h3><p>${group}</p><small>${note}</small></div><button type="button" data-student-detail="${name}">상세 보기</button></article>`; }).join("");
   document.querySelector("#categoryCards").innerHTML = ["중등 과학|화학 반응 · 이온 · 기체","통합과학|물질의 규칙성 · 화학 변화","화학 I|몰 · 산화 환원 · 중화 반응"].map((item) => { const [title,units]=item.split("|"); return `<article class="category-card"><span>▦</span><h3>${title}</h3><p>${units}</p><button>카테고리 관리</button></article>`; }).join("");
 }
 function renderAnswerOverview() {
@@ -274,7 +274,7 @@ function renderMyPapers() {
   paperPage = Math.min(paperPage, totalPages);
   const visible = filtered.slice((paperPage - 1) * papersPerPage, paperPage * papersPerPage);
   document.querySelector("#myPaperCount").textContent = filtered.length;
-  document.querySelector("#myPaperCards").innerHTML = visible.length ? visible.map((paper) => `<article class="paper-card"><div class="paper-thumb"><span>시험지</span>${paper.status === "채점 완료" ? '<b class="thumb-mark">○ × ○</b>' : ""}</div><div class="paper-info"><span class="card-tag">${paper.category}</span><h3>${paper.title}</h3><p>${paper.uploaded} · <strong>${paper.status}</strong></p><div class="paper-actions">${paper.status === "업로드 완료" ? `<button class="secondary-button" data-delete-paper="${paper.id}">삭제 후 재업로드</button><button class="primary-button" data-grade-paper="${paper.id}">채점하기</button>` : `<button class="secondary-button" data-result-paper="${paper.id}">채점 이미지 보기</button><small>채점 완료 후에는 재업로드할 수 없습니다.</small>`}</div></div></article>`).join("") : '<p class="empty-history">조건에 맞는 시험지 이력이 없습니다.</p>';
+  document.querySelector("#myPaperCards").innerHTML = visible.length ? visible.map((paper) => `<article class="paper-card"><div class="paper-thumb"><span>시험지</span>${paper.status === "채점 완료" ? '<b class="thumb-mark">○ ○ ○</b>' : ""}</div><div class="paper-info"><button class="secondary-button paper-original-btn" type="button" data-original-paper="${paper.id}">원본 보기</button><span class="card-tag">${paper.category}</span><h3>${paper.title}</h3><p>${paper.uploaded} · <strong>${paper.status}</strong></p><div class="paper-actions">${paper.status === "업로드 완료" ? `<button class="secondary-button paper-delete-btn" type="button" data-delete-paper="${paper.id}">삭제 후 재업로드</button><button class="primary-button" type="button" data-grade-paper="${paper.id}">채점하기</button>` : `<button class="primary-button" type="button" data-result-paper="${paper.id}">채점 결과</button>`}</div></div></article>`).join("") : '<p class="empty-history">조건에 맞는 시험지 이력이 없습니다.</p>';
   document.querySelector("#paperPagination").innerHTML = Array.from({ length:totalPages }, (_,index) => `<button class="${index + 1 === paperPage ? "active" : ""}" type="button" data-paper-page="${index + 1}">${index + 1}</button>`).join("");
 }
 function getWeekKey(date) {
@@ -316,8 +316,9 @@ document.querySelector("#saveUpload").addEventListener("click", () => { myPapers
 document.querySelector("[data-show-records]").addEventListener("click", () => { document.querySelector("#statusFilter").value="검토 필요"; renderRecords(); showPage("records"); });
 
 document.querySelector("#myPaperCards").addEventListener("click", (event) => {
-  const deleteButton=event.target.closest("[data-delete-paper]"), gradeButton=event.target.closest("[data-grade-paper]"), resultButton=event.target.closest("[data-result-paper]");
+  const deleteButton=event.target.closest("[data-delete-paper]"), gradeButton=event.target.closest("[data-grade-paper]"), resultButton=event.target.closest("[data-result-paper]"), originalButton=event.target.closest("[data-original-paper]");
   if (deleteButton) { myPapers=myPapers.filter((paper) => paper.id !== Number(deleteButton.dataset.deletePaper)); renderMyPapers(); }
+  if (originalButton) { const paper=myPapers.find((item) => item.id === Number(originalButton.dataset.originalPaper)); if (paper) showOriginalScan(paper); }
   if (gradeButton) { const paper=myPapers.find((item) => item.id === Number(gradeButton.dataset.gradePaper)); paper.status="채점 완료"; paper.score=80; renderMyPapers(); showResultScan(paper); }
   if (resultButton) { const paper=myPapers.find((item) => item.id === Number(resultButton.dataset.resultPaper)); if (paper) showResultScan(paper); }
 });
@@ -479,12 +480,27 @@ function paperToRecord(paper) {
   return { student: document.querySelector("#profileName").textContent || "학생", grade:"-", academy:"라온 과학학원", className:"-", category: paper.category, paper: paper.title, date: paper.uploaded, score: paper.score ?? 0, status: paper.status };
 }
 /**
- * 학생 업로드 사진 기준 채점 결과 모달을 채워 표시한다.
+ * 학생 업로드 사진(실제 시험지) 기준 채점 결과 모달을 채워 표시한다.
  * @param {object} paper - myPapers 항목
  * @returns {void}
  */
 function showResultScan(paper) {
-  document.querySelector("#resultScan").innerHTML = buildScanPaper(paperToRecord(paper), true);
+  const record = paperToRecord(paper);
+  ensureGrading(record);
+  document.querySelector("#resultModal h2").textContent = "채점 결과";
+  document.querySelector("#resultScan").innerHTML = buildPrintSheet(record, record.grading.map((item) => item.mark), gradedScore(record), true);
+  document.querySelector("#resultModal").classList.remove("hidden");
+}
+/**
+ * 학생이 업로드한 원본 시험지(채점 표시 없음)를 모달에 표시한다.
+ * @param {object} paper - myPapers 항목
+ * @returns {void}
+ */
+function showOriginalScan(paper) {
+  const record = paperToRecord(paper);
+  ensureGrading(record);
+  document.querySelector("#resultModal h2").textContent = "원본 시험지";
+  document.querySelector("#resultScan").innerHTML = buildPrintSheet(record, record.grading.map(() => null), null, true);
   document.querySelector("#resultModal").classList.remove("hidden");
 }
 let gradingRecord = null;
@@ -504,7 +520,7 @@ function ensureGrading(record) {
     const isCorrect = index < correctCount;
     const recognized = index !== 1;
     let mark = null;
-    if (done) mark = isCorrect ? "o" : "x";
+    if (done && isCorrect) mark = "o";
     else if (recognized && isCorrect) mark = "o";
     return { question, answer, recognized, isCorrect, studentAnswer: isCorrect ? answer : wrongAnswers[index % wrongAnswers.length], mark };
   });
@@ -544,7 +560,7 @@ function renderGrading() {
   const autoScore = Math.round(autoCount / list.length * 100);
   const notDone = list.filter((item) => !item.mark).length;
   document.querySelector("#detailTitle").textContent = record.paper;
-  document.querySelector("#detailMeta").innerHTML = `<span>${record.student} · ${record.grade}</span><span>${record.academy} · ${record.className}</span><span>${record.category}</span><span class="status-chip ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span><span class="score-chip">${manualScore}점</span>`;
+  document.querySelector("#detailMeta").innerHTML = `<span>${record.student} · ${record.grade}</span><span>${record.academy} · ${record.className}</span><span>${record.category}</span><span class="status-chip ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span>`;
   const autoSummary = notDone > 0
     ? `명확히 인식된 정답 <b>${autoCount}</b>문항을 자동으로 ○ 처리했어요.<br>채점이 완료되지 않은 <b>${notDone}</b>문항은 가운데에서 수동으로 채점해 주세요.`
     : `명확히 인식된 정답 <b>${autoCount}</b>문항을 자동으로 ○ 처리했어요.<br>모든 문항 채점이 완료되었어요.`;
@@ -606,10 +622,9 @@ function gradeVariants(record) {
  * @param {(number|null)} score - 표시할 점수(null이면 미표시)
  * @returns {string} 인쇄 시트 HTML
  */
-function buildPrintSheet(record, marks, score) {
+function buildPrintSheet(record, marks, score, photo) {
   const lines = record.grading.map((item,index) => `<div class="print-line"><div class="print-q">${index + 1}. ${item.question}</div><div class="print-answer-row"><span class="print-ans">${item.studentAnswer}</span><b class="print-mark">${marks[index] === "o" ? "○" : marks[index] === "x" ? "×" : ""}</b></div></div>`).join("");
-  const scoreTag = (score === null || score === undefined) ? "" : `<b class="print-score">${score}점</b>`;
-  return `<div class="print-sheet"><div class="print-head"><div><strong>${record.paper}</strong><span>${record.category}</span></div><span>${record.student}</span></div><p class="print-sub">다음 문항의 답을 빈칸에 작성하세요.</p>${lines}${scoreTag}</div>`;
+  return `<div class="print-sheet ${photo ? "print-photo" : ""}"><div class="print-head"><div><strong>${record.paper}</strong><span>${record.category}</span></div><span>${record.student}</span></div><p class="print-sub">다음 문항의 답을 빈칸에 작성하세요.</p>${lines}</div>`;
 }
 /**
  * 선택한 변형을 인쇄한다.
@@ -687,7 +702,7 @@ function applyRole(nextRole) {
   role=mobileQuery.matches ? "student" : nextRole; const student=role === "student";
   document.body.classList.toggle("student-mode", student);
   document.querySelectorAll("[data-role]").forEach((item) => item.classList.toggle("active", item.dataset.role === role));
-  document.querySelector("#profileName").textContent=student ? "박서윤" : "김선생";
+  document.querySelector("#profileName").textContent=student ? "유재혁" : "전선생";
   document.querySelector("#profileRole").textContent=student ? "student account" : "academy admin";
   const collapsedToggle=document.querySelector("[data-collapsed-role-toggle]");
   const tooltip=student ? "선생님 모드로 전환" : "학생 모드로 전환";

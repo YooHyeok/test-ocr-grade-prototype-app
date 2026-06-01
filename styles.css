@@ -209,7 +209,11 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .paper-card { display: grid; grid-template-columns: 112px 1fr; gap: 15px; padding: 14px; }
 .paper-thumb { position: relative; display: grid; place-items: center; min-height: 142px; overflow: hidden; border: 1px solid #ebe6da; border-radius: 6px; color: #a29a8b; background: repeating-linear-gradient(#fffdf8 0 21px,#e8e3d8 22px); font-size: 11px; }
 .thumb-mark { position: absolute; color: #d6483e; font: 700 22px "Gowun Dodum"; transform: rotate(-9deg); }
-.paper-info { align-self: center; }.paper-actions { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin-top: 10px; }.paper-actions small { color: #a18d88; font-size: 10px; }
+.paper-info { position: relative; align-self: stretch; display: flex; flex-direction: column; align-items: flex-start; }
+.paper-info h3 { padding-right: 84px; }
+.paper-original-btn { position: absolute; top: 0; right: 0; }
+.paper-actions { display: flex; width: 100%; flex-wrap: wrap; gap: 7px; align-items: center; justify-content: flex-end; margin-top: auto; padding-top: 10px; }.paper-actions small { color: #a18d88; font-size: 10px; }
+.paper-actions .paper-delete-btn { margin-right: auto; }
 .student-mode .teacher-only, .student-mode .academy-mini { display: none; }
 .student-mode .student-only { display: flex; }
 .student-mode #desktopNav { display: grid; }
@@ -399,6 +403,9 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .print-ans { display: inline-flex; align-items: center; flex: 1; min-width: 120px; min-height: 34px; padding: 4px 11px; border: 1.5px dashed #9cc3b5; border-radius: 5px; color: #1f1c17; font-size: 16px; }
 .print-mark { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 42px; height: 42px; border: 1.5px dashed #dcc8c4; border-radius: 6px; color: #d83f36; font-size: 28px; line-height: 1; pointer-events: none; }
 .print-score { display: block; margin-top: 22px; color: #d83f36; font-size: 26px; font-weight: 700; text-align: right; }
+.print-photo { position: relative; margin: 6px; transform: rotate(-0.9deg); border: 1px solid #e2ddd2; border-radius: 8px; box-shadow: 0 14px 34px rgba(0,0,0,.18); }
+.print-photo::after { content: "학생 업로드 사진"; position: absolute; top: 12px; right: 14px; padding: 3px 9px; border-radius: 4px; background: rgba(29,118,88,.12); color: var(--green); font-family: "IBM Plex Sans KR"; font-size: 10px; font-weight: 700; }
+#resultModal .result-modal { width: min(820px,96vw); max-height: 92vh; overflow-y: auto; }
 .grade-actions-end { display: flex; flex: none; gap: 8px; align-items: center; }
 .print-preview-modal { width: min(1640px,98vw); max-height: 97vh; overflow-y: auto; }
 .print-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 14px; margin: 14px 0 18px; }
