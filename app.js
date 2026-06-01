@@ -274,11 +274,17 @@ function stopCamera() { if (cameraStream) cameraStream.getTracks().forEach((trac
 const uploadModal = document.querySelector("#uploadModal");
 document.querySelectorAll("[data-open-upload]").forEach((button) => button.addEventListener("click", () => uploadModal.classList.remove("hidden")));
 document.querySelectorAll("[data-close-upload]").forEach((button) => button.addEventListener("click", () => { stopCamera(); uploadModal.classList.add("hidden"); }));
-document.querySelectorAll("[data-capture-tab]").forEach((tab) => tab.addEventListener("click", () => { document.querySelectorAll("[data-capture-tab]").forEach((item) => item.classList.toggle("active", item === tab)); document.querySelectorAll("[data-capture-panel]").forEach((panel) => panel.classList.toggle("hidden", panel.dataset.capturePanel !== tab.dataset.captureTab)); }));
-document.querySelector("#startCamera").addEventListener("click", async () => {
+/**
+ * 후면 카메라를 연결하고 미리보기를 시작한다. 이미 연결돼 있으면 아무 작업도 하지 않는다.
+ * @returns {Promise<void>}
+ */
+async function startCamera() {
+  if (cameraStream) return;
   const badge = document.querySelector("#recognitionBadge strong");
   try { cameraStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:"environment" } }, audio:false }); const video=document.querySelector("#cameraPreview"); video.srcObject=cameraStream; await video.play(); document.querySelector("#cameraPlaceholder").classList.add("hidden"); badge.textContent="시험지 테두리를 프레임에 맞춰주세요"; document.querySelector("#capturePaper").disabled=false; } catch { badge.textContent="카메라 권한을 확인해주세요"; }
-});
+}
+document.querySelectorAll("[data-capture-tab]").forEach((tab) => tab.addEventListener("click", () => { document.querySelectorAll("[data-capture-tab]").forEach((item) => item.classList.toggle("active", item === tab)); document.querySelectorAll("[data-capture-panel]").forEach((panel) => panel.classList.toggle("hidden", panel.dataset.capturePanel !== tab.dataset.captureTab)); if (tab.dataset.captureTab === "camera" && mobileQuery.matches) startCamera(); }));
+document.querySelector("#startCamera").addEventListener("click", startCamera);
 document.querySelector("#capturePaper").addEventListener("click", () => { document.querySelector("#recognitionBadge").classList.add("success"); document.querySelector("#recognitionBadge strong").textContent="인식 성공 · 촬영 준비 완료"; });
 document.querySelector("#saveUpload").addEventListener("click", () => { myPapers.unshift({ id:Date.now(), title:"산화 환원 미니테스트", category:"화학 I · 산화 환원", uploaded:"방금 전", date:"2026-06-01", status:"업로드 완료" }); updateHistoryPeriodOptions(); stopCamera(); uploadModal.classList.add("hidden"); showPage("my-papers"); });
 document.querySelector("[data-show-records]").addEventListener("click", () => { document.querySelector("#statusFilter").value="검토 필요"; renderRecords(); showPage("records"); });
