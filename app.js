@@ -100,7 +100,20 @@ function renderTemplateList() {
 }
 function createQuestionMarkup(number) {
   const region=templateRegions[number] || { question:"문항 질문을 입력하세요.", answer:"" };
-  return `<div class="paper-question" data-paper-question="${number}"><label><span>${number}.</span><input class="paper-question-input" value="${region.question}" data-paper-question-input="${number}" /></label><label class="ocr-region ${number === 1 ? "active" : ""}" data-region="${number}" style="width:${region.w}px;height:${region.h}px"><textarea class="paper-answer-input" placeholder="기준 답안 입력" data-paper-answer-input="${number}">${region.answer}</textarea><button class="delete-question" type="button" data-delete-question="${number}" aria-label="${number}번 문항 삭제">×</button><span class="resize-handle" data-resize-region="${number}" title="드래그하여 OCR 영역 크기 조절"></span></label></div>`;
+  return `<div class="paper-question" data-paper-question="${number}"><label><span>${number}.</span><input class="paper-question-input" value="${region.question}" data-paper-question-input="${number}" /></label><div class="answer-row"><label class="ocr-region ${number === 1 ? "active" : ""}" data-region="${number}" style="width:${region.w}px;height:${region.h}px"><textarea class="paper-answer-input" placeholder="기준 답안 입력" data-paper-answer-input="${number}">${region.answer}</textarea><button class="delete-question" type="button" data-delete-question="${number}" aria-label="${number}번 문항 삭제">×</button><span class="resize-handle" data-resize-region="${number}" title="드래그하여 OCR 영역 크기 조절"></span></label><span class="grade-region" title="채점 기호가 표시되는 영역"></span></div></div>`;
+}
+/**
+ * OCR 영역 옆 채점 기호 영역이 차지하는 폭(영역 폭 + 간격)을 구한다.
+ * 답 영역 최대 너비를 제한할 때 빼주어 채점 영역이 종이 밖으로 넘어가지 않게 한다.
+ * @param {HTMLElement} box - OCR 영역(.ocr-region) 요소
+ * @returns {number} 예약할 폭(px)
+ */
+function gradeReserve(box) {
+  const row=box.parentElement;
+  const grade=row && row.querySelector(".grade-region");
+  if (!grade) return 0;
+  const gap=parseFloat(getComputedStyle(row).columnGap) || 0;
+  return grade.offsetWidth + gap;
 }
 function bindTemplateRegionInputs() {
   document.querySelectorAll("[data-region]").forEach((button) => button.addEventListener("click", () => selectRegion(button)));
@@ -194,7 +207,7 @@ function startRegionResize(event,handle,isModal=true) {
   const paperRect=paper.getBoundingClientRect();
   const boxRect=box.getBoundingClientRect();
   const paperStyle=getComputedStyle(paper);
-  const maxW=Math.max(160,Math.floor(paperRect.right - parseFloat(paperStyle.paddingRight) - boxRect.left));
+  const maxW=Math.max(160,Math.floor(paperRect.right - parseFloat(paperStyle.paddingRight) - boxRect.left - gradeReserve(box)));
   const maxH=Math.max(34,Math.floor(paperRect.bottom - parseFloat(paperStyle.paddingBottom) - boxRect.top));
   const onMove=(moveEvent) => {
     const width=Math.min(maxW,Math.max(160,Math.round(startW + moveEvent.clientX - startX)));
@@ -337,7 +350,7 @@ document.querySelectorAll("[data-template-tab]").forEach((button) => button.addE
 }));
 document.querySelectorAll("[data-toggle-inline-edit]").forEach((button) => button.addEventListener("click", () => setInlineEditMode(!inlineEditing)));
 document.querySelector("[data-inline-cancel]").addEventListener("click", () => {
-  if (!inlineEditing) { window.print(); return; }
+  if (!inlineEditing) { printTemplate(); return; }
   inlineEditing=false;
   document.body.classList.remove("inline-editing");
   reloadPersistedTemplate();
@@ -385,7 +398,7 @@ function closeTemplatePreview() {
 }
 document.querySelector("[data-close-template-preview]").addEventListener("click", closeTemplatePreview);
 templatePreviewModal.addEventListener("click", (event) => { if (event.target === templatePreviewModal) closeTemplatePreview(); });
-document.querySelectorAll("[data-print-template]").forEach((button) => button.addEventListener("click", () => window.print()));
+document.querySelectorAll("[data-print-template]").forEach((button) => button.addEventListener("click", () => printTemplate()));
 document.querySelector("#templatePreviewTitle").addEventListener("input", (event) => { const template=draftTemplate?.id === selectedTemplateId ? draftTemplate : templates.find((item) => item.id === selectedTemplateId); if (template) { template.name=event.target.value || "새 쪽지시험"; if (!draftTemplate) renderTemplateList(); } });
 document.querySelector("[data-save-new-template]").addEventListener("click", () => {
   if (!draftTemplate) return;
@@ -411,7 +424,7 @@ document.querySelector("#modalRegionAliases").addEventListener("input", (event) 
   const boxRect=box.getBoundingClientRect();
   const paperStyle=getComputedStyle(paper);
   let constrained=value;
-  if (key === "W") constrained=Math.min(Math.max(160,value),Math.max(160,Math.floor(paperRect.right - parseFloat(paperStyle.paddingRight) - boxRect.left)));
+  if (key === "W") constrained=Math.min(Math.max(160,value),Math.max(160,Math.floor(paperRect.right - parseFloat(paperStyle.paddingRight) - boxRect.left - gradeReserve(box))));
   if (key === "H") constrained=Math.min(Math.max(34,value),Math.max(34,Math.floor(paperRect.bottom - parseFloat(paperStyle.paddingBottom) - boxRect.top)));
   templateRegions[number][key.toLowerCase()]=constrained;
   event.target.value=constrained;
@@ -430,7 +443,7 @@ document.querySelectorAll(".region-editor .coordinate-grid input").forEach((inpu
     const boxRect=box.getBoundingClientRect();
     const paperStyle=getComputedStyle(paper);
     let constrained=value;
-    if (key === "W") constrained=Math.min(Math.max(160,value),Math.max(160,Math.floor(paperRect.right - parseFloat(paperStyle.paddingRight) - boxRect.left)));
+    if (key === "W") constrained=Math.min(Math.max(160,value),Math.max(160,Math.floor(paperRect.right - parseFloat(paperStyle.paddingRight) - boxRect.left - gradeReserve(box))));
     if (key === "H") constrained=Math.min(Math.max(34,value),Math.max(34,Math.floor(paperRect.bottom - parseFloat(paperStyle.paddingBottom) - boxRect.top)));
     templateRegions[number][key.toLowerCase()]=constrained;
     event.target.value=constrained;
@@ -594,7 +607,7 @@ function gradeVariants(record) {
  * @returns {string} 인쇄 시트 HTML
  */
 function buildPrintSheet(record, marks, score) {
-  const lines = record.grading.map((item,index) => `<div class="print-line"><span class="print-q">${index + 1}. ${item.question}</span><span class="print-ans">${item.studentAnswer}</span><b class="print-mark">${marks[index] === "o" ? "○" : marks[index] === "x" ? "×" : ""}</b></div>`).join("");
+  const lines = record.grading.map((item,index) => `<div class="print-line"><div class="print-q">${index + 1}. ${item.question}</div><div class="print-answer-row"><span class="print-ans">${item.studentAnswer}</span><b class="print-mark">${marks[index] === "o" ? "○" : marks[index] === "x" ? "×" : ""}</b></div></div>`).join("");
   const scoreTag = (score === null || score === undefined) ? "" : `<b class="print-score">${score}점</b>`;
   return `<div class="print-sheet"><div class="print-head"><div><strong>${record.paper}</strong><span>${record.category}</span></div><span>${record.student}</span></div><p class="print-sub">다음 문항의 답을 빈칸에 작성하세요.</p>${lines}${scoreTag}</div>`;
 }
@@ -611,6 +624,21 @@ function printVariant(record, marks, score) {
   window.print();
 }
 window.addEventListener("afterprint", () => document.body.classList.remove("print-record"));
+/**
+ * 현재 시험지 양식(문항 + 빈 답란 + 채점 영역)을 원본 시험지로 인쇄한다.
+ * @returns {void}
+ */
+function printTemplate() {
+  const modalOpen = !document.querySelector("#templatePreviewModal").classList.contains("hidden");
+  const scope = modalOpen ? "#largeTemplatePreview" : "#printableTemplate";
+  const title = modalOpen ? document.querySelector("#templatePreviewTitle").value : (templates.find((item) => item.id === selectedTemplateId)?.name || draftTemplate?.name || "시험지");
+  const category = document.querySelector(`${scope} [data-paper-category]`)?.value || "";
+  const subject = document.querySelector(`${scope} [data-paper-subject]`)?.value || "";
+  const lines = Object.entries(templateRegions).map(([number,region]) => `<div class="print-line"><div class="print-q">${number}. ${region.question}</div><div class="print-answer-row"><span class="print-ans print-blank"></span><b class="print-mark"></b></div></div>`).join("");
+  document.querySelector("#printArea").innerHTML = `<div class="print-sheet"><div class="print-head"><div><strong>${title}</strong><span>시험 카테고리: ${category}${subject ? ` · 과목: ${subject}` : ""}</span></div><span>이름 ____________</span></div><p class="print-sub">다음 문항의 답을 빈칸에 작성하세요.</p>${lines}</div>`;
+  document.body.classList.add("print-record");
+  window.print();
+}
 let printRecordRef = null;
 let printSelectedIndex = 2;
 /**
