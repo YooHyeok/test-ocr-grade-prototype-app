@@ -64,7 +64,7 @@ button { cursor: pointer; border: 0; }
 .student-only { display: none; }
 
 .page-shell { min-height: 100vh; margin-left: 238px; padding: 31px 42px 22px; display: flex; flex-direction: column; }
-.sidebar, .page-shell { transition: width .2s ease, margin-left .2s ease; }
+/* 폭 애니메이션 중 좁은 폭에서 텍스트가 세로로 줄바꿈되는 잔상을 막기 위해 즉시 전환한다 */
 .sidebar-collapsed .sidebar { width: 68px; padding-inline: 11px; }
 .sidebar-collapsed .page-shell { margin-left: 68px; }
 .sidebar-collapsed .brand, .sidebar-collapsed .academy-mini, .sidebar-collapsed .mode-switch, .sidebar-collapsed .profile-button span:not(.avatar) { display: none; }
