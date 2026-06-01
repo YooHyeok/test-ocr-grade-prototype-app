@@ -371,7 +371,8 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
   /* 모바일 접속 시 JS 실행 여부와 무관하게 학생 모드 메뉴/화면만 노출 */
   #mobileNav { grid-template-columns: 1fr 1fr; }
   #mobileNav .teacher-only { display: none; }
-  #mobileNav .student-only { display: grid; }
+  #mobileNav .student-only { display: grid; order: 1; }
+  #mobileNav [data-open-upload] { order: 2; }
   .header-manage, .header-new-template { display: none; }
   .app-page.active { display: none; }
   .app-page[data-page-panel="my-papers"] { display: block; }
