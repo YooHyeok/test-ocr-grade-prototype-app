@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>쪽지시험 | 단답형 채점 관리</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="sidebar-head"><div class="brand"><div><strong>쪽지시험</strong><span>단답형 채점 관리</span></div></div><button class="sidebar-toggle" type="button" aria-label="사이드바 접기" aria-expanded="true" data-sidebar-toggle><i></i><i></i><i></i></button></div>
+      <nav class="main-nav" id="desktopNav">
+        <button class="nav-link active teacher-only" type="button" data-page="dashboard" data-tooltip="대시보드"><span>⌂</span>대시보드</button>
+        <button class="nav-link teacher-only" type="button" data-page="records" data-tooltip="채점 기록"><span>▤</span>채점 기록</button>
+        <button class="nav-link teacher-only" type="button" data-page="templates" data-tooltip="시험지 관리"><span>▧</span>시험지 관리</button>
+        <button class="nav-link teacher-only" type="button" data-page="students" data-tooltip="학생 관리"><span>♧</span>학생 관리</button>
+        <button class="nav-link teacher-only" type="button" data-page="categories" data-tooltip="시험 카테고리"><span>▦</span>시험 카테고리</button>
+        <button class="nav-link teacher-only" type="button" data-page="settings" data-tooltip="설정"><span>⚙</span>설정</button>
+        <button class="nav-link student-only" type="button" data-page="my-papers" data-tooltip="내 시험지"><span>▤</span>내 시험지</button>
+        <button class="nav-link student-only" type="button" data-open-upload data-tooltip="시험지 첨부"><span>＋</span>시험지 첨부</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="academy-mini"><span class="mini-label">현재 학원</span><strong>라온 과학학원</strong><span>전체 권한</span></div>
+        <button class="profile-button" type="button"><span class="avatar">김</span><span><strong id="profileName">김선생</strong><small id="profileRole">academy admin</small></span><span>⋯</span></button>
+        <div class="mode-switch" role="group" aria-label="화면 모드 전환">
+          <button class="active" type="button" data-role="admin">선생님 모드</button>
+          <button type="button" data-role="student">학생 모드</button>
+        </div>
+        <button class="collapsed-role-toggle" type="button" data-collapsed-role-toggle data-tooltip="학생 모드로 전환" aria-label="학생 모드로 전환">⇄</button>
+      </div>
+    </aside>
+
+    <main class="page-shell">
+      <header class="topbar">
+        <div><h1 id="pageTitle">대시보드</h1></div>
+        <div class="header-actions">
+          <button class="icon-button" type="button" aria-label="알림">♧<span class="notification-dot"></span></button>
+          <button class="primary-button header-manage" type="button" data-page="templates"><span>▧</span> 시험지 관리</button>
+          <button class="primary-button header-new-template hidden" type="button" data-new-template>＋ 새 시험지 양식</button>
+        </div>
+      </header>
+
+      <section class="app-page active" data-page-panel="dashboard">
+        <section class="hero-grid">
+          <article class="hero-card">
+            <div><p class="eyebrow mint">TODAY'S PROGRESS</p><h2>오늘 24장의 시험지를<br /><em>차근차근</em> 정리했어요.</h2><p class="hero-copy">OCR이 먼저 읽고, 선생님은 애매한 답만 확인하세요.<br />현재 검토 대기 시험지는 3장입니다.</p><button class="dark-button" type="button" data-show-records>검토 대기 보기 <span>→</span></button></div>
+            <div class="molecule-visual" aria-hidden="true"><span class="atom atom-a">H</span><span class="bond bond-a"></span><span class="atom atom-b">O</span><span class="bond bond-b"></span><span class="atom atom-c">H</span><span class="orbital orbital-a"></span><span class="orbital orbital-b"></span></div>
+          </article>
+          <div class="stat-stack">
+            <article class="stat-card"><span class="stat-icon green">✓</span><div><p>오늘 채점 완료</p><strong>24<small> 장</small></strong></div><span class="trend">+18%</span></article>
+            <article class="stat-card"><span class="stat-icon coral">!</span><div><p>직접 검토 필요</p><strong>3<small> 장</small></strong></div><span class="stat-note">확인하기 →</span></article>
+          </div>
+        </section>
+        <section class="quick-grid">
+          <button class="quick-card" type="button" data-page="records"><span>▤</span><strong>채점 기록</strong><small>전체 시험지 이력 확인</small></button>
+          <button class="quick-card" type="button" data-page="templates"><span>▧</span><strong>시험지 관리</strong><small>양식 이미지와 OCR 영역 설정</small></button>
+          <button class="quick-card" type="button" data-page="students"><span>♧</span><strong>학생 관리</strong><small>클래스별 학생 관리</small></button>
+          <button class="quick-card" type="button" data-page="categories"><span>▦</span><strong>시험 카테고리</strong><small>학교급 · 과목 · 단원 분류</small></button>
+        </section>
+      </section>
+
+      <section class="app-page" data-page-panel="records">
+        <div class="section-heading"><div><p class="eyebrow">GRADING ARCHIVE</p><h2>채점 기록</h2><p>학원, 클래스, 카테고리, 학생별로 시험지 원본과 결과를 관리합니다.</p></div></div>
+        <div class="filter-panel">
+          <label class="search-box"><span>⌕</span><input id="recordSearch" type="search" placeholder="학생 이름 또는 시험지 검색" /></label>
+          <select id="academyFilter"><option value="all">전체 학원</option><option>라온 과학학원</option><option>브릿지 사이언스</option></select>
+          <select id="classFilter"><option value="all">전체 클래스</option><option>중3 화학 심화</option><option>고1 통합과학 A</option><option>고2 화학 I</option></select>
+          <select id="categoryFilter"><option value="all">전체 카테고리</option><option>화학 I · 산화 환원</option><option>중등 화학 · 이온</option><option>통합과학 · 물질</option></select>
+          <select id="statusFilter"><option value="all">전체 상태</option><option>검토 필요</option><option>채점 완료</option></select>
+        </div>
+        <div class="record-meta"><p>총 <strong id="recordCount">0</strong>건의 채점 기록</p><button type="button">최신순 ⌄</button></div>
+        <div class="table-wrap"><table><thead><tr><th>채점일</th><th>학생</th><th>학원 / 클래스</th><th>시험 카테고리</th><th>시험지</th><th>점수</th><th>상태</th><th></th></tr></thead><tbody id="recordBody"></tbody></table></div>
+      </section>
+
+      <section class="app-page" data-page-panel="students">
+        <div class="section-heading"><div><p class="eyebrow">STUDENT DIRECTORY</p><h2>학생 관리</h2><p>학원과 클래스별 학생 계정, 최근 성적, 업로드 현황을 관리합니다.</p></div><button class="primary-button">＋ 학생 등록</button></div>
+        <div class="content-grid" id="studentCards"></div>
+      </section>
+
+      <section class="app-page" data-page-panel="templates">
+        <div class="template-page-tools"><p>시험지 양식을 만들고, 문항별 OCR 인식 영역과 기준 답안을 함께 설정합니다.</p><div class="template-tabs" role="tablist" aria-label="시험지 관리 보기">
+          <button class="active" type="button" data-template-tab="editor">양식 편집</button>
+          <button type="button" data-template-tab="answers">답안만 보기</button>
+        </div></div>
+        <div class="template-workspace" data-template-panel="editor">
+          <aside class="template-list">
+            <div class="template-list-title"><strong>등록된 시험지</strong><small>3개 양식</small></div>
+            <div id="templateListItems"></div>
+          </aside>
+          <section class="template-canvas-card">
+            <div class="canvas-toolbar"><div><strong>시험지 양식 미리보기</strong><small>편집하기를 누르면 이 화면에서 문항과 OCR 영역을 바로 수정할 수 있습니다.</small></div><div class="canvas-actions"><button class="primary-button" type="button" data-toggle-inline-edit>편집하기</button><button class="secondary-button" type="button" data-inline-cancel>인쇄</button></div></div>
+            <div class="template-canvas-viewport">
+            <div class="template-canvas" id="printableTemplate">
+              <div class="paper-heading">
+                <div class="paper-classification">
+                  <label>시험 카테고리<select data-paper-category><option>화학 I · 산화 환원</option><option>화학 I · 몰</option><option>화학 I · 중화 반응</option><option>중등 화학 · 이온</option><option>통합과학 · 물질</option></select></label>
+                  <label>과목<select data-paper-subject><option>화학 I</option><option>통합과학</option><option>중등 화학</option></select></label>
+                </div>
+                <label class="student-name-region" data-name-region>이름 <input /><span class="resize-handle" data-resize-name title="드래그하여 이름 OCR 영역 크기 조절"></span></label>
+              </div>
+              <p>다음 문항의 답을 빈칸에 작성하세요.</p>
+              <div class="paper-question" data-paper-question="1"><label><span>1.</span><input class="paper-question-input" value="전자를 잃는 반응을 무엇이라고 하는가?" data-paper-question-input="1" /></label><label class="ocr-region active" data-region="1"><span>답 작성 영역 1</span><input class="paper-answer-input" value="산화" placeholder="기준 답안을 직접 입력" data-paper-answer-input="1" /></label></div>
+              <div class="paper-question" data-paper-question="2"><label><span>2.</span><input class="paper-question-input" value="전자를 얻는 반응을 무엇이라고 하는가?" data-paper-question-input="2" /></label><label class="ocr-region" data-region="2"><span>답 작성 영역 2</span><input class="paper-answer-input" value="환원" placeholder="기준 답안을 직접 입력" data-paper-answer-input="2" /></label></div>
+              <div class="paper-question" data-paper-question="3"><label><span>3.</span><input class="paper-question-input" value="원소의 산화 상태를 나타내는 값을 쓰시오." data-paper-question-input="3" /></label><label class="ocr-region" data-region="3"><span>답 작성 영역 3</span><input class="paper-answer-input" value="산화수" placeholder="기준 답안을 직접 입력" data-paper-answer-input="3" /></label></div>
+              <div class="paper-question" data-paper-question="4"><label><span>4.</span><input class="paper-question-input" value="산화와 환원이 동시에 일어나는 반응은?" data-paper-question-input="4" /></label><label class="ocr-region" data-region="4"><span>답 작성 영역 4</span><input class="paper-answer-input" value="산화 환원 반응" placeholder="기준 답안을 직접 입력" data-paper-answer-input="4" /></label></div>
+              <div class="paper-question" data-paper-question="5"><label><span>5.</span><input class="paper-question-input" value="산소를 잃는 반응을 쓰시오." data-paper-question-input="5" /></label><label class="ocr-region" data-region="5"><span>답 작성 영역 5</span><input class="paper-answer-input" value="환원" placeholder="기준 답안을 직접 입력" data-paper-answer-input="5" /></label></div>
+            </div>
+            </div>
+          </section>
+          <aside class="region-editor">
+            <p class="eyebrow mint">OCR REGION SUMMARY</p><h3><span id="selectedQuestion">1</span>번 문항 요약</h3>
+            <label>문항 질문<input id="regionQuestion" value="전자를 잃는 반응을 무엇이라고 하는가?" /></label>
+            <label>기준 정답<input id="regionAnswer" value="산화" /></label>
+            <label>허용 표기 변형<input id="regionAliases" value="산화 반응" /></label>
+            <div class="coordinate-grid"><label>X<input value="72" /></label><label>Y<input value="186" /></label><label>W<input value="420" /></label><label>H<input value="54" /></label></div>
+            <p class="capture-help">좌표는 시험지 원본 이미지 기준으로 저장됩니다. 학생이 올린 사진은 원근 보정 후 같은 좌표로 OCR 영역을 잘라냅니다.</p>
+            <button class="primary-button full-button" type="button" data-toggle-inline-edit>미리보기에서 편집</button>
+          </aside>
+        </div>
+        <div class="answer-overview hidden" data-template-panel="answers">
+          <div class="answer-overview-heading"><div><h3>시험지별 기준 답안</h3><p>OCR 영역 설정 없이 문항별 정답과 허용 표기만 빠르게 확인합니다.</p></div><select id="answerTemplateFilter" aria-label="시험지 선택"></select></div>
+          <div class="answer-overview-list" id="answerOverviewList"></div>
+        </div>
+      </section>
+
+
+      <section class="app-page" data-page-panel="categories">
+        <div class="section-heading"><div><p class="eyebrow">EXAM CATEGORIES</p><h2>시험 카테고리</h2><p>학교급, 과목, 단원을 기준으로 시험지를 체계적으로 분류합니다.</p></div><button class="primary-button">＋ 카테고리 추가</button></div>
+        <div class="category-board" id="categoryCards"></div>
+        <section class="teacher-assignment-card">
+          <div class="assignment-heading"><div><h3>클래스별 담당 선생님</h3><p>시험 카테고리와 클래스를 기준으로 담당 선생님을 지정합니다.</p></div><button class="secondary-button" type="button">＋ 담당 연결</button></div>
+          <div class="assignment-table-wrap"><table class="assignment-table"><thead><tr><th>시험 카테고리</th><th>클래스</th><th>담당 선생님</th><th>역할</th><th></th></tr></thead><tbody>
+            <tr><td>화학 I · 산화 환원</td><td>고2 화학 I</td><td><select><option>김선생</option><option>이선생</option><option>박선생</option></select></td><td><span class="status done">주 담당</span></td><td><button class="detail-button">⋯</button></td></tr>
+            <tr><td>중등 화학 · 이온</td><td>중3 화학 심화</td><td><select><option>이선생</option><option>김선생</option><option>박선생</option></select></td><td><span class="status done">주 담당</span></td><td><button class="detail-button">⋯</button></td></tr>
+            <tr><td>통합과학 · 물질</td><td>고1 통합과학 A</td><td><select><option>박선생</option><option>김선생</option><option>이선생</option></select></td><td><span class="status review">보조</span></td><td><button class="detail-button">⋯</button></td></tr>
+          </tbody></table></div>
+        </section>
+      </section>
+
+      <section class="app-page" data-page-panel="settings">
+        <div class="section-heading"><div><p class="eyebrow">SETTINGS</p><h2>설정</h2><p>학원 정보와 채점 정책을 관리합니다.</p></div></div>
+        <div class="settings-card"><h3>채점 정책</h3><label><input type="checkbox" checked /> OCR 결과는 학생이 `채점하기` 버튼을 누른 뒤에만 처리</label><label><input type="checkbox" checked /> 채점 완료된 시험지는 이미지 교체 금지</label><label><input type="checkbox" checked /> 낮은 신뢰도의 화학식은 선생님 검토 대상으로 이동</label></div>
+      </section>
+
+      <section class="app-page" data-page-panel="my-papers">
+        <div class="section-heading"><div><p class="eyebrow">MY TEST HISTORY</p><h2>시험지 이력</h2><p>올린 시험지를 확인하고, 준비가 끝났을 때 직접 채점을 시작하세요.</p></div></div>
+        <div class="student-notice">시험지를 올리는 것만으로는 채점되지 않습니다. 사진을 확인한 뒤 <strong>채점하기</strong>를 눌러주세요.</div>
+        <div class="history-toolbar">
+          <div class="period-tabs" role="tablist" aria-label="시험지 이력 기간">
+            <button class="active" type="button" data-period="all">전체</button>
+            <button type="button" data-period="month">월별</button>
+            <button type="button" data-period="week">주별</button>
+          </div>
+          <select id="historyPeriod" aria-label="이력 기간 상세 선택">
+            <option value="all">전체 기간</option>
+          </select>
+          <select id="historyStatus" aria-label="채점 상태 선택">
+            <option value="all">전체 상태</option>
+            <option value="업로드 완료">업로드 완료</option>
+            <option value="채점 완료">채점 완료</option>
+          </select>
+        </div>
+        <div class="history-meta"><p>총 <strong id="myPaperCount">0</strong>건의 시험지 이력</p></div>
+        <div class="paper-board" id="myPaperCards"></div>
+        <div class="pagination" id="paperPagination" aria-label="시험지 이력 페이지"></div>
+      </section>
+      <footer><span>쪽지시험 UI prototype</span><span>Google OCR · Supabase ready</span></footer>
+    </main>
+
+    <nav class="mobile-nav" id="mobileNav">
+      <button class="active teacher-only" type="button" data-page="dashboard"><span>⌂</span>홈</button><button class="teacher-only" type="button" data-page="records"><span>▤</span>기록</button><button type="button" data-open-upload><span>＋</span><strong>시험지 첨부</strong></button><button class="teacher-only" type="button" data-page="students"><span>♧</span>학생</button><button class="teacher-only" type="button" data-page="settings"><span>⚙</span>설정</button><button class="student-only" type="button" data-page="my-papers"><span>▤</span>내 시험지</button>
+    </nav>
+
+    <div class="modal-backdrop hidden" id="uploadModal">
+      <section class="upload-modal" role="dialog" aria-modal="true" aria-labelledby="uploadTitle">
+        <button class="modal-close" type="button" data-close-upload aria-label="닫기">×</button>
+        <p class="eyebrow mint">NEW TEST PAPER</p><h2 id="uploadTitle">시험지 첨부</h2><p>시험지 사진과 카테고리를 저장합니다. 채점은 저장 후 별도로 시작합니다.</p>
+        <div class="modal-grid"><label>시험 카테고리<select><option>화학 I · 산화 환원</option><option>중등 화학 · 이온</option><option>통합과학 · 물질</option></select></label><label>시험지<select><option>산화 환원 미니테스트</option><option>이온과 앙금 생성 반응</option></select></label></div>
+        <div class="capture-tabs" role="tablist"><button class="active" type="button" role="tab" data-capture-tab="upload">사진 첨부</button><button type="button" role="tab" data-capture-tab="camera">실시간 촬영</button></div>
+        <section data-capture-panel="upload"><input class="sr-only" id="paperFiles" type="file" accept="image/*,.heic" /><label class="upload-zone" for="paperFiles"><span class="upload-icon">↑</span><strong>시험지 사진을 올려주세요</strong><small>첨부한 이미지는 시험지 앵글에 맞게 자동 보정합니다.</small></label></section>
+        <section class="camera-panel hidden" data-capture-panel="camera">
+          <div class="desktop-camera-notice"><strong>실시간 촬영은 스마트폰에서만 사용할 수 있습니다.</strong><small>스마트폰 브라우저로 접속하면 시험지 앵글 가이드와 인식 성공 표시가 나타납니다.</small></div>
+          <div class="mobile-camera-only">
+            <div class="camera-stage"><video id="cameraPreview" playsinline muted></video><div class="camera-placeholder" id="cameraPlaceholder"><span>▣</span><strong>카메라 미리보기</strong><small>후면 카메라를 연결해주세요.</small></div><div class="document-guide"><i></i><i></i><i></i><i></i><span>시험지를 프레임 안에 맞춰주세요</span></div><div class="recognition-badge" id="recognitionBadge"><span></span><strong>시험지 정렬 확인 중</strong></div></div>
+            <div class="camera-actions"><button class="secondary-button" id="startCamera" type="button">카메라 연결</button><button class="primary-button" id="capturePaper" type="button" disabled>촬영하기</button></div>
+          </div>
+        </section>
+        <div class="modal-actions"><button class="secondary-button" type="button" data-close-upload>취소</button><button class="primary-button" id="saveUpload" type="button">업로드 저장</button></div>
+      </section>
+    </div>
+
+    <div class="modal-backdrop hidden" id="resultModal"><section class="result-modal"><button class="modal-close" type="button" data-close-result>×</button><p class="eyebrow mint">GRADING RESULT</p><h2>채점 결과 미리보기</h2><div class="graded-paper"><span class="paper-title">화학 I 산화 환원 미니테스트</span><span class="answer-line line-a">1. 산화</span><span class="answer-line line-b">2. 환원</span><span class="answer-line line-c">3. 산화수</span><b class="red-mark mark-a">○</b><b class="red-mark mark-b">×</b><b class="red-mark mark-c">○</b><b class="red-score">80</b></div><p class="capture-help">원본 이미지는 유지하고, 정답·오답 표시는 별도 좌표 데이터로 저장해 화면 위에 겹쳐 표시합니다.</p></section></div>
+    <div class="modal-backdrop hidden preview-backdrop" id="templatePreviewModal">
+      <section class="template-preview-modal" role="dialog" aria-modal="true" aria-labelledby="templatePreviewTitle">
+        <header><div><p class="eyebrow mint">TEST PAPER EDITOR</p><input class="template-title-input" id="templatePreviewTitle" value="산화 환원 미니테스트" aria-label="시험지 양식명" /></div><div class="preview-actions"><button class="primary-button hidden" type="button" data-save-new-template>저장</button><button class="secondary-button" type="button" data-print-template>인쇄</button><button class="modal-close-inline" type="button" data-close-template-preview aria-label="닫기">×</button></div></header>
+        <div class="template-editor-layout">
+          <section class="preview-document-column">
+            <div class="preview-paper-frame" id="largeTemplatePreview"></div>
+          </section>
+          <aside class="modal-region-editor">
+            <p class="eyebrow mint">OCR REGION EDITOR</p><h3><span id="modalSelectedQuestion">1</span>번 문항 설정</h3>
+            <label>문항 질문<input id="modalRegionQuestion" /></label>
+            <label>기준 정답<input id="modalRegionAnswer" /></label>
+            <label>허용 표기 변형<input id="modalRegionAliases" /></label>
+            <div class="coordinate-grid"><label>X<input id="modalRegionX" /></label><label>Y<input id="modalRegionY" /></label><label>W<input id="modalRegionW" /></label><label>H<input id="modalRegionH" /></label></div>
+            <p class="capture-help">학생 촬영본은 원근 보정 후 시험지 카테고리와 양식을 자동 인식하고, 등록된 좌표를 기준으로 OCR 처리합니다.</p>
+          </aside>
+        </div>
+      </section>
+    </div>
+    <script src="./app.js"></script>
+  </body>
+</html>
