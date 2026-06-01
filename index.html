@@ -7,15 +7,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=20" />
+    <link rel="stylesheet" href="./styles.css?v=21" />
   </head>
   <body>
     <aside class="sidebar">
       <div class="sidebar-head"><div class="brand"><div><strong>쪽지시험</strong><span>단답형 채점 관리</span></div></div><button class="sidebar-toggle" type="button" aria-label="사이드바 접기" aria-expanded="true" data-sidebar-toggle><i></i><i></i><i></i></button></div>
       <nav class="main-nav" id="desktopNav">
         <button class="nav-link active teacher-only" type="button" data-page="dashboard" data-tooltip="대시보드"><span>⌂</span>대시보드</button>
-        <button class="nav-link teacher-only" type="button" data-page="records" data-tooltip="채점 기록"><span>▤</span>채점 기록</button>
         <button class="nav-link teacher-only" type="button" data-page="templates" data-tooltip="시험지 관리"><span>▧</span>시험지 관리</button>
+        <button class="nav-link teacher-only" type="button" data-page="records" data-tooltip="채점 기록"><span>▤</span>채점 기록</button>
         <button class="nav-link teacher-only" type="button" data-page="students" data-tooltip="학생 관리"><span>♧</span>학생 관리</button>
         <button class="nav-link teacher-only" type="button" data-page="categories" data-tooltip="그룹 관리"><span>▦</span>그룹 관리</button>
         <button class="nav-link teacher-only" type="button" data-page="settings" data-tooltip="설정"><span>⚙</span>설정</button>
@@ -53,8 +53,8 @@
           </div>
         </section>
         <section class="quick-grid">
-          <button class="quick-card" type="button" data-page="records"><span>▤</span><strong>채점 기록</strong><small>전체 시험지 이력 확인</small></button>
           <button class="quick-card" type="button" data-page="templates"><span>▧</span><strong>시험지 관리</strong><small>양식 이미지와 OCR 영역 설정</small></button>
+          <button class="quick-card" type="button" data-page="records"><span>▤</span><strong>채점 기록</strong><small>전체 시험지 이력 확인</small></button>
           <button class="quick-card" type="button" data-page="students"><span>♧</span><strong>학생 관리</strong><small>클래스별 학생 관리</small></button>
           <button class="quick-card" type="button" data-page="categories"><span>▦</span><strong>그룹 관리</strong><small>학교급 · 과목 · 단원 분류</small></button>
         </section>
@@ -191,6 +191,15 @@
     </div>
 
     <div class="modal-backdrop hidden" id="resultModal"><section class="result-modal"><button class="modal-close" type="button" data-close-result>×</button><p class="eyebrow mint">GRADING RESULT</p><h2>채점 결과 미리보기</h2><div class="graded-paper"><span class="paper-title">화학 I 산화 환원 미니테스트</span><span class="answer-line line-a">1. 산화</span><span class="answer-line line-b">2. 환원</span><span class="answer-line line-c">3. 산화수</span><b class="red-mark mark-a">○</b><b class="red-mark mark-b">×</b><b class="red-mark mark-c">○</b><b class="red-score">80</b></div><p class="capture-help">원본 이미지는 유지하고, 정답·오답 표시는 별도 좌표 데이터로 저장해 화면 위에 겹쳐 표시합니다.</p></section></div>
+    <div class="modal-backdrop hidden" id="examDetailModal">
+      <section class="result-modal exam-detail-modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <button class="modal-close" type="button" data-close-detail aria-label="닫기">×</button>
+        <p class="eyebrow mint">GRADING RESULT</p><h2 id="detailTitle">채점 결과</h2>
+        <div class="detail-meta" id="detailMeta"></div>
+        <div class="detail-paper" id="detailPaper"></div>
+        <p class="capture-help">원본 이미지는 유지하고, 정답·오답 표시는 별도 좌표 데이터로 화면 위에 겹쳐 표시합니다.</p>
+      </section>
+    </div>
     <div class="modal-backdrop hidden preview-backdrop" id="templatePreviewModal">
       <section class="template-preview-modal" role="dialog" aria-modal="true" aria-labelledby="templatePreviewTitle">
         <header><div><p class="eyebrow mint">TEST PAPER EDITOR</p><input class="template-title-input" id="templatePreviewTitle" value="산화 환원 미니테스트" aria-label="시험지 양식명" /></div><div class="preview-actions"><button class="primary-button hidden" type="button" data-save-new-template>저장</button><button class="secondary-button" type="button" data-print-template>인쇄</button><button class="modal-close-inline" type="button" data-close-template-preview aria-label="닫기">×</button></div></header>
@@ -209,6 +218,6 @@
         </div>
       </section>
     </div>
-    <script src="./app.js?v=17"></script>
+    <script src="./app.js?v=21"></script>
   </body>
 </html>

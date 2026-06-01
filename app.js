@@ -42,7 +42,14 @@ let persistedTemplateRegions = structuredClone(templateRegions);
 let templates = [
   { id:1, name:"산화 환원 미니테스트", category:"화학 I · 산화 환원", subject:"화학 I", count:10 },
   { id:2, name:"이온과 앙금 생성 반응", category:"중등 화학 · 이온", subject:"중등 화학", count:12 },
-  { id:3, name:"물질의 규칙성 주간 테스트", category:"통합과학 · 물질", subject:"통합과학", count:15 }
+  { id:3, name:"물질의 규칙성 주간 테스트", category:"통합과학 · 물질", subject:"통합과학", count:15 },
+  { id:4, name:"몰과 화학식량 확인 문제", category:"화학 I · 몰", subject:"화학 I", count:8 },
+  { id:5, name:"중화 반응 단답 점검", category:"화학 I · 중화 반응", subject:"화학 I", count:10 },
+  { id:6, name:"산과 염기 개념 테스트", category:"중등 화학 · 산과 염기", subject:"중등 화학", count:11 },
+  { id:7, name:"기체의 성질 주간 평가", category:"통합과학 · 물질", subject:"통합과학", count:14 },
+  { id:8, name:"원소와 주기율표 미니테스트", category:"통합과학 · 물질", subject:"통합과학", count:9 },
+  { id:9, name:"화학 반응식 균형 맞추기", category:"화학 I · 산화 환원", subject:"화학 I", count:13 },
+  { id:10, name:"전해질과 이온화 단답", category:"중등 화학 · 이온", subject:"중등 화학", count:12 }
 ];
 let selectedTemplateId = 1;
 let draftTemplate = null;
@@ -62,17 +69,20 @@ document.addEventListener("click", (event) => {
 
 const recordBody = document.querySelector("#recordBody");
 const filters = ["recordSearch","academyFilter","classFilter","categoryFilter","statusFilter"].map((id) => document.querySelector(`#${id}`));
+let currentRecords = [];
 function renderRecords() {
   const [search,academy,className,category,status] = filters.map((filter) => filter.value);
   const query = search.trim().toLowerCase();
   const filtered = records.filter((record) => (!query || `${record.student} ${record.paper}`.toLowerCase().includes(query)) && (academy === "all" || record.academy === academy) && (className === "all" || record.className === className) && (category === "all" || record.category === category) && (status === "all" || record.status === status));
+  currentRecords = filtered;
   document.querySelector("#recordCount").textContent = filtered.length;
-  recordBody.innerHTML = filtered.map((record) => `<tr><td>${record.date}</td><td class="student-cell"><strong>${record.student}</strong><span>${record.grade}</span></td><td>${record.academy}<br>${record.className}</td><td>${record.category}</td><td class="paper-cell"><strong>${record.paper}</strong><span>단답형 시험</span></td><td class="score">${record.score}<small> / 100</small></td><td><span class="status ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span></td><td><button class="detail-button">⋯</button></td></tr>`).join("");
+  recordBody.innerHTML = filtered.map((record,index) => `<tr class="record-row" data-record-index="${index}"><td>${record.date}</td><td class="student-cell"><strong>${record.student}</strong><span>${record.grade}</span></td><td>${record.academy}<br>${record.className}</td><td>${record.category}</td><td class="paper-cell"><strong>${record.paper}</strong><span>단답형 시험</span></td><td class="score">${record.score}<small> / 100</small></td><td><span class="status ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span></td><td><button class="detail-button" type="button">⋯</button></td></tr>`).join("");
 }
 filters.forEach((filter) => filter.addEventListener("input", renderRecords));
+recordBody.addEventListener("click", (event) => { const row = event.target.closest("[data-record-index]"); if (!row) return; openExamDetail(currentRecords[Number(row.dataset.recordIndex)]); });
 
 function renderStaticCards() {
-  document.querySelector("#studentCards").innerHTML = ["박서윤|고2 화학 I|최근 평균 88점","김민준|고2 화학 I|검토 필요 1건","이도윤|중3 화학 심화|최근 평균 94점","한지우|고1 통합과학 A|최근 평균 86점"].map((item) => { const [name,group,note]=item.split("|"); return `<article class="manage-card"><span class="avatar">${name[0]}</span><div><h3>${name}</h3><p>${group}</p><small>${note}</small></div><button>상세 보기</button></article>`; }).join("");
+  document.querySelector("#studentCards").innerHTML = ["박서윤|고2 화학 I|최근 평균 88점","김민준|고2 화학 I|검토 필요 1건","이도윤|중3 화학 심화|최근 평균 94점","한지우|고1 통합과학 A|최근 평균 86점"].map((item) => { const [name,group,note]=item.split("|"); return `<article class="manage-card"><span class="avatar">${name[0]}</span><div><h3>${name}</h3><p>${group}</p><small>${note}</small></div><button type="button" data-student-detail="${name}">상세 보기</button></article>`; }).join("");
   document.querySelector("#categoryCards").innerHTML = ["중등 과학|화학 반응 · 이온 · 기체","통합과학|물질의 규칙성 · 화학 변화","화학 I|몰 · 산화 환원 · 중화 반응"].map((item) => { const [title,units]=item.split("|"); return `<article class="category-card"><span>▦</span><h3>${title}</h3><p>${units}</p><button>카테고리 관리</button></article>`; }).join("");
 }
 function renderAnswerOverview() {
@@ -423,6 +433,36 @@ document.querySelectorAll(".region-editor .coordinate-grid input").forEach((inpu
   });
 });
 document.querySelector("[data-close-result]").addEventListener("click", () => document.querySelector("#resultModal").classList.add("hidden"));
+const examAnswerBank = {
+  "화학 I · 산화 환원": [["전자를 잃는 반응을 무엇이라고 하는가?","산화"],["전자를 얻는 반응을 무엇이라고 하는가?","환원"],["원소의 산화 상태를 나타내는 값은?","산화수"],["산화와 환원이 동시에 일어나는 반응은?","산화 환원 반응"],["산소를 잃는 반응을 쓰시오.","환원"]],
+  "중등 화학 · 이온": [["+전하를 띤 이온을 무엇이라 하는가?","양이온"],["−전하를 띤 이온을 무엇이라 하는가?","음이온"],["두 용액을 섞을 때 생기는 침전물은?","앙금"],["수용액에서 전류가 흐르는 물질은?","전해질"],["Na⁺ 이온의 이름은?","나트륨 이온"]],
+  "통합과학 · 물질": [["우주 초기에 만들어진 원소는?","수소"],["별 내부에서 일어나는 반응은?","핵융합"],["지각에 가장 많은 원소는?","산소"],["주기율표의 세로줄을 무엇이라 하는가?","족"],["주기율표의 가로줄을 무엇이라 하는가?","주기"]]
+};
+/**
+ * 채점 결과 상세 모달을 채워 표시한다.
+ * @param {object} record - 채점 기록 한 건
+ * @returns {void}
+ */
+function openExamDetail(record) {
+  if (!record) return;
+  const set = examAnswerBank[record.category] || examAnswerBank["화학 I · 산화 환원"];
+  const total = set.length;
+  const correct = Math.max(0,Math.min(total,Math.round(record.score / 100 * total)));
+  document.querySelector("#detailTitle").textContent = record.paper;
+  document.querySelector("#detailMeta").innerHTML = `<span>${record.student} · ${record.grade}</span><span>${record.academy} · ${record.className}</span><span>${record.category}</span><span>${record.date}</span><span class="status-chip ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span><span class="score-chip">${record.score}점</span>`;
+  const rows = set.map(([question,answer],index) => { const ok = index < correct; return `<div class="dp-row ${ok ? "ok" : "no"}"><span class="dp-q">${index + 1}. ${question}</span><span class="dp-a">${answer}</span><b class="dp-mark">${ok ? "○" : "×"}</b></div>`; }).join("");
+  document.querySelector("#detailPaper").innerHTML = `<div class="dp-head"><strong>${record.paper}</strong><span class="dp-score">${record.score}</span></div>${rows}`;
+  document.querySelector("#examDetailModal").classList.remove("hidden");
+}
+const examDetailModal = document.querySelector("#examDetailModal");
+document.querySelectorAll("[data-close-detail]").forEach((button) => button.addEventListener("click", () => examDetailModal.classList.add("hidden")));
+examDetailModal.addEventListener("click", (event) => { if (event.target === examDetailModal) examDetailModal.classList.add("hidden"); });
+document.querySelector("#studentCards").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-student-detail]");
+  if (!button) return;
+  const name = button.dataset.studentDetail;
+  openExamDetail(records.find((record) => record.student === name) || { student:name, grade:"-", academy:"라온 과학학원", className:"-", category:"화학 I · 산화 환원", paper:"최근 시험지", date:"-", score:0, status:"검토 필요" });
+});
 const mobileQuery = globalThis.matchMedia("(max-width: 600px)");
 let desktopRole = "admin";
 /**
