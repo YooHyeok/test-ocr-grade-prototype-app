@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=43" />
+    <link rel="stylesheet" href="./styles.css?v=48" />
   </head>
   <body>
     <aside class="sidebar">
@@ -68,6 +68,8 @@
           <select id="classFilter"><option value="all">전체 클래스</option><option>중3 화학 심화</option><option>고1 통합과학 A</option><option>고2 화학 I</option></select>
           <select id="categoryFilter"><option value="all">전체 카테고리</option><option>화학 I · 산화 환원</option><option>중등 화학 · 이온</option><option>통합과학 · 물질</option></select>
           <select id="statusFilter"><option value="all">전체 상태</option><option>검토 필요</option><option>채점 완료</option></select>
+          <label class="date-range"><span>채점일</span><input type="date" id="recordDateFrom" aria-label="시작일" /><span>~</span><input type="date" id="recordDateTo" aria-label="종료일" /></label>
+          <button class="filter-reset" type="button" id="recordReset">초기화</button>
         </div>
         <div class="record-meta"><p>총 <strong id="recordCount">0</strong>건의 채점 관리</p><button type="button">최신순 ⌄</button></div>
         <div class="table-wrap"><table><thead><tr><th>채점일</th><th>학생</th><th>학원 / 클래스</th><th>시험 카테고리</th><th>시험지</th><th>상태</th><th></th></tr></thead><tbody id="recordBody"></tbody></table></div>
@@ -86,14 +88,14 @@
         <div class="template-workspace">
           <div class="template-side">
             <aside class="template-list">
-              <div class="template-list-title"><strong>등록된 시험지</strong><small>3개 양식</small></div>
+              <div class="template-list-title"><strong>등록된 시험지 양식</strong><small>3개 양식</small></div>
               <div id="templateListItems"></div>
             </aside>
             <aside class="region-editor" data-template-panel="editor">
               <p class="eyebrow mint">OCR REGION SUMMARY</p><h3><span id="selectedQuestion">1</span>번 문항 요약</h3>
+              <label class="region-field">허용 표기 변형<input id="regionAliases" type="text" placeholder="쉼표로 구분해 입력" /></label>
               <div class="coordinate-grid"><label>X<input value="72" /></label><label>Y<input value="186" /></label><label>W<input value="420" /></label><label>H<input value="54" /></label></div>
               <p class="capture-help">좌표는 시험지 원본 이미지 기준으로 저장됩니다. 학생이 올린 사진은 원근 보정 후 같은 좌표로 OCR 영역을 잘라냅니다.</p>
-              <button class="primary-button full-button" type="button" data-toggle-inline-edit>미리보기에서 편집</button>
             </aside>
           </div>
           <section class="template-canvas-card" data-template-panel="editor">
@@ -102,7 +104,7 @@
             <div class="template-canvas" id="printableTemplate">
               <div class="paper-heading">
                 <div class="paper-classification">
-                  <label>시험 카테고리<select data-paper-category><option>화학 I · 산화 환원</option><option>화학 I · 몰</option><option>화학 I · 중화 반응</option><option>중등 화학 · 이온</option><option>통합과학 · 물질</option></select></label>
+                  <label>시험 카테고리<select data-paper-category><option>화학 I · 산화 환원</option><option>화학 I · 몰</option><option>화학 I · 중화 반응</option><option>중등 화학 · 이온</option><option>중등 화학 · 산과 염기</option><option>통합과학 · 물질</option></select></label>
                   <label>과목<select data-paper-subject><option>화학 I</option><option>통합과학</option><option>중등 화학</option></select></label>
                 </div>
                 <label class="student-name-region" data-name-region>이름 <input /><span class="resize-handle" data-resize-name title="드래그하여 이름 OCR 영역 크기 조절"></span></label>
@@ -233,6 +235,6 @@
       </section>
     </div>
     <div id="printArea" aria-hidden="true"></div>
-    <script src="./app.js?v=43"></script>
+    <script src="./app.js?v=48"></script>
   </body>
 </html>

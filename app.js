@@ -1,9 +1,9 @@
 const records = [
   { date:"06.01 16:42", student:"유재혁", grade:"고2", academy:"라온 과학학원", className:"고2 화학 I", category:"화학 I · 산화 환원", paper:"산화 환원 미니테스트", score:90, status:"채점 완료" },
-  { date:"06.01 16:31", student:"김민준", grade:"고2", academy:"라온 과학학원", className:"고2 화학 I", category:"화학 I · 산화 환원", paper:"산화 환원 미니테스트", score:70, status:"검토 필요" },
-  { date:"06.01 15:58", student:"이도윤", grade:"중3", academy:"라온 과학학원", className:"중3 화학 심화", category:"중등 화학 · 이온", paper:"이온과 앙금 생성 반응", score:100, status:"채점 완료" },
-  { date:"06.01 15:44", student:"최하린", grade:"중3", academy:"브릿지 사이언스", className:"중3 화학 심화", category:"중등 화학 · 이온", paper:"이온과 앙금 생성 반응", score:75, status:"검토 필요" },
-  { date:"05.31 19:20", student:"한지우", grade:"고1", academy:"라온 과학학원", className:"고1 통합과학 A", category:"통합과학 · 물질", paper:"물질의 규칙성 주간 테스트", score:87, status:"채점 완료" }
+  { date:"06.01 16:31", student:"허재녕", grade:"고2", academy:"라온 과학학원", className:"고2 화학 I", category:"화학 I · 산화 환원", paper:"산화 환원 미니테스트", score:70, status:"검토 필요" },
+  { date:"06.01 15:58", student:"박지효", grade:"중3", academy:"라온 과학학원", className:"중3 화학 심화", category:"중등 화학 · 이온", paper:"이온과 앙금 생성 반응", score:100, status:"채점 완료" },
+  { date:"06.01 15:44", student:"황진미", grade:"중3", academy:"브릿지 사이언스", className:"중3 화학 심화", category:"중등 화학 · 이온", paper:"이온과 앙금 생성 반응", score:75, status:"검토 필요" },
+  { date:"05.31 19:20", student:"김의수", grade:"고1", academy:"라온 과학학원", className:"고1 통합과학 A", category:"통합과학 · 물질", paper:"물질의 규칙성 주간 테스트", score:87, status:"채점 완료" }
 ];
 let myPapers = [
   { id:1, title:"산화 환원 미니테스트", category:"화학 I · 산화 환원", uploaded:"06.01 17:20", date:"2026-06-01", status:"업로드 완료" },
@@ -51,8 +51,31 @@ let templates = [
   { id:9, name:"화학 반응식 균형 맞추기", category:"화학 I · 산화 환원", subject:"화학 I", count:13 },
   { id:10, name:"전해질과 이온화 단답", category:"중등 화학 · 이온", subject:"중등 화학", count:12 }
 ];
+const templateQuestions = {
+  1: [["전자를 잃는 반응을 무엇이라고 하는가?","산화"],["전자를 얻는 반응을 무엇이라고 하는가?","환원"],["원소의 산화 상태를 나타내는 값을 쓰시오.","산화수"],["산화와 환원이 동시에 일어나는 반응은?","산화 환원 반응"],["산소를 잃는 반응을 쓰시오.","환원"]],
+  2: [["+전하를 띤 이온을 무엇이라 하는가?","양이온"],["−전하를 띤 이온을 무엇이라 하는가?","음이온"],["두 용액을 섞을 때 생기는 침전물은?","앙금"],["수용액에서 전류가 흐르는 물질은?","전해질"],["Na⁺ 이온의 이름은?","나트륨 이온"]],
+  3: [["우주 초기에 만들어진 원소는?","수소"],["별 내부에서 일어나는 반응은?","핵융합"],["지각에 가장 많은 원소는?","산소"],["주기율표의 세로줄을 무엇이라 하는가?","족"],["주기율표의 가로줄을 무엇이라 하는가?","주기"]],
+  4: [["물질 1몰의 입자 수를 무엇이라 하는가?","아보가드로수"],["기체 1몰의 0°C·1기압 부피는?","22.4 L"],["몰 농도의 단위를 쓰시오.","mol/L"],["분자량에 g을 붙인 값은?","몰질량"],["탄소 12g은 몇 몰인가?","1몰"]],
+  5: [["산과 염기가 반응하는 것을 무엇이라 하는가?","중화 반응"],["중화 반응에서 생성되는 물질은?","물과 염"],["산성 용액의 pH 범위는?","7 미만"],["염기성 용액의 pH 범위는?","7 초과"],["중화점에서의 액성은?","중성"]],
+  6: [["신맛을 내는 물질의 성질은?","산성"],["붉은 리트머스를 푸르게 하는 것은?","염기"],["pH 7은 어떤 액성인가?","중성"],["위산의 주성분을 쓰시오.","염산"],["비누의 액성은?","염기성"]],
+  7: [["기체의 압력과 부피의 관계 법칙은?","보일 법칙"],["기체의 온도와 부피의 관계 법칙은?","샤를 법칙"],["기체 분자가 운동하는 원인은?","열에너지"],["기체 압력의 단위 하나를 쓰시오.","기압"],["기체가 골고루 퍼지는 현상은?","확산"]],
+  8: [["주기율표를 체계화한 과학자는?","멘델레예프"],["같은 족 원소의 공통점은?","최외각 전자 수"],["1족 원소를 무엇이라 하는가?","알칼리 금속"],["17족 원소를 무엇이라 하는가?","할로젠"],["18족 원소를 무엇이라 하는가?","비활성 기체"]],
+  9: [["화학 반응 전후 원자의 수는?","같다"],["반응식의 계수를 맞추는 것을 무엇이라 하는가?","균형 맞추기"],["질량 보존 법칙을 발견한 과학자는?","라부아지에"],["반응물은 화살표의 어느 쪽에 쓰는가?","왼쪽"],["생성물은 화살표의 어느 쪽에 쓰는가?","오른쪽"]],
+  10: [["전해질이 물에서 이온으로 나뉘는 현상은?","이온화"],["물에서 이온화하지 않는 물질은?","비전해질"],["소금물은 전해질인가?","맞다"],["설탕물은 전해질인가?","아니다"],["이온이 이동하여 흐르는 것은?","전류"]]
+};
+/**
+ * 문항 배열을 OCR 영역(templateRegions) 형태로 변환한다.
+ * @param {Array<Array<string>>} list - [질문, 정답] 배열
+ * @returns {object} 번호별 영역 객체
+ */
+function regionsFromQuestions(list) {
+  const regions = {};
+  list.forEach(([question,answer],index) => { regions[index + 1] = { question, answer, aliases:"", x:72, y:186 + index * 89, w:420, h:54 }; });
+  return regions;
+}
 let selectedTemplateId = 1;
 let draftTemplate = null;
+const MAX_REGION_H = 220;
 
 function showPage(name) {
   document.querySelectorAll("[data-page-panel]").forEach((panel) => panel.classList.toggle("active", panel.dataset.pagePanel === name));
@@ -70,15 +93,34 @@ document.addEventListener("click", (event) => {
 const recordBody = document.querySelector("#recordBody");
 const filters = ["recordSearch","academyFilter","classFilter","categoryFilter","statusFilter"].map((id) => document.querySelector(`#${id}`));
 let currentRecords = [];
+/**
+ * 채점 기록 날짜("MM.DD HH:MM")를 비교 가능한 ISO("2026-MM-DD")로 바꾼다.
+ * @param {object} record - 채점 기록
+ * @returns {string} ISO 날짜
+ */
+function recordDateISO(record) {
+  const [month,day] = record.date.split(" ")[0].split(".");
+  return `2026-${month}-${day}`;
+}
 function renderRecords() {
   const [search,academy,className,category,status] = filters.map((filter) => filter.value);
   const query = search.trim().toLowerCase();
-  const filtered = records.filter((record) => (!query || `${record.student} ${record.paper}`.toLowerCase().includes(query)) && (academy === "all" || record.academy === academy) && (className === "all" || record.className === className) && (category === "all" || record.category === category) && (status === "all" || record.status === status));
+  const from = document.querySelector("#recordDateFrom").value;
+  const to = document.querySelector("#recordDateTo").value;
+  const filtered = records.filter((record) => { const iso = recordDateISO(record); return (!query || `${record.student} ${record.paper}`.toLowerCase().includes(query)) && (academy === "all" || record.academy === academy) && (className === "all" || record.className === className) && (category === "all" || record.category === category) && (status === "all" || record.status === status) && (!from || iso >= from) && (!to || iso <= to); });
   currentRecords = filtered;
   document.querySelector("#recordCount").textContent = filtered.length;
-  recordBody.innerHTML = filtered.map((record,index) => `<tr class="record-row" data-record-index="${index}"><td>${record.date}</td><td class="student-cell"><strong>${record.student}</strong><span>${record.grade}</span></td><td>${record.academy}<br>${record.className}</td><td>${record.category}</td><td class="paper-cell"><strong>${record.paper}</strong><span>단답형 시험</span></td><td><span class="status ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span></td><td class="row-actions"><button class="print-record-btn" type="button" data-print-record="${index}" aria-label="인쇄">🖨</button><button class="detail-button" type="button">⋯</button></td></tr>`).join("");
+  recordBody.innerHTML = filtered.map((record,index) => `<tr class="record-row" data-record-index="${index}"><td>${record.date}</td><td class="student-cell"><strong>${record.student}</strong><span>${record.grade}</span></td><td>${record.academy}<br>${record.className}</td><td>${record.category}</td><td class="paper-cell"><strong>${record.paper}</strong><span>단답형 시험</span></td><td><span class="status ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span></td><td class="row-actions"><button class="detail-button" type="button">⋯</button></td></tr>`).join("");
 }
 filters.forEach((filter) => filter.addEventListener("input", renderRecords));
+["recordDateFrom","recordDateTo"].forEach((id) => document.querySelector(`#${id}`).addEventListener("input", renderRecords));
+document.querySelector("#recordReset").addEventListener("click", () => {
+  document.querySelector("#recordSearch").value = "";
+  ["academyFilter","classFilter","categoryFilter","statusFilter"].forEach((id) => { document.querySelector(`#${id}`).value = "all"; });
+  document.querySelector("#recordDateFrom").value = "";
+  document.querySelector("#recordDateTo").value = "";
+  renderRecords();
+});
 recordBody.addEventListener("click", (event) => {
   const printButton = event.target.closest("[data-print-record]");
   if (printButton) { openPrintPreview(currentRecords[Number(printButton.dataset.printRecord)]); return; }
@@ -88,14 +130,16 @@ recordBody.addEventListener("click", (event) => {
 });
 
 function renderStaticCards() {
-  document.querySelector("#studentCards").innerHTML = ["유재혁|고2 화학 I|최근 평균 88점","김민준|고2 화학 I|검토 필요 1건","이도윤|중3 화학 심화|최근 평균 94점","한지우|고1 통합과학 A|최근 평균 86점"].map((item) => { const [name,group,note]=item.split("|"); return `<article class="manage-card"><span class="avatar">${name[0]}</span><div><h3>${name}</h3><p>${group}</p><small>${note}</small></div><button type="button" data-student-detail="${name}">상세 보기</button></article>`; }).join("");
+  const seenStudents = new Set();
+  const students = records.filter((record) => { if (seenStudents.has(record.student)) return false; seenStudents.add(record.student); return true; });
+  document.querySelector("#studentCards").innerHTML = students.map((record) => { const note = record.status === "검토 필요" ? "검토 필요 1건" : "최근 채점 완료"; return `<article class="manage-card"><span class="avatar">${record.student[0]}</span><div><h3>${record.student}</h3><p>${record.className}</p><small>${note}</small></div><button type="button" data-student-detail="${record.student}">상세 보기</button></article>`; }).join("");
   document.querySelector("#categoryCards").innerHTML = ["중등 과학|화학 반응 · 이온 · 기체","통합과학|물질의 규칙성 · 화학 변화","화학 I|몰 · 산화 환원 · 중화 반응"].map((item) => { const [title,units]=item.split("|"); return `<article class="category-card"><span>▦</span><h3>${title}</h3><p>${units}</p><button>카테고리 관리</button></article>`; }).join("");
 }
 function renderAnswerOverview() {
   document.querySelector("#answerOverviewList").innerHTML=Object.entries(templateRegions).map(([number,region]) => `<article class="answer-overview-item"><strong>${number}번</strong><p>${region.question}</p><small>정답: <b>${region.answer || "미입력"}</b>${region.aliases ? ` · 허용: ${region.aliases}` : ""}</small></article>`).join("");
 }
 function renderTemplateList() {
-  document.querySelector(".template-list-title small").textContent=`${templates.length}개 양식`;
+  document.querySelector(".template-list-title small").textContent=`총 ${templates.length}개`;
   document.querySelector("#templateListItems").innerHTML=templates.map((template) => `<button class="template-item ${template.id === selectedTemplateId ? "active" : ""}" type="button" data-template-id="${template.id}"><span class="template-icon">▧</span><span><strong>${template.name}</strong><small>${template.category} · ${template.count}문항</small></span></button>`).join("");
 }
 function createQuestionMarkup(number) {
@@ -125,7 +169,8 @@ function selectRegion(button) {
   const region=templateRegions[button.dataset.region];
   document.querySelectorAll("[data-region]").forEach((item) => item.classList.toggle("active", item === button));
   document.querySelector("#selectedQuestion").textContent=button.dataset.region;
-  const coordinateInputs=document.querySelectorAll(".coordinate-grid input");
+  document.querySelector("#regionAliases").value=region.aliases || "";
+  const coordinateInputs=document.querySelectorAll(".region-editor .coordinate-grid input");
   [region.x,region.y,region.w,region.h].forEach((value,index) => coordinateInputs[index].value=value);
 }
 function selectModalRegion(regionLabel) {
@@ -173,6 +218,7 @@ function setInlineEditMode(enabled) {
   const outer=document.querySelector("#printableTemplate");
   outer.querySelectorAll("input,textarea").forEach((input) => enabled ? input.removeAttribute("readonly") : input.setAttribute("readonly",""));
   outer.querySelectorAll("select").forEach((select) => enabled ? select.removeAttribute("disabled") : select.setAttribute("disabled",""));
+  document.querySelectorAll(".region-editor input").forEach((input) => { input.disabled = !enabled; });
   if (enabled) outer.querySelectorAll("[tabindex]").forEach((element) => element.removeAttribute("tabindex"));
   if (enabled) bindInlineTemplateEditor();
   document.querySelectorAll("[data-toggle-inline-edit]").forEach((button) => button.textContent=enabled ? "편집 완료" : button.classList.contains("full-button") ? "미리보기에서 편집" : "편집하기");
@@ -180,7 +226,6 @@ function setInlineEditMode(enabled) {
 }
 function bindInlineTemplateEditor() {
   const outer=document.querySelector("#printableTemplate");
-  outer.querySelectorAll("[data-region]").forEach((label) => label.addEventListener("click", () => selectRegion(label)));
   outer.querySelectorAll("[data-paper-question-input]").forEach((input) => input.addEventListener("input", () => { const number=input.dataset.paperQuestionInput; templateRegions[number].question=input.value; }));
   outer.querySelectorAll("[data-paper-answer-input]").forEach((input) => input.addEventListener("focus", () => selectRegion(input.closest("[data-region]"))));
   outer.querySelectorAll("[data-paper-answer-input]").forEach((input) => input.addEventListener("input", () => { const number=input.dataset.paperAnswerInput; templateRegions[number].answer=input.value; }));
@@ -208,7 +253,7 @@ function startRegionResize(event,handle,isModal=true) {
   const boxRect=box.getBoundingClientRect();
   const paperStyle=getComputedStyle(paper);
   const maxW=Math.max(160,Math.floor(paperRect.right - parseFloat(paperStyle.paddingRight) - boxRect.left - gradeReserve(box)));
-  const maxH=Math.max(34,Math.floor(paperRect.bottom - parseFloat(paperStyle.paddingBottom) - boxRect.top));
+  const maxH=MAX_REGION_H;
   const onMove=(moveEvent) => {
     const width=Math.min(maxW,Math.max(160,Math.round(startW + moveEvent.clientX - startX)));
     const height=Math.min(maxH,Math.max(34,Math.round(startH + moveEvent.clientY - startY)));
@@ -357,7 +402,28 @@ document.querySelector("[data-inline-cancel]").addEventListener("click", () => {
   reloadPersistedTemplate();
   setInlineEditMode(false);
 });
-document.querySelector("#templateListItems").addEventListener("click", (event) => { const button=event.target.closest("[data-template-id]"); if (!button) return; selectedTemplateId=Number(button.dataset.templateId); renderTemplateList(); renderAnswerOverview(); });
+/**
+ * 등록된 시험지를 선택해 해당 문항을 미리보기에 로드한다.
+ * @param {number} id - 시험지 id
+ * @returns {void}
+ */
+function loadTemplate(id) {
+  if (inlineEditing) setInlineEditMode(false);
+  selectedTemplateId = id;
+  const questions = templateQuestions[id] || templateQuestions[1];
+  Object.keys(templateRegions).forEach((key) => delete templateRegions[key]);
+  Object.assign(templateRegions, regionsFromQuestions(questions));
+  const template = templates.find((item) => item.id === id);
+  const categorySelect = document.querySelector("#printableTemplate [data-paper-category]");
+  const subjectSelect = document.querySelector("#printableTemplate [data-paper-subject]");
+  if (template && categorySelect) categorySelect.value = template.category;
+  if (template && subjectSelect) subjectSelect.value = template.subject;
+  syncOuterTemplatePreview();
+  savePersistedTemplate();
+  selectRegion(document.querySelector('#printableTemplate [data-region="1"]'));
+  renderAnswerOverview();
+}
+document.querySelector("#templateListItems").addEventListener("click", (event) => { const button=event.target.closest("[data-template-id]"); if (!button) return; loadTemplate(Number(button.dataset.templateId)); });
 document.querySelector("[data-add-inline-question]").addEventListener("click", () => {
   const number=Object.keys(templateRegions).length + 1;
   templateRegions[number]={ question:"문항 질문을 입력하세요.", answer:"", aliases:"", x:72, y:100 + number * 89, w:420, h:54 };
@@ -426,7 +492,7 @@ document.querySelector("#modalRegionAliases").addEventListener("input", (event) 
   const paperStyle=getComputedStyle(paper);
   let constrained=value;
   if (key === "W") constrained=Math.min(Math.max(160,value),Math.max(160,Math.floor(paperRect.right - parseFloat(paperStyle.paddingRight) - boxRect.left - gradeReserve(box))));
-  if (key === "H") constrained=Math.min(Math.max(34,value),Math.max(34,Math.floor(paperRect.bottom - parseFloat(paperStyle.paddingBottom) - boxRect.top)));
+  if (key === "H") constrained=Math.min(Math.max(34,value),MAX_REGION_H);
   templateRegions[number][key.toLowerCase()]=constrained;
   event.target.value=constrained;
   if (key === "W") box.style.width=`${constrained}px`;
@@ -445,13 +511,15 @@ document.querySelectorAll(".region-editor .coordinate-grid input").forEach((inpu
     const paperStyle=getComputedStyle(paper);
     let constrained=value;
     if (key === "W") constrained=Math.min(Math.max(160,value),Math.max(160,Math.floor(paperRect.right - parseFloat(paperStyle.paddingRight) - boxRect.left - gradeReserve(box))));
-    if (key === "H") constrained=Math.min(Math.max(34,value),Math.max(34,Math.floor(paperRect.bottom - parseFloat(paperStyle.paddingBottom) - boxRect.top)));
+    if (key === "H") constrained=Math.min(Math.max(34,value),MAX_REGION_H);
     templateRegions[number][key.toLowerCase()]=constrained;
     event.target.value=constrained;
     if (key === "W") box.style.width=`${constrained}px`;
     if (key === "H") box.style.height=`${constrained}px`;
   });
 });
+document.querySelector("#regionAliases").addEventListener("input", (event) => { const number=document.querySelector("#selectedQuestion").textContent; if (templateRegions[number]) templateRegions[number].aliases=event.target.value; });
+document.querySelector("#printableTemplate").addEventListener("click", (event) => { const region=event.target.closest("[data-region]"); if (region) selectRegion(region); });
 document.querySelector("[data-close-result]").addEventListener("click", () => document.querySelector("#resultModal").classList.add("hidden"));
 const examAnswerBank = {
   "화학 I · 산화 환원": [["전자를 잃는 반응을 무엇이라고 하는가?","산화"],["전자를 얻는 반응을 무엇이라고 하는가?","환원"],["원소의 산화 상태를 나타내는 값은?","산화수"],["산화와 환원이 동시에 일어나는 반응은?","산화 환원 반응"],["산소를 잃는 반응을 쓰시오.","환원"]],
@@ -649,7 +717,7 @@ function printTemplate() {
   const title = modalOpen ? document.querySelector("#templatePreviewTitle").value : (templates.find((item) => item.id === selectedTemplateId)?.name || draftTemplate?.name || "시험지");
   const category = document.querySelector(`${scope} [data-paper-category]`)?.value || "";
   const subject = document.querySelector(`${scope} [data-paper-subject]`)?.value || "";
-  const lines = Object.entries(templateRegions).map(([number,region]) => `<div class="print-line"><div class="print-q">${number}. ${region.question}</div><div class="print-answer-row"><span class="print-ans print-blank"></span><b class="print-mark"></b></div></div>`).join("");
+  const lines = Object.entries(templateRegions).map(([number,region]) => `<div class="print-line"><div class="print-q">${number}. ${region.question}</div><div class="print-answer-row"><span class="print-ans print-blank" style="width:${region.w}px;height:${region.h}px"></span><b class="print-mark"></b></div></div>`).join("");
   document.querySelector("#printArea").innerHTML = `<div class="print-sheet"><div class="print-head"><div><strong>${title}</strong><span>시험 카테고리: ${category}${subject ? ` · 과목: ${subject}` : ""}</span></div><span>이름 ____________</span></div><p class="print-sub">다음 문항의 답을 빈칸에 작성하세요.</p>${lines}</div>`;
   document.body.classList.add("print-record");
   window.print();
@@ -727,5 +795,5 @@ document.querySelector("[data-sidebar-toggle]").addEventListener("click", (event
   event.currentTarget.setAttribute("aria-expanded",String(!collapsed));
   event.currentTarget.setAttribute("aria-label",collapsed ? "사이드바 펼치기" : "사이드바 접기");
 });
-renderRecords(); renderStaticCards(); renderTemplateList(); renderAnswerOverview(); updateHistoryPeriodOptions(); syncOuterTemplatePreview(); setInlineEditMode(false);
+renderRecords(); renderStaticCards(); renderTemplateList(); renderAnswerOverview(); updateHistoryPeriodOptions(); syncOuterTemplatePreview(); setInlineEditMode(false); selectRegion(document.querySelector('#printableTemplate [data-region="1"]'));
 syncRoleToViewport();
