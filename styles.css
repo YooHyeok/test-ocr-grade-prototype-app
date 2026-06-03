@@ -19,7 +19,7 @@ body {
   margin: 0;
   color: var(--ink);
   background: var(--paper);
-  font-family: "IBM Plex Sans KR", sans-serif;
+  font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif;
 }
 button, input, select { font: inherit; }
 button { cursor: pointer; border: 0; }
@@ -117,11 +117,11 @@ h2 { margin-bottom: 9px; font-size: 23px; letter-spacing: -.7px; }
   position: relative; min-height: 222px; overflow: hidden; padding: 30px 33px;
   border-radius: 18px; background: var(--mint);
 }
-.hero-card h2 { font-family: "Gowun Dodum"; font-size: 26px; line-height: 1.42; }
+.hero-card h2 { font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; font-size: 26px; line-height: 1.42; }
 .hero-card em { color: var(--green); font-style: normal; }
 .hero-copy { color: #59716a; font-size: 13px; line-height: 1.7; }
 .molecule-visual { position: absolute; right: 42px; bottom: 17px; width: 180px; height: 170px; }
-.atom { position: absolute; z-index: 2; display: grid; place-items: center; border-radius: 50%; box-shadow: var(--shadow); font: 700 22px "Gowun Dodum"; }
+.atom { position: absolute; z-index: 2; display: grid; place-items: center; border-radius: 50%; box-shadow: var(--shadow); font: 700 22px "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; }
 .atom-a, .atom-c { width: 64px; height: 64px; color: var(--green-dark); background: #fff7df; }
 .atom-a { top: 11px; right: 4px; } .atom-c { left: 3px; bottom: 8px; }
 .atom-b { left: 65px; top: 65px; width: 82px; height: 82px; color: var(--white); background: var(--coral); font-size: 30px; }
@@ -213,7 +213,7 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .paper-board { grid-template-columns: repeat(2, minmax(0,1fr)); }
 .paper-card { display: grid; grid-template-columns: 112px 1fr; gap: 15px; padding: 14px; }
 .paper-thumb { position: relative; display: grid; place-items: center; min-height: 142px; overflow: hidden; border: 1px solid #ebe6da; border-radius: 6px; color: #a29a8b; background: repeating-linear-gradient(#fffdf8 0 21px,#e8e3d8 22px); font-size: 11px; }
-.thumb-mark { position: absolute; color: #d6483e; font: 700 22px "Gowun Dodum"; transform: rotate(-9deg); }
+.thumb-mark { position: absolute; color: #d6483e; font: 700 22px "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; transform: rotate(-9deg); }
 .paper-info { position: relative; align-self: stretch; display: flex; flex-direction: column; align-items: flex-start; }
 .paper-info h3 { padding-right: 84px; }
 .paper-original-btn { position: absolute; top: 0; right: 0; }
@@ -255,20 +255,20 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .template-canvas-viewport { flex: 1; min-height: 0; overflow: auto; padding: 17px; }
 .canvas-footer { display: none; flex: none; padding: 11px 15px; border-top: 1px solid var(--line); background: var(--white); border-radius: 0 0 12px 12px; }
 .inline-editing .canvas-footer { display: block; }
-.template-canvas { width: 100%; min-width: 520px; min-height: 630px; padding: 29px 34px; border: 1px solid #e6e0d4; color: #57534b; background: #fff; box-shadow: 0 4px 12px rgba(58,70,64,.05); font-family: "Gowun Dodum"; font-size: 13px; }
+.template-canvas { width: 100%; min-width: 520px; min-height: 630px; padding: 29px 34px; border: 1px solid #e6e0d4; color: #57534b; background: #fff; box-shadow: 0 4px 12px rgba(58,70,64,.05); font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; font-size: 13px; }
 #printableTemplate { pointer-events: none; }
 #printableTemplate .ocr-region { pointer-events: auto; cursor: pointer; }
 .inline-editing #printableTemplate { pointer-events: auto; }
 .paper-heading { display: flex; justify-content: space-between; gap: 14px; align-items: end; padding-bottom: 17px; margin-bottom: 25px; border-bottom: 2px solid #625d54; }.paper-heading strong { font-size: 17px; }.paper-heading span { font-size: 12px; }
-.paper-classification { display: flex; gap: 8px; flex-wrap: wrap; }.paper-classification label { display: grid; gap: 4px; color: #777168; font-family: "IBM Plex Sans KR"; font-size: 10px; }.paper-classification select { width: auto; min-width: 130px; height: 31px; padding: 0 7px; border: 1px solid #cfd5d2; color: #57534b; background: #fff; font-size: 11px; }
+.paper-classification { display: flex; gap: 8px; flex-wrap: wrap; }.paper-classification label { display: grid; gap: 4px; color: #777168; font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; font-size: 10px; }.paper-classification select { width: auto; min-width: 130px; height: 31px; padding: 0 7px; border: 1px solid #cfd5d2; color: #57534b; background: #fff; font-size: 11px; }
 .student-name-region { position: relative; display: grid; width: 170px; min-width: 130px; min-height: 44px; gap: 3px; align-content: center; padding: 4px 8px; border: 2px dashed #85b9a5; border-radius: 4px; color: #47836d; background: rgba(216,239,228,.35); font-size: 11px; font-weight: 700; white-space: nowrap; }.student-name-region input { width: 100%; height: 22px; padding: 0 5px; border: 1px solid #b9cfc7; background: #fff; font-size: 11px; }
-.paper-question { display: grid; gap: 7px; margin-top: 24px; }.paper-question > label:first-child { display: flex; gap: 5px; align-items: center; }.paper-question-input { height: 32px; padding: 0 8px; border: 1px solid transparent; color: #57534b; background: transparent; font-family: "Gowun Dodum"; font-size: 13px; }.paper-question-input:hover, .paper-question-input:focus { border-color: #aac8bd; background: #fff; }
+.paper-question { display: grid; gap: 7px; margin-top: 24px; }.paper-question > label:first-child { display: flex; gap: 5px; align-items: center; }.paper-question-input { height: 32px; padding: 0 8px; border: 1px solid transparent; color: #57534b; background: transparent; font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; font-size: 13px; }.paper-question-input:hover, .paper-question-input:focus { border-color: #aac8bd; background: #fff; }
 .ocr-region { position: relative; display: flex; max-width: calc(100% - 56px); min-width: 160px; min-height: 34px; align-items: center; padding: 3px 29px 3px 5px; border: 2px dashed #85b9a5; border-radius: 4px; color: #47836d; background: rgba(216,239,228,.35); text-align: left; font-size: 11px; resize: none; }
 .ocr-region:hover, .ocr-region.active { border-color: var(--coral); color: #b8604d; background: rgba(240,139,114,.12); }
 .answer-row { display: flex; align-items: center; gap: 12px; }
-.grade-region { display: grid; place-items: center; flex: none; width: 42px; height: 42px; border: 2px dashed #d6c3bf; border-radius: 6px; color: #d9aaa3; font-family: "Gowun Dodum"; font-size: 23px; }
+.grade-region { display: grid; place-items: center; flex: none; width: 42px; height: 42px; border: 2px dashed #d6c3bf; border-radius: 6px; color: #d9aaa3; font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; font-size: 23px; }
 .grade-region::before { content: "○"; }
-.paper-answer-input { width: 100%; height: 100%; min-height: 24px; padding: 4px 6px; border: 1px solid #b9cfc7; color: #426c5d; background: rgba(255,255,255,.9); font-family: "Gowun Dodum"; font-size: 12px; line-height: 1.45; resize: none; }.paper-answer-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(29,118,88,.13); }
+.paper-answer-input { width: 100%; height: 100%; min-height: 24px; padding: 4px 6px; border: 1px solid #b9cfc7; color: #426c5d; background: rgba(255,255,255,.9); font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; font-size: 12px; line-height: 1.45; resize: none; }.paper-answer-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(29,118,88,.13); }
 .inline-editing #printableTemplate { outline: 3px solid rgba(29,118,88,.15); }.inline-editing #printableTemplate .ocr-region { border-color: var(--green); }
 .region-editor { align-self: start; padding: 17px; }.region-editor h3 { margin: 0 0 17px; }.region-editor label { display: grid; gap: 5px; margin-top: 11px; color: #68746f; font-size: 11px; font-weight: 700; }.region-editor input { height: 38px; padding: 0 10px; border: 1px solid #bdc8c4; border-radius: 6px; color: #394842; background: #fff; box-shadow: inset 0 1px 2px rgba(31,49,43,.04); }
 .region-editor input:hover { border-color: #8eb0a4; }.region-editor input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(29,118,88,.14); }
@@ -334,9 +334,9 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .add-question { display: block; width: 100%; padding: 11px; border: 1px dashed #82b7a3; border-radius: 6px; color: var(--green); background: #f5fbf8; font-size: 12px; font-weight: 700; }
 #largeTemplatePreview .add-question { margin-top: 20px; }
 .template-title-input { min-width: 280px; height: 38px; padding: 0 9px; border: 1px solid #bdc8c4; border-radius: 6px; color: var(--ink); background: #fff; font-size: 18px; font-weight: 700; }
-.graded-paper { position: relative; min-height: 430px; margin-top: 15px; padding: 38px 33px; border: 1px solid #ebe6da; color: #56524b; background: repeating-linear-gradient(#fffdf8 0 31px,#ebe7dc 32px); font-family: "Gowun Dodum"; }
+.graded-paper { position: relative; min-height: 430px; margin-top: 15px; padding: 38px 33px; border: 1px solid #ebe6da; color: #56524b; background: repeating-linear-gradient(#fffdf8 0 31px,#ebe7dc 32px); font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; }
 .paper-title { display: block; margin-bottom: 42px; font-size: 17px; font-weight: 700; }.answer-line { display: block; margin-top: 32px; }
-.red-mark, .red-score { position: absolute; color: #d83f36; font-family: "Gowun Dodum"; transform: rotate(-9deg); }.red-mark { right: 70px; font-size: 44px; }.mark-a { top: 110px; }.mark-b { top: 171px; }.mark-c { top: 233px; }.red-score { right: 30px; bottom: 30px; border-bottom: 2px solid #d83f36; font-size: 35px; }
+.red-mark, .red-score { position: absolute; color: #d83f36; font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; transform: rotate(-9deg); }.red-mark { right: 70px; font-size: 44px; }.mark-a { top: 110px; }.mark-b { top: 171px; }.mark-c { top: 233px; }.red-score { right: 30px; bottom: 30px; border-bottom: 2px solid #d83f36; font-size: 35px; }
 .record-row { cursor: pointer; }
 .record-row:hover td { background: #f6f9f6; }
 .exam-detail-modal { width: min(1800px,98vw); max-height: 97vh; overflow-y: auto; }
@@ -355,7 +355,7 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .grade-col-body .print-mark { right: 5px; width: 42px; height: 42px; font-size: 26px; }
 .grade-col-body .print-score { margin-top: 18px; font-size: 25px; }
 .manual-box { padding: 13px 14px; border: 1px solid var(--line); border-radius: 12px; }
-.scan-sheet { position: relative; padding: 18px 20px 40px; border: 1px solid #e6dfce; border-radius: 12px; color: #4a463d; background: repeating-linear-gradient(#fffdf6 0 30px,#efe9d8 31px); box-shadow: 0 6px 16px rgba(58,70,64,.08); font-family: "Gowun Dodum"; }
+.scan-sheet { position: relative; padding: 18px 20px 40px; border: 1px solid #e6dfce; border-radius: 12px; color: #4a463d; background: repeating-linear-gradient(#fffdf6 0 30px,#efe9d8 31px); box-shadow: 0 6px 16px rgba(58,70,64,.08); font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; }
 .scan-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding-bottom: 11px; margin-bottom: 6px; border-bottom: 2px solid #b9b2a0; }
 .scan-head strong { font-size: 15px; }.scan-head span { color: #7a7363; font-size: 12px; }
 .scan-line { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
@@ -364,7 +364,7 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .scan-mark { font-size: 25px; transform: rotate(-10deg); color: #d83f36; }
 .scan-score { position: absolute; right: 16px; bottom: 11px; border-bottom: 2px solid #d83f36; color: #d83f36; font-size: 29px; font-weight: 700; transform: rotate(-8deg); }
 .scan-photo { transform: rotate(-1.1deg); border-color: #d8d0bd; box-shadow: 0 14px 32px rgba(0,0,0,.18); }
-.scan-photo::after { content: "학생 업로드 사진"; position: absolute; top: 8px; right: 9px; padding: 2px 7px; border-radius: 4px; background: rgba(29,118,88,.12); color: var(--green); font-family: "IBM Plex Sans KR"; font-size: 9px; font-weight: 700; letter-spacing: .3px; }
+.scan-photo::after { content: "학생 업로드 사진"; position: absolute; top: 8px; right: 9px; padding: 2px 7px; border-radius: 4px; background: rgba(29,118,88,.12); color: var(--green); font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; font-size: 9px; font-weight: 700; letter-spacing: .3px; }
 .grade-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 11px; }
 .grade-toolbar .secondary-button { padding: 9px 13px; font-size: 12px; }
 .grade-toolbar small { flex: 1; min-width: 140px; color: var(--muted); font-size: 11px; }
@@ -398,7 +398,7 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .print-record-btn { width: 30px; height: 30px; border-radius: 7px; background: #eef2ef; color: #56635e; font-size: 13px; line-height: 1; }
 .print-record-btn:hover { background: #e0e8e3; }
 #printArea { display: none; }
-.print-sheet { padding: 38px 42px; color: #1f1c17; font-family: "Gowun Dodum"; }
+.print-sheet { padding: 38px 42px; color: #1f1c17; font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; }
 .print-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; padding-bottom: 14px; margin-bottom: 22px; border-bottom: 2px solid #1f1c17; }
 .print-head strong { display: block; font-size: 21px; }.print-head span { display: block; margin-top: 4px; color: #555; font-size: 13px; }
 .print-sub { margin: 0 0 16px; font-size: 13px; }
@@ -409,7 +409,7 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .print-mark { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 42px; height: 42px; border: 1.5px dashed #dcc8c4; border-radius: 6px; color: #d83f36; font-size: 28px; line-height: 1; pointer-events: none; }
 .print-score { display: block; margin-top: 22px; color: #d83f36; font-size: 26px; font-weight: 700; text-align: right; }
 .print-photo { position: relative; margin: 6px; transform: rotate(-0.9deg); border: 1px solid #e2ddd2; border-radius: 8px; box-shadow: 0 14px 34px rgba(0,0,0,.18); }
-.print-photo::after { content: "학생 업로드 사진"; position: absolute; top: 12px; right: 14px; padding: 3px 9px; border-radius: 4px; background: rgba(29,118,88,.12); color: var(--green); font-family: "IBM Plex Sans KR"; font-size: 10px; font-weight: 700; }
+.print-photo::after { content: "학생 업로드 사진"; position: absolute; top: 12px; right: 14px; padding: 3px 9px; border-radius: 4px; background: rgba(29,118,88,.12); color: var(--green); font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; }
 #resultModal .result-modal { width: min(820px,96vw); max-height: 92vh; overflow-y: auto; }
 .grade-actions-end { display: flex; flex: none; gap: 8px; align-items: center; }
 .print-preview-modal { width: min(1640px,98vw); max-height: 97vh; overflow-y: auto; }
@@ -436,10 +436,10 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .detail-meta .status-chip.done { color: var(--green); background: #e2f1ea; }
 .detail-meta .score-chip { color: var(--white); background: var(--green); font-weight: 700; }
 .detail-paper { display: flex; flex-direction: column; }
-.detail-paper .dp-head { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; border-bottom: 1px dashed #d9d2c2; font-family: "Gowun Dodum"; }
+.detail-paper .dp-head { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; border-bottom: 1px dashed #d9d2c2; font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; }
 .detail-paper .dp-head strong { font-size: 15px; color: #4a463f; }
-.detail-paper .dp-head .dp-score { color: #d83f36; font-family: "Gowun Dodum"; font-size: 26px; font-weight: 700; }
-.dp-row { display: grid; grid-template-columns: 1fr auto 34px; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f1ede2; font-family: "Gowun Dodum"; }
+.detail-paper .dp-head .dp-score { color: #d83f36; font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; font-size: 26px; font-weight: 700; }
+.dp-row { display: grid; grid-template-columns: 1fr auto 34px; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f1ede2; font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; }
 .dp-row:last-child { border-bottom: 0; }
 .dp-row .dp-q { color: #6b665c; font-size: 13px; }
 .dp-row .dp-a { color: #2f2b25; font-size: 14px; font-weight: 700; }
