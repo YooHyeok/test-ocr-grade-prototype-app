@@ -6,14 +6,20 @@
     <title>쪽지시험 | 단답형 채점 관리</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=49" />
+    <link rel="stylesheet" href="./styles.css?v=52" />
   </head>
   <body>
     <aside class="sidebar">
       <div class="sidebar-head"><div class="brand"><div><strong>쪽지시험</strong><span>단답형 채점 관리</span></div></div><button class="sidebar-toggle" type="button" aria-label="사이드바 접기" aria-expanded="true" data-sidebar-toggle><i></i><i></i><i></i></button></div>
       <nav class="main-nav" id="desktopNav">
         <button class="nav-link active teacher-only" type="button" data-page="dashboard" data-tooltip="대시보드"><span>⌂</span>대시보드</button>
-        <button class="nav-link teacher-only" type="button" data-page="templates" data-tooltip="시험지 관리"><span>▧</span>시험지 관리</button>
+        <div class="nav-group teacher-only" data-nav-group="templates">
+          <button class="nav-link nav-parent" type="button" data-accordion-toggle="templates" data-tooltip="시험지 관리"><span>▧</span>시험지 관리<i class="nav-caret"></i></button>
+          <div class="nav-children" data-accordion="templates">
+            <button class="nav-link nav-child" type="button" data-page="templates" data-tooltip="주관식">주관식</button>
+            <button class="nav-link nav-child" type="button" data-page="templates-mc" data-tooltip="객관식">객관식</button>
+          </div>
+        </div>
         <button class="nav-link teacher-only" type="button" data-page="records" data-tooltip="채점 관리"><span>▤</span>채점 관리</button>
         <button class="nav-link teacher-only" type="button" data-page="students" data-tooltip="학생 관리"><span>♧</span>학생 관리</button>
         <button class="nav-link teacher-only" type="button" data-page="categories" data-tooltip="그룹 관리"><span>▦</span>그룹 관리</button>
@@ -101,6 +107,7 @@
             <div class="canvas-toolbar"><div><strong>시험지 양식 미리보기</strong><small>편집하기를 누르면 이 화면에서 문항과 OCR 영역을 바로 수정할 수 있습니다.</small></div><div class="canvas-actions"><button class="primary-button" type="button" data-toggle-inline-edit>편집하기</button><button class="secondary-button" type="button" data-inline-cancel>인쇄</button></div></div>
             <div class="template-canvas-viewport">
             <div class="template-canvas" id="printableTemplate">
+              <div class="fiducials"><i></i><i></i><i></i><i></i></div>
               <div class="paper-heading">
                 <div class="paper-classification">
                   <label>시험 카테고리<select data-paper-category><option>화학 I · 산화 환원</option><option>화학 I · 몰</option><option>화학 I · 중화 반응</option><option>중등 화학 · 이온</option><option>중등 화학 · 산과 염기</option><option>통합과학 · 물질</option></select></label>
@@ -122,6 +129,27 @@
             <div class="answer-overview-heading"><div><h3>시험지별 기준 답안</h3><p>OCR 영역 설정 없이 문항별 정답과 허용 표기만 빠르게 확인합니다.</p></div></div>
             <div class="answer-overview-list" id="answerOverviewList"></div>
           </div>
+        </div>
+      </section>
+
+      <section class="app-page" data-page-panel="templates-mc">
+        <div class="template-workspace">
+          <div class="template-side">
+            <aside class="template-list">
+              <div class="template-list-title"><strong>등록된 객관식 시험지</strong><small>총 0개</small></div>
+              <div id="mcListItems"></div>
+            </aside>
+            <aside class="region-editor mc-summary">
+              <p class="eyebrow mint">QUESTION SUMMARY</p><h3><span id="mcSelectedQuestion">1</span>번 문항</h3>
+              <div id="mcSummaryBody" class="mc-summary-body"></div>
+            </aside>
+          </div>
+          <section class="template-canvas-card">
+            <div class="canvas-toolbar"><div><strong>객관식 시험지 미리보기</strong><small>문항을 선택하면 좌측에 보기·정답이 표시됩니다.</small></div><div class="canvas-actions"><button class="secondary-button" type="button" id="mcPrint">인쇄</button></div></div>
+            <div class="template-canvas-viewport">
+              <div class="template-canvas" id="mcPreview"></div>
+            </div>
+          </section>
         </div>
       </section>
 
@@ -234,6 +262,6 @@
       </section>
     </div>
     <div id="printArea" aria-hidden="true"></div>
-    <script src="./app.js?v=48"></script>
+    <script src="./app.js?v=52"></script>
   </body>
 </html>

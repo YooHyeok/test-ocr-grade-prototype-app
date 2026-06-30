@@ -14,11 +14,12 @@ let myPapers = [
   { id:6, title:"물질의 규칙성 주간 테스트", category:"통합과학 · 물질", uploaded:"04.27 18:30", date:"2026-04-27", status:"채점 완료", score:95 },
   { id:7, title:"산과 염기 개념 점검", category:"중등 화학 · 산과 염기", uploaded:"04.18 13:22", date:"2026-04-18", status:"채점 완료", score:70 }
 ];
-const pageTitles = { dashboard:"대시보드", records:"채점 관리", templates:"시험지 관리", students:"학생 관리", categories:"그룹 관리", settings:"설정", "my-papers":"내 시험지" };
+const pageTitles = { dashboard:"대시보드", records:"채점 관리", templates:"시험지 관리 · 주관식", "templates-mc":"시험지 관리 · 객관식", students:"학생 관리", categories:"그룹 관리", settings:"설정", "my-papers":"내 시험지" };
 const pageSubtitles = {
   dashboard:"",
   records:"학원, 클래스, 카테고리, 학생별로 시험지 원본과 결과를 관리합니다.",
-  templates:"시험지 양식을 만들고, 문항별 OCR 인식 영역과 기준 답안을 함께 설정합니다.",
+  templates:"주관식(단답형) 양식을 만들고, 문항별 OCR 인식 영역과 기준 답안을 설정합니다.",
+  "templates-mc":"객관식 양식을 만들고, 문항별 보기와 정답을 설정합니다.",
   students:"학원과 클래스별 학생 계정, 최근 성적, 업로드 현황을 관리합니다.",
   categories:"학교급, 과목, 단원을 기준으로 시험지를 체계적으로 분류합니다.",
   settings:"학원 정보와 채점 정책을 관리합니다.",
@@ -83,12 +84,23 @@ function showPage(name) {
   document.querySelector("#pageTitle").textContent = pageTitles[name] || "케미체크";
   document.querySelector("#pageSubtitle").textContent = pageSubtitles[name] || "";
   document.querySelector(".header-new-template").classList.toggle("hidden",name !== "templates");
+  const templatesGroup = document.querySelector('[data-nav-group="templates"]');
+  if (templatesGroup) {
+    const inGroup = name === "templates" || name === "templates-mc";
+    templatesGroup.classList.toggle("open", inGroup);
+    templatesGroup.querySelector(".nav-parent").classList.toggle("active", inGroup);
+  }
   window.scrollTo({ top:0, behavior:"smooth" });
 }
 document.addEventListener("click", (event) => {
   const pageButton = event.target.closest("[data-page]");
   if (pageButton) showPage(pageButton.dataset.page);
 });
+document.querySelectorAll("[data-accordion-toggle]").forEach((button) => button.addEventListener("click", () => {
+  if (document.body.classList.contains("sidebar-collapsed")) { showPage("templates"); return; }
+  const group = button.closest("[data-nav-group]");
+  if (group) group.classList.toggle("open");
+}));
 
 const recordBody = document.querySelector("#recordBody");
 const filters = ["recordSearch","academyFilter","classFilter","categoryFilter","statusFilter"].map((id) => document.querySelector(`#${id}`));
@@ -341,23 +353,72 @@ function updateHistoryPeriodOptions() {
   renderMyPapers();
 }
 
-function stopCamera() { if (cameraStream) cameraStream.getTracks().forEach((track) => track.stop()); cameraStream = undefined; document.querySelector("#cameraPreview").srcObject = null; }
+let qualityTimers = [];
+function clearQualityTimers() { qualityTimers.forEach((id) => clearTimeout(id)); qualityTimers = []; }
+/**
+ * 촬영 품질 상태를 표시한다(warn=빨강 경고, ok=초록 정상).
+ * @param {string} state - "warn" | "ok" | ""
+ * @param {string} message - 안내 문구
+ * @returns {void}
+ */
+function setCameraQuality(state, message) {
+  const stage = document.querySelector(".camera-stage");
+  if (stage) { stage.classList.remove("quality-warn","quality-ok"); if (state) stage.classList.add(`quality-${state}`); }
+  const badge = document.querySelector("#recognitionBadge");
+  badge.classList.toggle("success", state === "ok");
+  badge.classList.toggle("warn", state === "warn");
+  document.querySelector("#recognitionBadge strong").textContent = message;
+}
+function stopCamera() {
+  clearQualityTimers();
+  if (cameraStream) cameraStream.getTracks().forEach((track) => track.stop());
+  cameraStream = undefined;
+  document.querySelector("#cameraPreview").srcObject = null;
+  const stage = document.querySelector(".camera-stage");
+  if (stage) stage.classList.remove("quality-warn","quality-ok");
+}
 const uploadModal = document.querySelector("#uploadModal");
 document.querySelectorAll("[data-open-upload]").forEach((button) => button.addEventListener("click", () => uploadModal.classList.remove("hidden")));
 document.querySelectorAll("[data-close-upload]").forEach((button) => button.addEventListener("click", () => { stopCamera(); uploadModal.classList.add("hidden"); }));
 /**
- * 후면 카메라를 연결하고 미리보기를 시작한다. 이미 연결돼 있으면 아무 작업도 하지 않는다.
+ * 시험지 업로드 1건을 생성하고 모달을 닫는다.
+ * @returns {void}
+ */
+function saveUploadedPaper() {
+  myPapers.unshift({ id:Date.now(), title:"산화 환원 미니테스트", category:"화학 I · 산화 환원", uploaded:"방금 전", date:"2026-06-01", status:"업로드 완료" });
+  updateHistoryPeriodOptions();
+  stopCamera();
+  uploadModal.classList.add("hidden");
+  showPage("my-papers");
+}
+/**
+ * 촬영 품질을 실시간 검사하는 것처럼 상태를 진행하고, 인식 성공이 안정되면 자동 촬영·업로드한다.
+ * @returns {void}
+ */
+function runQualityCheck() {
+  clearQualityTimers();
+  setCameraQuality("warn", "시험지를 프레임 안에 맞춰주세요");
+  qualityTimers.push(setTimeout(() => setCameraQuality("warn", "기울기·흔들림을 확인하는 중…"), 1400));
+  qualityTimers.push(setTimeout(() => { setCameraQuality("ok", "인식 성공 · 자동 촬영합니다"); document.querySelector("#capturePaper").disabled = false; }, 2700));
+  qualityTimers.push(setTimeout(saveUploadedPaper, 3800));
+}
+/**
+ * 후면 카메라를 연결하고 품질 검사를 시작한다. 이미 연결돼 있으면 아무 작업도 하지 않는다.
  * @returns {Promise<void>}
  */
 async function startCamera() {
   if (cameraStream) return;
-  const badge = document.querySelector("#recognitionBadge strong");
-  try { cameraStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:"environment" } }, audio:false }); const video=document.querySelector("#cameraPreview"); video.srcObject=cameraStream; await video.play(); document.querySelector("#cameraPlaceholder").classList.add("hidden"); badge.textContent="시험지 테두리를 프레임에 맞춰주세요"; document.querySelector("#capturePaper").disabled=false; } catch { badge.textContent="카메라 권한을 확인해주세요"; }
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:"environment" } }, audio:false });
+    const video=document.querySelector("#cameraPreview"); video.srcObject=cameraStream; await video.play();
+    document.querySelector("#cameraPlaceholder").classList.add("hidden");
+    runQualityCheck();
+  } catch { setCameraQuality("warn", "카메라 권한을 확인해주세요"); }
 }
 document.querySelectorAll("[data-capture-tab]").forEach((tab) => tab.addEventListener("click", () => { document.querySelectorAll("[data-capture-tab]").forEach((item) => item.classList.toggle("active", item === tab)); document.querySelectorAll("[data-capture-panel]").forEach((panel) => panel.classList.toggle("hidden", panel.dataset.capturePanel !== tab.dataset.captureTab)); if (tab.dataset.captureTab === "camera" && mobileQuery.matches) startCamera(); }));
 document.querySelector("#startCamera").addEventListener("click", startCamera);
-document.querySelector("#capturePaper").addEventListener("click", () => { document.querySelector("#recognitionBadge").classList.add("success"); document.querySelector("#recognitionBadge strong").textContent="인식 성공 · 촬영 준비 완료"; });
-document.querySelector("#saveUpload").addEventListener("click", () => { myPapers.unshift({ id:Date.now(), title:"산화 환원 미니테스트", category:"화학 I · 산화 환원", uploaded:"방금 전", date:"2026-06-01", status:"업로드 완료" }); updateHistoryPeriodOptions(); stopCamera(); uploadModal.classList.add("hidden"); showPage("my-papers"); });
+document.querySelector("#capturePaper").addEventListener("click", saveUploadedPaper);
+document.querySelector("#saveUpload").addEventListener("click", saveUploadedPaper);
 document.querySelector("[data-show-records]").addEventListener("click", () => { document.querySelector("#statusFilter").value="검토 필요"; renderRecords(); showPage("records"); });
 
 document.querySelector("#myPaperCards").addEventListener("click", (event) => {
@@ -692,7 +753,7 @@ function gradeVariants(record) {
  */
 function buildPrintSheet(record, marks, score, photo) {
   const lines = record.grading.map((item,index) => `<div class="print-line"><div class="print-q">${index + 1}. ${item.question}</div><div class="print-answer-row"><span class="print-ans">${item.studentAnswer}</span><b class="print-mark">${marks[index] === "o" ? "○" : marks[index] === "x" ? "×" : ""}</b></div></div>`).join("");
-  return `<div class="print-sheet ${photo ? "print-photo" : ""}"><div class="print-head"><div><strong>${record.paper}</strong><span>${record.category}</span></div><span>${record.student}</span></div><p class="print-sub">다음 문항의 답을 빈칸에 작성하세요.</p>${lines}</div>`;
+  return `<div class="print-sheet ${photo ? "print-photo" : ""}"><div class="fiducials"><i></i><i></i><i></i><i></i></div><div class="print-head"><div><strong>${record.paper}</strong><span>${record.category}</span></div><span>${record.student}</span></div><p class="print-sub">다음 문항의 답을 빈칸에 작성하세요.</p>${lines}</div>`;
 }
 /**
  * 선택한 변형을 인쇄한다.
@@ -718,7 +779,7 @@ function printTemplate() {
   const category = document.querySelector(`${scope} [data-paper-category]`)?.value || "";
   const subject = document.querySelector(`${scope} [data-paper-subject]`)?.value || "";
   const lines = Object.entries(templateRegions).map(([number,region]) => `<div class="print-line"><div class="print-q">${number}. ${region.question}</div><div class="print-answer-row"><span class="print-ans print-blank" style="width:${region.w}px;height:${region.h}px"></span><b class="print-mark"></b></div></div>`).join("");
-  document.querySelector("#printArea").innerHTML = `<div class="print-sheet"><div class="print-head"><div><strong>${title}</strong><span>시험 카테고리: ${category}${subject ? ` · 과목: ${subject}` : ""}</span></div><span>이름 ____________</span></div><p class="print-sub">다음 문항의 답을 빈칸에 작성하세요.</p>${lines}</div>`;
+  document.querySelector("#printArea").innerHTML = `<div class="print-sheet"><div class="fiducials"><i></i><i></i><i></i><i></i></div><div class="print-head"><div><strong>${title}</strong><span>시험 카테고리: ${category}${subject ? ` · 과목: ${subject}` : ""}</span></div><span>이름 ____________</span></div><p class="print-sub">다음 문항의 답을 빈칸에 작성하세요.</p>${lines}</div>`;
   document.body.classList.add("print-record");
   window.print();
 }
@@ -795,5 +856,88 @@ document.querySelector("[data-sidebar-toggle]").addEventListener("click", (event
   event.currentTarget.setAttribute("aria-expanded",String(!collapsed));
   event.currentTarget.setAttribute("aria-label",collapsed ? "사이드바 펼치기" : "사이드바 접기");
 });
+const mcTemplates = [
+  { id:1, name:"산화 환원 객관식 미니테스트", category:"화학 I · 산화 환원", subject:"화학 I", count:5 },
+  { id:2, name:"이온과 앙금 객관식", category:"중등 화학 · 이온", subject:"중등 화학", count:5 },
+  { id:3, name:"물질의 규칙성 객관식", category:"통합과학 · 물질", subject:"통합과학", count:5 }
+];
+const mcQuestions = {
+  1: [
+    { q:"전자를 잃는 반응을 무엇이라 하는가?", choices:["환원","산화","중화","연소"], answer:1 },
+    { q:"전자를 얻는 반응을 무엇이라 하는가?", choices:["산화","환원","분해","치환"], answer:1 },
+    { q:"원소의 산화 상태를 나타내는 값은?", choices:["원자량","산화수","몰수","질량수"], answer:1 },
+    { q:"산화와 환원이 동시에 일어나는 반응은?", choices:["중화 반응","산화 환원 반응","분해 반응","앙금 생성"], answer:1 },
+    { q:"산소를 잃는 반응은?", choices:["산화","환원","연소","부식"], answer:1 }
+  ],
+  2: [
+    { q:"+전하를 띤 이온을 무엇이라 하는가?", choices:["음이온","양이온","중성자","분자"], answer:1 },
+    { q:"−전하를 띤 이온을 무엇이라 하는가?", choices:["양이온","음이온","원자핵","전자쌍"], answer:1 },
+    { q:"두 용액을 섞을 때 생기는 침전물은?", choices:["기체","앙금","용매","결정"], answer:1 },
+    { q:"수용액에서 전류가 흐르는 물질은?", choices:["비전해질","전해질","절연체","촉매"], answer:1 },
+    { q:"Na⁺의 이름은?", choices:["칼륨 이온","나트륨 이온","칼슘 이온","수소 이온"], answer:1 }
+  ],
+  3: [
+    { q:"우주 초기에 만들어진 원소는?", choices:["산소","수소","철","규소"], answer:1 },
+    { q:"별 내부에서 일어나는 반응은?", choices:["핵분열","핵융합","연소","산화"], answer:1 },
+    { q:"지각에 가장 많은 원소는?", choices:["규소","산소","알루미늄","철"], answer:1 },
+    { q:"주기율표의 세로줄을 무엇이라 하는가?", choices:["주기","족","계열","군"], answer:1 },
+    { q:"주기율표의 가로줄을 무엇이라 하는가?", choices:["족","주기","구역","블록"], answer:1 }
+  ]
+};
+const mcChoiceMarks = ["①","②","③","④","⑤"];
+let mcSelectedId = 1;
+let mcSelectedQ = 0;
+/**
+ * 객관식 등록 시험지 목록을 렌더링한다.
+ * @returns {void}
+ */
+function renderMcList() {
+  document.querySelector('[data-page-panel="templates-mc"] .template-list-title small').textContent = `총 ${mcTemplates.length}개`;
+  document.querySelector("#mcListItems").innerHTML = mcTemplates.map((template) => `<button class="template-item ${template.id === mcSelectedId ? "active" : ""}" type="button" data-mc-id="${template.id}"><span class="template-icon">▤</span><span><strong>${template.name}</strong><small>${template.category} · ${template.count}문항</small></span></button>`).join("");
+}
+/**
+ * 선택된 객관식 시험지 미리보기(문항 + 보기 + 정답)를 렌더링한다.
+ * @returns {void}
+ */
+function renderMcPreview() {
+  const template = mcTemplates.find((item) => item.id === mcSelectedId);
+  const questions = mcQuestions[mcSelectedId] || [];
+  const body = questions.map((item,index) => `<div class="mc-question ${index === mcSelectedQ ? "active" : ""}" data-mc-q="${index}"><div class="mc-q-text">${index + 1}. ${item.q}</div><div class="mc-choices">${item.choices.map((choice,ci) => `<div class="mc-choice ${ci === item.answer ? "correct" : ""}"><span class="mc-num">${mcChoiceMarks[ci]}</span><span>${choice}</span></div>`).join("")}</div></div>`).join("");
+  document.querySelector("#mcPreview").innerHTML = `<div class="fiducials"><i></i><i></i><i></i><i></i></div><div class="mc-head"><div><strong>${template?.name || "객관식 시험지"}</strong><span>${template?.category || ""} · ${template?.subject || ""}</span></div><span>이름 ____________</span></div><p class="mc-paper-sub">다음 문항에서 알맞은 답을 하나 고르세요.</p>${body}`;
+}
+/**
+ * 선택된 문항의 보기/정답 요약을 좌측 패널에 표시한다.
+ * @returns {void}
+ */
+function renderMcSummary() {
+  const item = (mcQuestions[mcSelectedId] || [])[mcSelectedQ];
+  document.querySelector("#mcSelectedQuestion").textContent = mcSelectedQ + 1;
+  document.querySelector("#mcSummaryBody").innerHTML = item ? `<p class="mc-summary-q">${item.q}</p><ul class="mc-summary-choices">${item.choices.map((choice,ci) => `<li class="${ci === item.answer ? "correct" : ""}"><span>${mcChoiceMarks[ci]}</span><span>${choice}</span>${ci === item.answer ? '<em>정답</em>' : ""}</li>`).join("")}</ul>` : "";
+}
+/**
+ * 객관식 시험지를 선택한다.
+ * @param {number} id - 시험지 id
+ * @returns {void}
+ */
+function selectMcTemplate(id) {
+  mcSelectedId = id; mcSelectedQ = 0;
+  renderMcList(); renderMcPreview(); renderMcSummary();
+}
+/**
+ * 객관식 시험지를 인쇄한다(보기 포함, 정답 미표시).
+ * @returns {void}
+ */
+function printMc() {
+  const template = mcTemplates.find((item) => item.id === mcSelectedId);
+  const questions = mcQuestions[mcSelectedId] || [];
+  const lines = questions.map((item,index) => `<div class="mc-print-q"><div class="mc-print-text">${index + 1}. ${item.q}</div><div class="mc-print-choices">${item.choices.map((choice,ci) => `<span class="mc-print-choice">${mcChoiceMarks[ci]} ${choice}</span>`).join("")}</div></div>`).join("");
+  document.querySelector("#printArea").innerHTML = `<div class="print-sheet"><div class="fiducials"><i></i><i></i><i></i><i></i></div><div class="print-head"><div><strong>${template?.name || "객관식 시험지"}</strong><span>시험 카테고리: ${template?.category || ""}${template?.subject ? ` · 과목: ${template.subject}` : ""}</span></div><span>이름 ____________</span></div><p class="print-sub">다음 문항에서 알맞은 답을 하나 고르세요.</p>${lines}</div>`;
+  document.body.classList.add("print-record");
+  window.print();
+}
+document.querySelector("#mcListItems").addEventListener("click", (event) => { const button = event.target.closest("[data-mc-id]"); if (button) selectMcTemplate(Number(button.dataset.mcId)); });
+document.querySelector("#mcPreview").addEventListener("click", (event) => { const question = event.target.closest("[data-mc-q]"); if (!question) return; mcSelectedQ = Number(question.dataset.mcQ); renderMcPreview(); renderMcSummary(); });
+document.querySelector("#mcPrint").addEventListener("click", printMc);
 renderRecords(); renderStaticCards(); renderTemplateList(); renderAnswerOverview(); updateHistoryPeriodOptions(); syncOuterTemplatePreview(); setInlineEditMode(false); selectRegion(document.querySelector('#printableTemplate [data-region="1"]'));
+renderMcList(); renderMcPreview(); renderMcSummary();
 syncRoleToViewport();
