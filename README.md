@@ -1,17 +1,42 @@
-# [쪽지시험 정적 UI 프로토타입](https://yoohyeok.github.io/test-ocr-grade-prototype-app/)
+# 케미체크 (ChemiCheck)
 
-한국 중고등학생 화학 단답형 쪽지시험지를 OCR로 인식하여 채점하고 기록하는 웹앱의 UI 기획 프로토타입 입니다.
+한국 중고등학생 화학 쪽지시험지를 OCR(주관식) / OMR(객관식)로 인식하여 채점하고 기록하는 웹앱입니다.
 
+- 제품 기획: [docs/PRODUCT_PLAN.md](docs/PRODUCT_PLAN.md)
+- 정적 UI 기획 프로토타입: [`public/prototype/`](public/prototype/index.html) — 개발 서버에서 `/prototype/index.html`로 확인
+  - 배포본: https://yoohyeok.github.io/test-ocr-grade-prototype-app/ (`main` 브랜치)
+  - 프로토타입 원본 브랜치: `feature/init-mockup-plan`
 
+## 기술 스택
 
-## `Mode1`) 쪽지시험 관리자
-- 시험지 관리 메뉴를 통해 시험지 양식을 생성 / 인쇄 할 수 있다.  
-- 채점 관리 메뉴를 통해 자동채점 결과를 확인할 수 있으며, 수동채점 기능을 통해 자동채점된 결과를 임의로 수정할 수 있다.  
-- 인쇄 기능을 통해 제출된 시험지 원본, 자동채점된 시험지, 수동채점된 시험지를 선택하여 시험지를 인쇄할 수 있다.  
+- Vite + React 19 + TypeScript
+- Tailwind CSS v4 + shadcn/ui
+- React Router v7
+- Zustand (+ immer)
+- TanStack Query v5
+- Supabase (Auth / Storage / Postgres / Edge Functions)
 
-***관리자, 선생님만 접근할 수 있으며, PC버전 해상도에서만 접근이 가능하다.***
+## 시작하기
 
-## `Mode2`) 시험지 업로드 및 자동채점
-- 자동채점을 진행할 쪽지시험지를 이미지로 업로드 한다.  
-- 이미지 업로드는 파일첨부, 실시간 촬영 2가지 유형으로 나뉜다.  
-***학생만 접근이 가능하며, 모바일 해상도에서만 접근이 가능하다.  ***
+```bash
+npm install
+cp .env.example .env   # VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY 입력
+npm run dev
+```
+
+| 스크립트 | 설명 |
+| --- | --- |
+| `npm run dev` | 개발 서버 |
+| `npm run build` | 타입 체크 + 프로덕션 빌드 |
+| `npm run lint` | ESLint |
+| `npm run type-gen` | Supabase 스키마 타입 생성 (`package.json`의 project-id 설정 필요) |
+
+## 화면 구성
+
+| 경로 | 화면 |
+| --- | --- |
+| `/` | 대시보드 |
+| `/grading` | 채점 관리 |
+| `/exam-sheets/subjective` | 시험지 관리 · 주관식 |
+| `/exam-sheets/objective` | 시험지 관리 · 객관식 |
+| `/upload` | 시험지 업로드 / 촬영 (학생, 모바일) |
