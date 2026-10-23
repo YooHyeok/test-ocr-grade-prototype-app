@@ -120,6 +120,37 @@
   --breakpoint-sm: 37.5rem;
   --breakpoint-md: 51.25rem;
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* 프로토타입 보조 색상 */
+  --color-mint: #d8efe4;
+  --color-mint-soft: #e6f3ec;
+  --color-coral: #f08b72;
+  --color-coral-soft: #fce8e2;
+  --color-coral-strong: #c96651;
+  --color-notice: #fff8e8;
+  --color-notice-border: #f0d69d;
+  --color-notice-foreground: #765d29;
+  --color-paper-border: #e6e0d4;
+}
+
+/* 카드형 흰 배경 박스 (프로토타입 .quick-card, .manage-card 등) */
+@utility surface {
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--card);
+  box-shadow: 0 5px 15px rgb(58 70 64 / 3.5%);
+}
+
+/* 필터·폼의 select / input 공통 스타일 (프로토타입 select) */
+@utility field {
+  height: 38px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: #52605b;
+  background: var(--card);
+  font-size: 12px;
+  outline: none;
 }
 
 @layer base {
