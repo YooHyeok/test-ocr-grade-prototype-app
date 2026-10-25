@@ -240,6 +240,7 @@ export const SUBJECTIVE_QUESTIONS: Record<number, SubjectiveQuestion[]> =
     Object.entries(SUBJECTIVE_SOURCE).map(([id, list]) => [
       id,
       list.map(([question, answer, aliases = ""], index) => ({
+        id: Number(id) * 100 + index + 1,
         question,
         answer,
         aliases,
@@ -272,7 +273,7 @@ export const OBJECTIVE_SHEETS: ExamSheet[] = [
   },
 ];
 
-export const OBJECTIVE_QUESTIONS: Record<number, ObjectiveQuestion[]> = {
+const OBJECTIVE_SOURCE: Record<number, Omit<ObjectiveQuestion, "id">[]> = {
   1: [
     {
       question: "전자를 잃는 반응을 무엇이라 하는가?",
@@ -355,6 +356,18 @@ export const OBJECTIVE_QUESTIONS: Record<number, ObjectiveQuestion[]> = {
     },
   ],
 };
+
+/** 시험지별 객관식 문항 */
+export const OBJECTIVE_QUESTIONS: Record<number, ObjectiveQuestion[]> =
+  Object.fromEntries(
+    Object.entries(OBJECTIVE_SOURCE).map(([id, list]) => [
+      id,
+      list.map((item, index) => ({
+        id: Number(id) * 100 + index + 1,
+        ...item,
+      })),
+    ]),
+  );
 
 export const MY_PAPERS: MyPaper[] = [
   {

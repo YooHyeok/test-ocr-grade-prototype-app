@@ -43,6 +43,7 @@ export type Region = {
 
 /** 주관식 문항 */
 export type SubjectiveQuestion = {
+  id: number;
   question: string;
   answer: string;
   aliases: string;
@@ -51,6 +52,7 @@ export type SubjectiveQuestion = {
 
 /** 객관식 문항 */
 export type ObjectiveQuestion = {
+  id: number;
   question: string;
   choices: string[];
   /** 정답 보기 index (0부터) */

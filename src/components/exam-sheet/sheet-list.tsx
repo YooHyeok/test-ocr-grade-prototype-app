@@ -1,7 +1,6 @@
-import { useCallback, type MouseEvent } from "react";
 import type { LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { ExamSheet } from "@/type";
+import SheetListItem from "./sheet-list-item";
 
 type Props = {
   title: string;
@@ -21,14 +20,8 @@ export default function SheetList({
   sheets,
   selectedId,
   onSelect,
-  icon: Icon,
-}: Props) {
-  const handleClick = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) =>
-      onSelect(Number(event.currentTarget.value)),
-    [onSelect],
-  );
-
+  icon,
+}: Readonly<Props>) {
   return (
     <aside className="bg-card min-h-0 overflow-y-auto rounded-xl border">
       <div className="flex items-baseline justify-between gap-2 border-b p-3.5">
@@ -38,25 +31,13 @@ export default function SheetList({
         </small>
       </div>
       {sheets.map((sheet) => (
-        <button
+        <SheetListItem
           key={sheet.id}
-          type="button"
-          value={sheet.id}
-          aria-pressed={sheet.id === selectedId}
-          onClick={handleClick}
-          className={cn(
-            "hover:text-primary flex w-full items-center gap-2.5 border-b border-[#eef0ee] p-3 text-left text-[#56635e] hover:bg-[#f1f8f4]",
-            sheet.id === selectedId && "text-primary bg-[#f1f8f4]",
-          )}
-        >
-          <Icon className="text-primary size-5 shrink-0" />
-          <span className="grid gap-1">
-            <strong className="text-[13px]">{sheet.name}</strong>
-            <small className="text-[10px] text-[#929d99]">
-              {sheet.category} · {sheet.count}문항
-            </small>
-          </span>
-        </button>
+          sheet={sheet}
+          selected={sheet.id === selectedId}
+          onSelect={onSelect}
+          icon={icon}
+        />
       ))}
     </aside>
   );
