@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
+import MoleculeArt from "./molecule-art";
 
 type Props = {
   completedToday: number;
@@ -11,7 +12,10 @@ type Props = {
  * @param {Props} props
  * @returns {JSX.Element}
  */
-export default function ProgressHero({ completedToday, needsReview }: Props) {
+export default function ProgressHero({
+  completedToday,
+  needsReview,
+}: Readonly<Props>) {
   return (
     <article className="bg-mint relative min-h-[222px] overflow-hidden rounded-[18px] px-8 py-7.5 max-sm:min-h-[245px] max-sm:px-5 max-sm:py-6">
       <div className="relative z-10">
@@ -35,26 +39,7 @@ export default function ProgressHero({ completedToday, needsReview }: Props) {
           검토 대기 보기 <ArrowRight className="size-4" />
         </Link>
       </div>
-
-      {/* H₂O 분자 일러스트 */}
-      <div
-        aria-hidden
-        className="absolute right-10 bottom-4 h-[170px] w-[180px] max-sm:right-3 max-sm:opacity-35"
-      >
-        <span className="absolute inset-[15px_9px_24px_11px] -rotate-[28deg] rounded-full border border-dashed border-[#29443b]/25" />
-        <span className="absolute inset-[17px_30px_9px_17px] rotate-[28deg] rounded-full border border-dashed border-[#29443b]/25" />
-        <span className="absolute top-[65px] right-[31px] h-[9px] w-[69px] -rotate-[39deg] rounded-full bg-[#29443b]/25" />
-        <span className="absolute bottom-[52px] left-[27px] h-[9px] w-[69px] -rotate-[39deg] rounded-full bg-[#29443b]/25" />
-        <span className="absolute top-[11px] right-1 z-10 grid size-16 place-items-center rounded-full bg-[#fff7df] text-[22px] font-bold text-[#245143] shadow-[0_16px_38px_rgba(58,70,64,.08)]">
-          H
-        </span>
-        <span className="bg-coral absolute top-[65px] left-[65px] z-10 grid size-[82px] place-items-center rounded-full text-[30px] font-bold text-white shadow-[0_16px_38px_rgba(58,70,64,.08)]">
-          O
-        </span>
-        <span className="absolute bottom-2 left-[3px] z-10 grid size-16 place-items-center rounded-full bg-[#fff7df] text-[22px] font-bold text-[#245143] shadow-[0_16px_38px_rgba(58,70,64,.08)]">
-          H
-        </span>
-      </div>
+      <MoleculeArt />
     </article>
   );
 }
