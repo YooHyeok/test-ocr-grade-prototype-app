@@ -8,7 +8,7 @@ type Props = {
  * @param {Props} props
  * @returns {JSX.Element}
  */
-export default function GradingPolicy({ policies }: Props) {
+export default function GradingPolicy({ policies }: Readonly<Props>) {
   return (
     <section className="surface mt-5.5 grid gap-3.5 p-5">
       <h3 className="mb-1 font-bold">채점 정책</h3>

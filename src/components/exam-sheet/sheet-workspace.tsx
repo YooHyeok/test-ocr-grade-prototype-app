@@ -12,7 +12,7 @@ type Props = {
  * @param {Props} props
  * @returns {JSX.Element}
  */
-export default function SheetWorkspace({ side, children }: Props) {
+export default function SheetWorkspace({ side, children }: Readonly<Props>) {
   return (
     <div className="mt-3 grid grid-cols-[250px_minmax(420px,1fr)] gap-3 max-[1100px]:grid-cols-[180px_1fr] max-sm:grid-cols-1">
       <div className="flex max-h-[calc(100vh-189px)] min-w-0 flex-col gap-3 max-sm:max-h-none">

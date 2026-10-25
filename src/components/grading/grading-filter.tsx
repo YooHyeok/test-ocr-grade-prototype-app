@@ -27,7 +27,11 @@ const SELECTS: {
  * @param {Props} props
  * @returns {JSX.Element}
  */
-export default function GradingFilter({ value, onChange, onReset }: Props) {
+export default function GradingFilter({
+  value,
+  onChange,
+  onReset,
+}: Readonly<Props>) {
   return (
     <div className="bg-card mt-5 grid grid-cols-[minmax(120px,1.2fr)_repeat(4,minmax(0,1fr))_max-content_max-content] gap-2 rounded-[11px] border p-3 max-[1100px]:grid-cols-3 max-sm:grid-cols-1">
       <label className="flex items-center gap-2 rounded-[7px] border px-3 text-[#89938f] max-[1100px]:col-span-2 max-sm:col-auto max-sm:min-h-[38px]">

@@ -12,7 +12,7 @@ type Props = {
  * @param {Props} props
  * @returns {JSX.Element}
  */
-export default function StatusBadge({ tone, children }: Props) {
+export default function StatusBadge({ tone, children }: Readonly<Props>) {
   return (
     <span
       className={cn(

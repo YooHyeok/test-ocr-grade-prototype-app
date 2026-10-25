@@ -17,7 +17,7 @@ type Props = {
  * @param {Props} props
  * @returns {JSX.Element}
  */
-export default function NavGroup({ group }: Props) {
+export default function NavGroup({ group }: Readonly<Props>) {
   const compact = useSidebarCompact();
   const { pathname } = useLocation();
   const navigate = useNavigate();

@@ -19,7 +19,7 @@ export default function PreviewCard({
   description,
   actions,
   children,
-}: Props) {
+}: Readonly<Props>) {
   return (
     <section className="bg-card flex max-h-[calc(100vh-189px)] min-w-0 flex-col rounded-xl border max-sm:max-h-none">
       <div className="flex items-center justify-between gap-3 border-b px-4 py-3 max-sm:flex-col max-sm:items-start">

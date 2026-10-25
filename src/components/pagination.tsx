@@ -12,7 +12,11 @@ type Props = {
  * @param {Props} props
  * @returns {JSX.Element}
  */
-export default function Pagination({ page, totalPages, onChange }: Props) {
+export default function Pagination({
+  page,
+  totalPages,
+  onChange,
+}: Readonly<Props>) {
   const pages = useMemo(
     () => Array.from({ length: totalPages }, (_, index) => index + 1),
     [totalPages],

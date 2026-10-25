@@ -15,7 +15,7 @@ type Props = {
  * @param {Props} props
  * @returns {JSX.Element}
  */
-export default function NavItem({ item, child = false }: Props) {
+export default function NavItem({ item, child = false }: Readonly<Props>) {
   const compact = useSidebarCompact();
   const Icon = item.icon;
 

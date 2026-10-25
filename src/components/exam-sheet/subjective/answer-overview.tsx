@@ -9,7 +9,7 @@ type Props = {
  * @param {Props} props
  * @returns {JSX.Element}
  */
-export default function AnswerOverview({ questions }: Props) {
+export default function AnswerOverview({ questions }: Readonly<Props>) {
   return (
     <section className="bg-card self-start overflow-hidden rounded-xl border">
       <div className="border-b p-4">
