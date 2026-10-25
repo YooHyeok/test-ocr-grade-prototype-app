@@ -1,5 +1,5 @@
-import { useCallback, type ChangeEvent, type MouseEvent } from "react";
-import { cn } from "@/lib/utils";
+import type { ChangeEvent } from "react";
+import SegmentedTabs from "@/components/segmented-tabs";
 import {
   PAPER_STATUS_OPTIONS,
   PERIOD_TABS,
@@ -29,38 +29,16 @@ export default function PaperFilter({
   onPeriodTypeChange,
   onPeriodChange,
   onStatusChange,
-}: Props) {
-  const handleTabClick = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) =>
-      onPeriodTypeChange(event.currentTarget.value as PeriodType),
-    [onPeriodTypeChange],
-  );
-
+}: Readonly<Props>) {
   return (
     <div className="bg-card mt-4.5 flex items-center gap-2 rounded-[10px] border p-3 max-sm:grid max-sm:grid-cols-2">
-      <div
-        role="tablist"
-        aria-label="시험지 이력 기간"
-        className="flex gap-1 rounded-lg bg-[#f1f3f1] p-[3px] max-sm:col-span-full max-sm:grid max-sm:grid-cols-3"
-      >
-        {PERIOD_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            type="button"
-            role="tab"
-            value={tab.value}
-            aria-selected={tab.value === periodType}
-            onClick={handleTabClick}
-            className={cn(
-              "rounded-md px-3 py-1.5 text-xs font-bold text-[#84908b]",
-              tab.value === periodType &&
-                "text-primary bg-white shadow-[0_2px_6px_rgba(31,49,43,.07)]",
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <SegmentedTabs
+        options={PERIOD_TABS}
+        value={periodType}
+        onChange={onPeriodTypeChange}
+        ariaLabel="시험지 이력 기간"
+        className="max-sm:col-span-full max-sm:grid max-sm:grid-cols-3"
+      />
       <select
         value={period}
         onChange={onPeriodChange}

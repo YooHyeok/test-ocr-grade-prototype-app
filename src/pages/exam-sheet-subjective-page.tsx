@@ -1,16 +1,21 @@
 import { useCallback, useMemo, useState } from "react";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import SegmentedTabs, { type TabOption } from "@/components/segmented-tabs";
 import SheetWorkspace from "@/components/exam-sheet/sheet-workspace";
 import SheetList from "@/components/exam-sheet/sheet-list";
 import PreviewCard from "@/components/exam-sheet/preview-card";
-import SheetViewTabs, {
-  type SheetView,
-} from "@/components/exam-sheet/subjective/sheet-view-tabs";
 import QuestionSummary from "@/components/exam-sheet/subjective/question-summary";
 import SubjectivePaper from "@/components/exam-sheet/subjective/subjective-paper";
 import AnswerOverview from "@/components/exam-sheet/subjective/answer-overview";
 import { SUBJECTIVE_QUESTIONS, SUBJECTIVE_SHEETS } from "@/lib/mock-data";
+
+type SheetView = "editor" | "answers";
+
+const VIEW_TABS: TabOption<SheetView>[] = [
+  { value: "editor", label: "양식 편집" },
+  { value: "answers", label: "답안만 보기" },
+];
 
 /**
  * 시험지 관리 · 주관식 페이지.
@@ -37,7 +42,12 @@ export default function ExamSheetSubjectivePage() {
 
   return (
     <>
-      <SheetViewTabs value={view} onChange={setView} />
+      <SegmentedTabs
+        options={VIEW_TABS}
+        value={view}
+        onChange={setView}
+        ariaLabel="시험지 관리 보기"
+      />
       <SheetWorkspace
         side={
           <>
