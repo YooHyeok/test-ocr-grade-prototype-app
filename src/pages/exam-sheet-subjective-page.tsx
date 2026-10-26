@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SegmentedTabs, { type TabOption } from "@/components/segmented-tabs";
@@ -8,6 +8,7 @@ import PreviewCard from "@/components/exam-sheet/preview-card";
 import QuestionSummary from "@/components/exam-sheet/subjective/question-summary";
 import SubjectivePaper from "@/components/exam-sheet/subjective/subjective-paper";
 import AnswerOverview from "@/components/exam-sheet/subjective/answer-overview";
+import { useSheetSelection } from "@/hooks/use-sheet-selection";
 import { SUBJECTIVE_QUESTIONS, SUBJECTIVE_SHEETS } from "@/lib/mock-data";
 
 type SheetView = "editor" | "answers";
@@ -23,22 +24,14 @@ const VIEW_TABS: TabOption<SheetView>[] = [
  */
 export default function ExamSheetSubjectivePage() {
   const [view, setView] = useState<SheetView>("editor");
-  const [selectedId, setSelectedId] = useState(SUBJECTIVE_SHEETS[0].id);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const sheet = useMemo(
-    () => SUBJECTIVE_SHEETS.find((item) => item.id === selectedId)!,
-    [selectedId],
-  );
-  const questions = useMemo(
-    () => SUBJECTIVE_QUESTIONS[selectedId] ?? [],
-    [selectedId],
-  );
-
-  const handleSelectSheet = useCallback((id: number) => {
-    setSelectedId(id);
-    setSelectedIndex(0);
-  }, []);
+  const {
+    sheet,
+    questions,
+    selectedId,
+    selectedIndex,
+    selectSheet,
+    selectQuestion,
+  } = useSheetSelection(SUBJECTIVE_SHEETS, SUBJECTIVE_QUESTIONS);
 
   return (
     <>
@@ -55,7 +48,7 @@ export default function ExamSheetSubjectivePage() {
               title="등록된 시험지 양식"
               sheets={SUBJECTIVE_SHEETS}
               selectedId={selectedId}
-              onSelect={handleSelectSheet}
+              onSelect={selectSheet}
               icon={FileText}
             />
             {view === "editor" && (
@@ -78,12 +71,14 @@ export default function ExamSheetSubjectivePage() {
               </>
             }
           >
-            <SubjectivePaper
-              sheet={sheet}
-              questions={questions}
-              selectedIndex={selectedIndex}
-              onSelect={setSelectedIndex}
-            />
+            {sheet && (
+              <SubjectivePaper
+                sheet={sheet}
+                questions={questions}
+                selectedIndex={selectedIndex}
+                onSelect={selectQuestion}
+              />
+            )}
           </PreviewCard>
         ) : (
           <AnswerOverview questions={questions} />
