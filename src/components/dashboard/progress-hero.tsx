@@ -19,9 +19,7 @@ export default function ProgressHero({
   return (
     <article className="bg-mint relative min-h-[222px] overflow-hidden rounded-[18px] px-8 py-7.5 max-sm:min-h-[245px] max-sm:px-5 max-sm:py-6">
       <div className="relative z-10">
-        <p className="text-primary mb-2 text-[10px] font-bold tracking-[1.6px]">
-          TODAY'S PROGRESS
-        </p>
+        <p className="eyebrow">TODAY'S PROGRESS</p>
         <h2 className="mb-2 text-[26px] leading-[1.42] font-bold tracking-tight max-sm:text-[23px]">
           오늘 {completedToday}장의 시험지를
           <br />

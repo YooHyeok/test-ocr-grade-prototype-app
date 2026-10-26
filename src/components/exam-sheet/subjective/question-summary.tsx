@@ -18,9 +18,7 @@ const COORDINATE_KEYS = ["x", "y", "w", "h"] as const;
 export default function QuestionSummary({ index, question }: Readonly<Props>) {
   return (
     <aside className="bg-card mt-auto shrink-0 rounded-xl border p-4">
-      <p className="text-primary mb-2 text-[10px] font-bold tracking-[1.6px]">
-        OCR REGION SUMMARY
-      </p>
+      <p className="eyebrow">OCR REGION SUMMARY</p>
       <h3 className="mb-4 font-bold">{index + 1}번 문항 요약</h3>
 
       <SummaryField

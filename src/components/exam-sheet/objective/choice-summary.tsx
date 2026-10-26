@@ -15,9 +15,7 @@ type Props = {
 export default function ChoiceSummary({ index, question }: Readonly<Props>) {
   return (
     <aside className="bg-card mt-auto shrink-0 rounded-xl border p-4">
-      <p className="text-primary mb-2 text-[10px] font-bold tracking-[1.6px]">
-        QUESTION SUMMARY
-      </p>
+      <p className="eyebrow">QUESTION SUMMARY</p>
       <h3 className="mb-4 font-bold">{index + 1}번 문항</h3>
       {question && (
         <>

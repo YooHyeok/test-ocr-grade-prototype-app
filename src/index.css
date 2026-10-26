@@ -141,6 +141,15 @@
   box-shadow: 0 5px 15px rgb(58 70 64 / 3.5%);
 }
 
+/* 제목 위 작은 영문 라벨 (프로토타입 .eyebrow.mint) */
+@utility eyebrow {
+  margin-bottom: 0.5rem;
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+}
+
 /* 필터·폼의 select / input 공통 스타일 (프로토타입 select) */
 @utility field {
   height: 38px;
