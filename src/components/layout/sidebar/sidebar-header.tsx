@@ -24,9 +24,9 @@ export default function SidebarHeader() {
     >
       {!compact && (
         <div className="p-1">
-          <strong className="block text-lg">케미체크</strong>
+          <strong className="block text-lg">쪽지시험</strong>
           <span className="text-sidebar-muted mt-0.5 block text-[10px]">
-            화학 쪽지시험 채점 관리
+            OCR 채점 관리
           </span>
         </div>
       )}

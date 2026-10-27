@@ -16,7 +16,7 @@ export default function Header() {
     <header className="bg-card sticky top-0 z-30 flex items-center justify-between border-b px-7 py-2.5 max-md:px-5 max-sm:flex-col max-sm:items-start max-sm:gap-4 max-sm:px-4">
       <div className="flex flex-wrap items-baseline gap-3">
         <h1 className="text-xl font-bold tracking-tight max-sm:text-[22px]">
-          {menuItem?.label ?? "케미체크"}
+          {menuItem?.label ?? "쪽지시험"}
         </h1>
         {menuItem?.subtitle && (
           <p className="text-muted-foreground text-xs font-medium">
