@@ -93,7 +93,7 @@
 
 ```mermaid
 flowchart LR
-  A["GitHub Pages 정적 UI"] --> B["Supabase Auth 또는 Firebase Auth"]
+  A["Vercel 정적 UI (React SPA)"] --> B["Supabase Auth 또는 Firebase Auth"]
   A --> C["Storage: 시험지 원본"]
   A --> D["Serverless Function"]
   D --> E["Google Cloud Vision OCR"]
@@ -102,7 +102,14 @@ flowchart LR
   G --> A
 ```
 
-Google OCR 인증 정보는 브라우저에 포함하면 안 된다. GitHub Pages에는 공개 가능한 클라이언트 설정만 두고, Vision API 호출은 Supabase Edge Function 또는 Firebase Cloud Function에서 처리한다.
+Google OCR 인증 정보는 브라우저에 포함하면 안 된다. Vercel에는 공개 가능한 클라이언트 설정(`VITE_` 환경변수)만 두고, Vision API 호출은 Supabase Edge Function 또는 Firebase Cloud Function에서 처리한다.
+
+Vercel 배포 시 참고:
+
+- React Router의 화면 주소(`/grading` 등)를 새로고침해도 열리도록 `vercel.json`에서 모든 경로를 `index.html`로 연결한다. 실제 파일(`/prototype/index.html` 등)은 그대로 제공된다.
+- Vercel 프로젝트 환경변수에 `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`를 등록한다.
+- Supabase 대시보드 Authentication > URL Configuration의 Site URL과 Redirect URLs에 Vercel 도메인을 추가한다.
+- Vercel 무료(Hobby) 플랜은 개인·비상업 용도로 제한된다. 학원 대상 유료 서비스로 운영하면 Pro 플랜이 필요할 수 있으므로 운영 전 약관을 확인한다.
 
 초기 구현은 Supabase를 권장한다. Postgres 기반이라 학원 / 클래스 / 학생 / 시험지 / 문항 / 채점 결과처럼 관계가 많은 데이터 조회와 게시판 필터 구현이 자연스럽다. Firebase도 가능하지만 복합 필터와 집계 화면을 위해 별도 인덱스 설계가 더 많이 필요하다.
 
