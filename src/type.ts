@@ -1,6 +1,13 @@
 /** 화면 모드. 선생님(관리자) 모드와 학생 모드로 메뉴와 화면이 나뉜다. */
 export type Mode = "teacher" | "student";
 
+/** TanStack Query mutation 훅에 넘기는 공통 콜백 */
+export type MutationCallbacks = {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+  onSettled?: () => void;
+};
+
 /** 채점 상태 */
 export type GradingStatus = "채점 완료" | "검토 필요";
 
