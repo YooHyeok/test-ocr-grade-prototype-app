@@ -1,10 +1,19 @@
 import RootRoute from "@/root-route";
+import SessionProvider from "@/provider/session-provider";
+import SetupNotice from "@/components/setup-notice";
+import { isSupabaseConfigured } from "@/lib/supabase";
 
 /**
  * 애플리케이션 루트 컴포넌트.
- * 전역 Provider(세션, 모달 등)는 이 위치에서 RootRoute를 감싸도록 추가한다.
+ * Supabase 접속 정보가 없으면 설정 안내를, 있으면 세션 확인 후 라우트를 렌더링한다.
  * @returns {JSX.Element}
  */
 export default function App() {
-  return <RootRoute />;
+  if (!isSupabaseConfigured) return <SetupNotice />;
+
+  return (
+    <SessionProvider>
+      <RootRoute />
+    </SessionProvider>
+  );
 }
