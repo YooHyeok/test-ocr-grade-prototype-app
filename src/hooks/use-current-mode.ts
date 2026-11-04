@@ -1,13 +1,11 @@
-import { useMode } from "@/store/mode";
-import { MOBILE_QUERY, useMediaQuery } from "@/hooks/use-media-query";
+import { useCurrentProfile } from "@/hooks/use-current-profile";
 import type { Mode } from "@/type";
 
 /**
- * 실제 화면에 적용되는 모드를 반환한다. 모바일 폭에서는 항상 학생 모드로 고정한다.
+ * 계정 권한에 따른 화면 모드를 반환한다. 프로필을 확인할 수 없으면 권한이 가장 낮은 학생 모드로 본다.
  * @returns {Mode}
  */
 export function useCurrentMode(): Mode {
-  const mode = useMode();
-  const isMobile = useMediaQuery(MOBILE_QUERY);
-  return isMobile ? "student" : mode;
+  const profile = useCurrentProfile();
+  return profile?.role === "teacher" ? "teacher" : "student";
 }
