@@ -4,5 +4,11 @@
     { "source": "/prototype", "destination": "/prototype/index.html", "permanent": false },
     { "source": "/prototype/", "destination": "/prototype/index.html", "permanent": false }
   ],
+  "headers": [
+    {
+      "source": "/config.js",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+    }
+  ],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
