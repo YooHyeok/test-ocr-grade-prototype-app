@@ -15,10 +15,12 @@ export default function AcademyCard() {
         현재 학원
       </span>
       <strong className="block">
-        {profile.academy?.name ?? "소속 학원 없음"}
+        {profile.academyName ?? "소속 학원 없음"}
       </strong>
       <span className="text-sidebar-muted mt-1 block text-[11px]">
-        {profile.academy ? "선생님 권한" : "관리자에게 학원 배정을 요청하세요"}
+        {profile.academyId
+          ? "선생님 권한"
+          : "관리자에게 학원 배정을 요청하세요"}
       </span>
     </div>
   );
