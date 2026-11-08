@@ -1,5 +1,5 @@
-import type { Session } from "@supabase/supabase-js";
 import { create } from "zustand";
+import type { AuthSession as Session } from "@/lib/backend/types";
 import { combine, devtools } from "zustand/middleware";
 
 type State = {

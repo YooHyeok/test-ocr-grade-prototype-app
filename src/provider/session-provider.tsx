@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import GlobalLoader from "@/components/global-loader";
 import { useProfileData } from "@/hooks/queries/use-profile-data";
-import supabase from "@/lib/supabase";
+import { backend } from "@/lib/backend";
 import { useIsSessionLoaded, useSession, useSetSession } from "@/store/session";
 
 type Props = {
@@ -20,12 +20,8 @@ export default function SessionProvider({ children }: Readonly<Props>) {
   const isSessionLoaded = useIsSessionLoaded();
   const { isLoading: isProfileLoading } = useProfileData(session?.user.id);
 
-  useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
-    });
-    return () => data.subscription.unsubscribe();
-  }, [setSession]);
+  // 백엔드 종류와 무관하게, 구독 직후 현재 세션으로 한 번 호출되고 이후 변경 때마다 호출된다.
+  useEffect(() => backend.auth.onSessionChange(setSession), [setSession]);
 
   if (!isSessionLoaded || isProfileLoading) return <GlobalLoader />;
   return children;
