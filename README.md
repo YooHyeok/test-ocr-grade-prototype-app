@@ -14,15 +14,27 @@
 - React Router v7
 - Zustand (+ immer)
 - TanStack Query v5
-- Supabase (Auth / Storage / Postgres / Edge Functions)
+- 백엔드: Supabase(기본) / Spring REST API / mock 중 선택 — [docs/BACKEND.md](docs/BACKEND.md)
 
 ## 시작하기
 
 ```bash
 npm install
-cp .env.example .env   # VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY 입력
 npm run dev
 ```
+
+백엔드는 [`public/config.js`](public/config.js)에서 고릅니다. 빌드 없이 배포 후에도 바꿀 수 있습니다.
+
+```js
+const config = {
+  backend: "supabase", // "supabase" | "spring" | "mock"
+  supabase: { url: "", publishableKey: "" },
+  spring: { baseUrl: "" },
+};
+```
+
+- 비워 둔 값은 `.env`를 사용합니다. (`cp .env.example .env`)
+- 백엔드 없이 화면만 보려면 `backend: "mock"`으로 바꾸고 데모 계정(`teacher@demo.com` / `student@demo.com`, 비밀번호 `demo1234`)으로 로그인합니다.
 
 | 스크립트 | 설명 |
 | --- | --- |
