@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSignInWithPassword } from "@/hooks/mutations/auth/use-sign-in-with-password";
 import { getErrorMessage } from "@/lib/error";
+import { appConfig } from "@/lib/app-config";
+import { DEMO_ACCOUNTS } from "@/lib/backend/mock";
 
 /**
  * 로그인 페이지. 계정은 학원에서 발급한 이메일·비밀번호를 사용한다.
@@ -71,6 +73,20 @@ export default function SignInPage() {
             {isPending ? "로그인 중..." : "로그인"}
           </Button>
         </form>
+
+        {appConfig.backend === "mock" && (
+          <div className="bg-muted text-muted-foreground mt-5 rounded-lg p-3 text-xs">
+            <strong className="text-foreground mb-1 block">
+              데모 모드 (mock 백엔드)
+            </strong>
+            {DEMO_ACCOUNTS.map((account) => (
+              <p key={account.email}>
+                {account.profile.role === "teacher" ? "선생님" : "학생"}:{" "}
+                {account.email} / {account.password}
+              </p>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
