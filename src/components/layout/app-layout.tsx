@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { Outlet } from "react-router";
+import PageLoader from "@/components/page-loader";
 import { cn } from "@/lib/utils";
 import { useSidebarCompact } from "@/hooks/use-sidebar-compact";
 import Sidebar from "./sidebar/sidebar";
@@ -28,7 +30,10 @@ export default function AppLayout() {
         <Header />
         <div className="flex flex-1 flex-col px-7 pt-3.5 pb-5.5 max-md:px-5 max-sm:px-4">
           <main className="flex-1">
-            <Outlet />
+            {/* 페이지 코드를 받는 동안 사이드바·헤더는 그대로 두고 본문만 로딩 표시 */}
+            <Suspense fallback={<PageLoader />}>
+              <Outlet />
+            </Suspense>
           </main>
           <Footer />
         </div>

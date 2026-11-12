@@ -1,30 +1,46 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router";
 import AppLayout from "@/components/layout/app-layout";
 import GuestOnlyLayout from "@/components/layout/guest-only-layout";
 import MemberOnlyLayout from "@/components/layout/member-only-layout";
 import RoleOnlyLayout from "@/components/layout/role-only-layout";
-import SignInPage from "@/pages/sign-in-page";
-import DashboardPage from "@/pages/dashboard-page";
-import ExamSheetSubjectivePage from "@/pages/exam-sheet-subjective-page";
-import ExamSheetObjectivePage from "@/pages/exam-sheet-objective-page";
-import GradingPage from "@/pages/grading-page";
-import StudentsPage from "@/pages/students-page";
-import GroupsPage from "@/pages/groups-page";
-import SettingsPage from "@/pages/settings-page";
-import MyPapersPage from "@/pages/my-papers-page";
-import UploadPage from "@/pages/upload-page";
+import GlobalLoader from "@/components/global-loader";
+
+// 페이지는 처음 방문할 때 코드를 내려받는다. (첫 로딩 번들 크기 축소)
+const SignInPage = lazy(() => import("@/pages/sign-in-page"));
+const DashboardPage = lazy(() => import("@/pages/dashboard-page"));
+const ExamSheetSubjectivePage = lazy(
+  () => import("@/pages/exam-sheet-subjective-page"),
+);
+const ExamSheetObjectivePage = lazy(
+  () => import("@/pages/exam-sheet-objective-page"),
+);
+const GradingPage = lazy(() => import("@/pages/grading-page"));
+const StudentsPage = lazy(() => import("@/pages/students-page"));
+const GroupsPage = lazy(() => import("@/pages/groups-page"));
+const SettingsPage = lazy(() => import("@/pages/settings-page"));
+const MyPapersPage = lazy(() => import("@/pages/my-papers-page"));
+const UploadPage = lazy(() => import("@/pages/upload-page"));
 
 /**
  * 라우트 정의. 메뉴 구성(제목/설명/아이콘)은 src/lib/menu.ts에서 관리한다.
  * - 비로그인: 로그인 화면만 접근
  * - 로그인: 모드(선생님/학생)별 화면만 접근, 다른 모드 주소는 자기 첫 화면으로 이동
+ * - 로그인 후 화면은 AppLayout 안에서 지연 로딩한다. (사이드바·헤더는 유지)
  * @returns {JSX.Element}
  */
 export default function RootRoute() {
   return (
     <Routes>
       <Route element={<GuestOnlyLayout />}>
-        <Route path="/sign-in" element={<SignInPage />} />
+        <Route
+          path="/sign-in"
+          element={
+            <Suspense fallback={<GlobalLoader />}>
+              <SignInPage />
+            </Suspense>
+          }
+        />
       </Route>
 
       <Route element={<MemberOnlyLayout />}>
