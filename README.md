@@ -41,6 +41,7 @@ const config = {
 | `npm run dev` | 개발 서버 |
 | `npm run build` | 타입 체크 + 프로덕션 빌드 |
 | `npm run lint` | ESLint |
+| `npm test` | 단위 테스트 (Vitest) |
 | `npm run type-gen` | Supabase 스키마 타입 생성 (`package.json`의 project-id 설정 필요) |
 
 ## Supabase 설정
