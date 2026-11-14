@@ -15,9 +15,24 @@ export type Database = {
   public: {
     Tables: {
       academies: {
-        Row: { id: string; name: string; created_at: string };
-        Insert: { id?: string; name: string; created_at?: string };
-        Update: { id?: string; name?: string; created_at?: string };
+        Row: {
+          id: string;
+          name: string;
+          image_retention_months: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          image_retention_months?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          image_retention_months?: number;
+          created_at?: string;
+        };
         Relationships: [];
       };
       profiles: {
@@ -26,6 +41,7 @@ export type Database = {
           academy_id: string | null;
           role: Database["public"]["Enums"]["app_role"];
           name: string;
+          is_admin: boolean;
           created_at: string;
         };
         Insert: {
@@ -33,6 +49,7 @@ export type Database = {
           academy_id?: string | null;
           role?: Database["public"]["Enums"]["app_role"];
           name?: string;
+          is_admin?: boolean;
           created_at?: string;
         };
         Update: {
@@ -40,6 +57,7 @@ export type Database = {
           academy_id?: string | null;
           role?: Database["public"]["Enums"]["app_role"];
           name?: string;
+          is_admin?: boolean;
           created_at?: string;
         };
         Relationships: [
@@ -228,6 +246,7 @@ export type Database = {
           uploaded_by: string | null;
           created_at: string;
           graded_at: string | null;
+          image_purged_at: string | null;
         };
         Insert: {
           id?: string;
@@ -241,6 +260,7 @@ export type Database = {
           uploaded_by?: string | null;
           created_at?: string;
           graded_at?: string | null;
+          image_purged_at?: string | null;
         };
         Update: {
           id?: string;
@@ -254,6 +274,7 @@ export type Database = {
           uploaded_by?: string | null;
           created_at?: string;
           graded_at?: string | null;
+          image_purged_at?: string | null;
         };
         Relationships: [
           {
@@ -328,18 +349,186 @@ export type Database = {
           },
         ];
       };
+      report_logs: {
+        Row: {
+          id: string;
+          academy_id: string;
+          period_start: string;
+          period_end: string;
+          status: Database["public"]["Enums"]["report_status"];
+          recipient_count: number;
+          job_count: number;
+          purged_image_count: number;
+          error: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          academy_id: string;
+          period_start: string;
+          period_end: string;
+          status: Database["public"]["Enums"]["report_status"];
+          recipient_count?: number;
+          job_count?: number;
+          purged_image_count?: number;
+          error?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          academy_id?: string;
+          period_start?: string;
+          period_end?: string;
+          status?: Database["public"]["Enums"]["report_status"];
+          recipient_count?: number;
+          job_count?: number;
+          purged_image_count?: number;
+          error?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "report_logs_academy_id_fkey";
+            columns: ["academy_id"];
+            isOneToOne: false;
+            referencedRelation: "academies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      system_setting_groups: {
+        Row: {
+          prop_grp_id: string;
+          prop_grp_nm: string;
+          prop_grp_desc: string | null;
+        };
+        Insert: {
+          prop_grp_id: string;
+          prop_grp_nm: string;
+          prop_grp_desc?: string | null;
+        };
+        Update: {
+          prop_grp_id?: string;
+          prop_grp_nm?: string;
+          prop_grp_desc?: string | null;
+        };
+        Relationships: [];
+      };
+      system_settings: {
+        Row: {
+          prop_id: string;
+          prop_key: string;
+          prop_grp: string;
+          prop_sub_grp: string | null;
+          prop_type: "STR" | "NUM" | "BOOL";
+          prop_spr_type: string | null;
+          prop_val: string | null;
+          prop_spr_val: string | null;
+          prop_desc: string | null;
+          prop_usr_rgh: "R" | "W" | "H";
+          eg_rst_flag: string | null;
+          wm_rst_flag: string | null;
+          prop_name: string;
+        };
+        Insert: {
+          prop_id?: string;
+          prop_key: string;
+          prop_grp: string;
+          prop_sub_grp?: string | null;
+          prop_type: "STR" | "NUM" | "BOOL";
+          prop_spr_type?: string | null;
+          prop_val?: string | null;
+          prop_spr_val?: string | null;
+          prop_desc?: string | null;
+          prop_usr_rgh?: "R" | "W" | "H";
+          eg_rst_flag?: string | null;
+          wm_rst_flag?: string | null;
+          prop_name: string;
+        };
+        Update: {
+          prop_id?: string;
+          prop_key?: string;
+          prop_grp?: string;
+          prop_sub_grp?: string | null;
+          prop_type?: "STR" | "NUM" | "BOOL";
+          prop_spr_type?: string | null;
+          prop_val?: string | null;
+          prop_spr_val?: string | null;
+          prop_desc?: string | null;
+          prop_usr_rgh?: "R" | "W" | "H";
+          eg_rst_flag?: string | null;
+          wm_rst_flag?: string | null;
+          prop_name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "system_settings_prop_grp_fkey";
+            columns: ["prop_grp"];
+            isOneToOne: false;
+            referencedRelation: "system_setting_groups";
+            referencedColumns: ["prop_grp_id"];
+          },
+        ];
+      };
+      system_setting_histories: {
+        Row: {
+          hist_id: string;
+          prop_id: string;
+          prop_name: string | null;
+          sys_group_id: string;
+          sys_group_name: string | null;
+          now_value: string | null;
+          prev_value: string | null;
+          prop_action: "I" | "U" | "D" | null;
+          reg_dt: string | null;
+          reg_id: string | null;
+          reg_name: string | null;
+          prop_key: string | null;
+        };
+        Insert: {
+          hist_id?: string;
+          prop_id: string;
+          prop_name?: string | null;
+          sys_group_id: string;
+          sys_group_name?: string | null;
+          now_value?: string | null;
+          prev_value?: string | null;
+          prop_action?: "I" | "U" | "D" | null;
+          reg_dt?: string | null;
+          reg_id?: string | null;
+          reg_name?: string | null;
+          prop_key?: string | null;
+        };
+        Update: {
+          hist_id?: string;
+          prop_id?: string;
+          prop_name?: string | null;
+          sys_group_id?: string;
+          sys_group_name?: string | null;
+          now_value?: string | null;
+          prev_value?: string | null;
+          prop_action?: "I" | "U" | "D" | null;
+          reg_dt?: string | null;
+          reg_id?: string | null;
+          reg_name?: string | null;
+          prop_key?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
       current_academy_id: { Args: Record<PropertyKey, never>; Returns: string };
       current_student_id: { Args: Record<PropertyKey, never>; Returns: string };
       is_teacher: { Args: Record<PropertyKey, never>; Returns: boolean };
+      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
     };
     Enums: {
       app_role: "teacher" | "student";
       sheet_type: "subjective" | "objective";
       grading_status:
         "uploaded" | "processing" | "needs_review" | "completed" | "failed";
+      report_status: "sent" | "skipped" | "failed";
     };
     CompositeTypes: { [_ in never]: never };
   };
