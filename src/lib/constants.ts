@@ -4,4 +4,10 @@ export const QUERY_KEYS = {
     all: ["profile"],
     byId: (userId: string) => ["profile", "byId", userId],
   },
+  systemSettings: {
+    all: ["systemSettings"],
+    list: ["systemSettings", "list"],
+    groups: ["systemSettings", "groups"],
+    histories: (query: object) => ["systemSettings", "histories", query],
+  },
 };
