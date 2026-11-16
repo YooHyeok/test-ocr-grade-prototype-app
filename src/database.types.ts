@@ -420,7 +420,7 @@ export type Database = {
           prop_key: string;
           prop_grp: string;
           prop_sub_grp: string | null;
-          prop_type: "STR" | "NUM" | "BOOL";
+          prop_type: "STR" | "NUM" | "BOOL" | "RADIO" | "SEL" | "CHECK";
           prop_spr_type: string | null;
           prop_val: string | null;
           prop_spr_val: string | null;
@@ -435,7 +435,7 @@ export type Database = {
           prop_key: string;
           prop_grp: string;
           prop_sub_grp?: string | null;
-          prop_type: "STR" | "NUM" | "BOOL";
+          prop_type: "STR" | "NUM" | "BOOL" | "RADIO" | "SEL" | "CHECK";
           prop_spr_type?: string | null;
           prop_val?: string | null;
           prop_spr_val?: string | null;
@@ -450,7 +450,7 @@ export type Database = {
           prop_key?: string;
           prop_grp?: string;
           prop_sub_grp?: string | null;
-          prop_type?: "STR" | "NUM" | "BOOL";
+          prop_type?: "STR" | "NUM" | "BOOL" | "RADIO" | "SEL" | "CHECK";
           prop_spr_type?: string | null;
           prop_val?: string | null;
           prop_spr_val?: string | null;
