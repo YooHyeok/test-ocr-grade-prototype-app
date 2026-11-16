@@ -10,6 +10,10 @@ const ERROR_MESSAGE_MAP: Partial<Record<BackendErrorCode, string>> = {
   invalid_email: "이메일 주소가 올바르게 입력되지 않았습니다.",
   rate_limited: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
   not_found: "요청한 정보를 찾을 수 없습니다.",
+  forbidden: "권한이 없습니다. 관리자에게 문의해주세요.",
+  invalid_value: "허용되지 않는 값입니다. 입력값을 확인해주세요.",
+  conflict: "이미 같은 키(아이디)가 있습니다. 다른 값으로 입력해주세요.",
+  in_use: "사용 중이라 삭제할 수 없습니다. 속한 항목을 먼저 삭제해주세요.",
   not_implemented: "아직 지원하지 않는 기능입니다.",
 };
 

@@ -51,4 +51,26 @@ describe("Spring 백엔드", () => {
       listener.mock.calls.map(([session]) => session?.user.id ?? null),
     ).toEqual([null, "u-1", null]);
   });
+
+  it("시스템 설정을 PATCH로 저장하고, 본문 없는 403은 권한 부족(forbidden)으로 안내한다", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(new Response(null, { status: 403 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const backend = createSpringBackend({ baseUrl: "https://api.example.com" });
+    const changes = [{ key: "WM.MAIL_BATCH.ENABLED", value: "true" }];
+
+    await backend.systemSettings.updateValues(changes);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://api.example.com/api/system-settings");
+    expect(init).toMatchObject({
+      method: "PATCH",
+      body: JSON.stringify({ changes }),
+    });
+
+    await expect(backend.systemSettings.list()).rejects.toMatchObject({
+      code: "forbidden",
+    });
+  });
 });

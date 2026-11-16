@@ -4,6 +4,7 @@ import {
   type Backend,
   type Profile,
 } from "../types";
+import { createMockSystemSettings } from "./system-settings";
 
 /** 개발·시연용 데모 계정 (백엔드 없이 화면을 확인할 때 사용) */
 export const DEMO_ACCOUNTS: {
@@ -20,6 +21,7 @@ export const DEMO_ACCOUNTS: {
       name: "전선생",
       academyId: "mock-academy",
       academyName: "라온 과학학원",
+      isAdmin: true,
     },
   },
   {
@@ -31,6 +33,7 @@ export const DEMO_ACCOUNTS: {
       name: "김학생",
       academyId: "mock-academy",
       academyName: "라온 과학학원",
+      isAdmin: false,
     },
   },
 ];
@@ -78,6 +81,11 @@ export function createMockBackend(): Backend {
     listeners.forEach((listener) => listener(session));
   };
 
+  /** 로그인한 데모 계정의 프로필 */
+  const currentProfile = () =>
+    DEMO_ACCOUNTS.find((item) => item.profile.id === current?.user.id)
+      ?.profile ?? null;
+
   return {
     name: "mock",
 
@@ -123,5 +131,7 @@ export function createMockBackend(): Backend {
         return account.profile;
       },
     },
+
+    systemSettings: createMockSystemSettings(currentProfile),
   };
 }

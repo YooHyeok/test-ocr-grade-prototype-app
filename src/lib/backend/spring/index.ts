@@ -4,6 +4,9 @@ import {
   type AuthSession,
   type Backend,
   type Profile,
+  type SystemSetting,
+  type SystemSettingGroup,
+  type SystemSettingHistoryPage,
 } from "../types";
 import { createHttpClient } from "./http";
 
@@ -46,6 +49,23 @@ function writeStoredAuth(auth: StoredAuth | null) {
 }
 
 /**
+ * 로그인 후 요청의 403(본문에 code 없음)은 계정 정지가 아니라 권한 부족으로 안내한다.
+ * @param {unknown} error - 요청 오류
+ * @returns {unknown} 바꾼 오류 (해당하지 않으면 그대로)
+ */
+function toForbidden(error: unknown) {
+  if (error instanceof BackendError && error.code === "user_banned") {
+    const cause = error.cause as {
+      status?: number;
+      body?: { code?: string } | null;
+    };
+    if (cause?.status === 403 && !cause.body?.code)
+      return new BackendError("forbidden", error.message, error.cause);
+  }
+  return error;
+}
+
+/**
  * Spring REST API 백엔드를 만든다.
  * 서버가 구현해야 하는 엔드포인트 계약은 docs/BACKEND.md 참고.
  * @param {AppConfig["spring"]} settings - API 주소
@@ -79,6 +99,18 @@ export function createSpringBackend(settings: AppConfig["spring"]): Backend {
       if (error instanceof BackendError && error.code === "session_expired")
         setAuth(null);
       throw error;
+    }
+  };
+
+  /** 시스템 설정 요청. 403(본문 code 없음)은 forbidden으로 바꾼다. */
+  const settingsRequest = async <T>(
+    path: string,
+    options: Parameters<typeof request>[1] = {},
+  ) => {
+    try {
+      return await authorized<T>(path, options);
+    } catch (error) {
+      throw toForbidden(error);
     }
   };
 
@@ -131,6 +163,60 @@ export function createSpringBackend(settings: AppConfig["spring"]): Backend {
       fetchById(userId) {
         return authorized<Profile>(
           `/api/profiles/${encodeURIComponent(userId)}`,
+        );
+      },
+    },
+
+    // 403(본문 code 없음)은 권한 부족으로 안내한다.
+    systemSettings: {
+      listGroups: () =>
+        settingsRequest<SystemSettingGroup[]>("/api/system-settings/groups"),
+      createGroup: (group) =>
+        settingsRequest<void>("/api/system-settings/groups", {
+          method: "POST",
+          body: group,
+        }),
+      updateGroup: (id, patch) =>
+        settingsRequest<void>(
+          `/api/system-settings/groups/${encodeURIComponent(id)}`,
+          { method: "PATCH", body: patch },
+        ),
+      deleteGroup: (id) =>
+        settingsRequest<void>(
+          `/api/system-settings/groups/${encodeURIComponent(id)}`,
+          { method: "DELETE" },
+        ),
+      list: () => settingsRequest<SystemSetting[]>("/api/system-settings"),
+      create: (input) =>
+        settingsRequest<void>("/api/system-settings", {
+          method: "POST",
+          body: input,
+        }),
+      update: (key, input) =>
+        settingsRequest<void>(
+          `/api/system-settings/${encodeURIComponent(key)}`,
+          { method: "PUT", body: input },
+        ),
+      updateValues: (changes) =>
+        settingsRequest<void>("/api/system-settings", {
+          method: "PATCH",
+          body: { changes },
+        }),
+      remove: (key) =>
+        settingsRequest<void>(
+          `/api/system-settings/${encodeURIComponent(key)}`,
+          { method: "DELETE" },
+        ),
+      listHistories: (query) => {
+        const params = new URLSearchParams({
+          page: String(query.page),
+          size: String(query.pageSize),
+        });
+        if (query.date) params.set("date", query.date);
+        if (query.groupId) params.set("groupId", query.groupId);
+        if (query.key.trim()) params.set("key", query.key.trim());
+        return settingsRequest<SystemSettingHistoryPage>(
+          `/api/system-settings/histories?${params}`,
         );
       },
     },

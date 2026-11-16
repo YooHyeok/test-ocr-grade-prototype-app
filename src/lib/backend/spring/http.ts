@@ -5,6 +5,7 @@ const STATUS_CODE_MAP: Record<number, BackendErrorCode> = {
   401: "session_expired",
   403: "user_banned",
   404: "not_found",
+  409: "conflict",
   429: "rate_limited",
 };
 
@@ -17,6 +18,10 @@ const KNOWN_CODES = new Set<string>([
   "invalid_email",
   "rate_limited",
   "not_found",
+  "forbidden",
+  "invalid_value",
+  "conflict",
+  "in_use",
 ]);
 
 type RequestOptions = {
