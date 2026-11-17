@@ -45,12 +45,22 @@ const QUICK_LINKS: {
  */
 export default function QuickLinks() {
   return (
-    <section className="mt-5.5 grid grid-cols-3 gap-3 max-[1100px]:grid-cols-2 max-sm:grid-cols-1">
+    <section className="grid grid-cols-4 gap-3 max-[1100px]:grid-cols-2 max-sm:grid-cols-1">
       {QUICK_LINKS.map(({ to, icon: Icon, title, description }) => (
-        <Link key={to} to={to} className="surface grid gap-1.5 p-4">
-          <Icon className="text-primary size-5" />
-          <strong>{title}</strong>
-          <small className="text-muted-foreground">{description}</small>
+        <Link
+          key={to}
+          to={to}
+          className="surface hover:border-primary/40 flex items-center gap-3 p-4 transition-colors"
+        >
+          <span className="bg-mint-soft text-primary grid size-10 shrink-0 place-items-center rounded-xl">
+            <Icon className="size-5" />
+          </span>
+          <span className="grid gap-0.5">
+            <strong className="text-sm">{title}</strong>
+            <small className="text-muted-foreground text-xs">
+              {description}
+            </small>
+          </span>
         </Link>
       ))}
     </section>

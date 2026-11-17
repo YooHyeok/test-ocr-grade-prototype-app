@@ -15,9 +15,36 @@ import type {
 
 export const DASHBOARD_SUMMARY = {
   completedToday: 24,
-  needsReview: 3,
+  needsReview: 2,
   trend: "+18%",
 };
+
+/** 이번 주 요일별 채점 건수 (완료 / 검토 필요) */
+export const WEEKLY_GRADING: {
+  day: string;
+  completed: number;
+  review: number;
+}[] = [
+  { day: "월", completed: 18, review: 2 },
+  { day: "화", completed: 22, review: 4 },
+  { day: "수", completed: 15, review: 1 },
+  { day: "목", completed: 27, review: 3 },
+  { day: "금", completed: 21, review: 2 },
+  { day: "토", completed: 9, review: 1 },
+  { day: "일", completed: 24, review: 3 },
+];
+
+/** 클래스별 이번 달 평균 점수 */
+export const CLASS_AVERAGES: {
+  className: string;
+  average: number;
+  papers: number;
+}[] = [
+  { className: "고2 화학 I", average: 84, papers: 46 },
+  { className: "중3 화학 심화", average: 79, papers: 38 },
+  { className: "고1 통합과학 A", average: 88, papers: 41 },
+  { className: "고1 통합과학 B", average: 72, papers: 29 },
+];
 
 export const GRADING_RECORDS: GradingRecord[] = [
   {

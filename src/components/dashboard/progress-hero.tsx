@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
-import MoleculeArt from "./molecule-art";
+import heroImage from "@/assets/dashboard-hero.svg";
 
 type Props = {
   completedToday: number;
@@ -8,7 +8,7 @@ type Props = {
 };
 
 /**
- * 대시보드 상단 오늘의 채점 진행 카드. 우측에 H₂O 분자 일러스트를 표시한다.
+ * 대시보드 상단 오늘의 채점 진행 카드. 우측에 채점된 시험지 일러스트를 표시한다.
  * @param {Props} props
  * @returns {JSX.Element}
  */
@@ -18,7 +18,7 @@ export default function ProgressHero({
 }: Readonly<Props>) {
   return (
     <article className="bg-mint relative min-h-[222px] overflow-hidden rounded-[18px] px-8 py-7.5 max-sm:min-h-[245px] max-sm:px-5 max-sm:py-6">
-      <div className="relative z-10">
+      <div className="relative z-10 max-w-[62%] max-sm:max-w-none">
         <p className="eyebrow">TODAY'S PROGRESS</p>
         <h2 className="mb-2 text-[26px] leading-[1.42] font-bold tracking-tight max-sm:text-[23px]">
           오늘 {completedToday}장의 시험지를
@@ -37,7 +37,12 @@ export default function ProgressHero({
           검토 대기 보기 <ArrowRight className="size-4" />
         </Link>
       </div>
-      <MoleculeArt />
+      <img
+        src={heroImage}
+        alt=""
+        aria-hidden
+        className="pointer-events-none absolute right-4 bottom-0 h-[106%] max-h-[250px] w-auto max-md:h-[92%] max-sm:right-[-40px] max-sm:opacity-30"
+      />
     </article>
   );
 }
