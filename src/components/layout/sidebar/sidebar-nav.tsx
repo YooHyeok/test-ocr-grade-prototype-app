@@ -1,6 +1,5 @@
-import { useMemo } from "react";
-import { MENU, isMenuGroup } from "@/lib/menu";
-import { useCurrentMode } from "@/hooks/use-current-mode";
+import { isMenuGroup } from "@/lib/menu";
+import { useMenuEntries } from "@/hooks/use-menu-entries";
 import NavGroup from "./nav-group";
 import NavItem from "./nav-item";
 
@@ -9,11 +8,7 @@ import NavItem from "./nav-item";
  * @returns {JSX.Element}
  */
 export default function SidebarNav() {
-  const mode = useCurrentMode();
-  const entries = useMemo(
-    () => MENU.filter((entry) => entry.mode === mode),
-    [mode],
-  );
+  const entries = useMenuEntries();
 
   return (
     <nav className="mt-12 grid gap-1.5">

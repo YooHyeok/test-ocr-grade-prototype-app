@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { NavLink } from "react-router";
 import { cn } from "@/lib/utils";
-import { MENU, isMenuGroup, type MenuItem } from "@/lib/menu";
-import { useCurrentMode } from "@/hooks/use-current-mode";
+import { isMenuGroup, type MenuItem } from "@/lib/menu";
+import { useMenuEntries } from "@/hooks/use-menu-entries";
 
 /**
  * 모바일 하단 고정 내비게이션. 계정 모드의 메뉴 중 하위 메뉴가 없는 항목만 표시한다.
@@ -10,13 +10,13 @@ import { useCurrentMode } from "@/hooks/use-current-mode";
  * @returns {JSX.Element}
  */
 export default function MobileNav() {
-  const mode = useCurrentMode();
+  const entries = useMenuEntries();
   const items = useMemo(
     () =>
-      MENU.filter((entry) => entry.mode === mode).filter(
+      entries.filter(
         (entry): entry is MenuItem & typeof entry => !isMenuGroup(entry),
       ),
-    [mode],
+    [entries],
   );
 
   return (

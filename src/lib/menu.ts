@@ -20,6 +20,8 @@ export type MenuItem = {
   subtitle?: string;
   /** 모바일 하단 내비게이션에서 강조(원형 버튼)로 표시할지 여부 */
   primary?: boolean;
+  /** 시스템 관리자에게만 보이는 메뉴 */
+  adminOnly?: boolean;
 };
 
 /** 하위 메뉴를 가진 아코디언 그룹 */
@@ -82,10 +84,22 @@ export const MENU: MenuEntry[] = [
   },
   {
     mode: "teacher",
-    to: "/settings",
     label: "설정",
     icon: Settings,
-    subtitle: "학원 정보와 채점 정책을 관리합니다.",
+    children: [
+      {
+        to: "/settings/system",
+        label: "시스템",
+        adminOnly: true,
+        subtitle:
+          "모든 학원에 공통 적용되는 설정을 그룹별로 추가·수정·삭제하고 변경 이력을 봅니다.",
+      },
+      {
+        to: "/settings/grading",
+        label: "채점 정책",
+        subtitle: "학원 정보와 채점 정책을 관리합니다.",
+      },
+    ],
   },
   {
     mode: "student",
