@@ -14,7 +14,7 @@ let myPapers = [
   { id:6, title:"물질의 규칙성 주간 테스트", category:"통합과학 · 물질", uploaded:"04.27 18:30", date:"2026-04-27", status:"채점 완료", score:95 },
   { id:7, title:"산과 염기 개념 점검", category:"중등 화학 · 산과 염기", uploaded:"04.18 13:22", date:"2026-04-18", status:"채점 완료", score:70 }
 ];
-const pageTitles = { dashboard:"대시보드", records:"채점 관리", templates:"시험지 관리 · 주관식", "templates-mc":"시험지 관리 · 객관식", students:"학생 관리", categories:"그룹 관리", settings:"설정", "my-papers":"내 시험지" };
+const pageTitles = { dashboard:"대시보드", records:"채점 관리", templates:"시험지 관리 · 주관식", "templates-mc":"시험지 관리 · 객관식", students:"학생 관리", categories:"그룹 관리", settings:"설정 · 채점 정책", "system-settings":"설정 · 시스템", "my-papers":"내 시험지" };
 const pageSubtitles = {
   dashboard:"",
   records:"학원, 클래스, 카테고리, 학생별로 시험지 원본과 결과를 관리합니다.",
@@ -23,6 +23,7 @@ const pageSubtitles = {
   students:"학원과 클래스별 학생 계정, 최근 성적, 업로드 현황을 관리합니다.",
   categories:"학교급, 과목, 단원을 기준으로 시험지를 체계적으로 분류합니다.",
   settings:"학원 정보와 채점 정책을 관리합니다.",
+  "system-settings":"모든 학원에 공통 적용되는 설정을 그룹별로 추가·수정·삭제하고 변경 이력을 봅니다.",
   "my-papers":"올린 시험지를 확인하고, 준비가 끝났을 때 직접 채점을 시작하세요."
 };
 let role = "admin";
@@ -84,12 +85,12 @@ function showPage(name) {
   document.querySelector("#pageTitle").textContent = pageTitles[name] || "케미체크";
   document.querySelector("#pageSubtitle").textContent = pageSubtitles[name] || "";
   document.querySelector(".header-new-template").classList.toggle("hidden",name !== "templates");
-  const templatesGroup = document.querySelector('[data-nav-group="templates"]');
-  if (templatesGroup) {
-    const inGroup = name === "templates" || name === "templates-mc";
-    templatesGroup.classList.toggle("open", inGroup);
-    templatesGroup.querySelector(".nav-parent").classList.toggle("active", inGroup);
-  }
+  // 아코디언 메뉴(시험지 관리·설정): 하위 화면에 있으면 펼치고 상위 메뉴를 강조한다.
+  document.querySelectorAll("[data-nav-group]").forEach((group) => {
+    const inGroup = Boolean(group.querySelector(`[data-page="${name}"]`));
+    group.classList.toggle("open", inGroup);
+    group.querySelector(".nav-parent").classList.toggle("active", inGroup);
+  });
   window.scrollTo({ top:0, behavior:"smooth" });
 }
 document.addEventListener("click", (event) => {
@@ -97,8 +98,9 @@ document.addEventListener("click", (event) => {
   if (pageButton) showPage(pageButton.dataset.page);
 });
 document.querySelectorAll("[data-accordion-toggle]").forEach((button) => button.addEventListener("click", () => {
-  if (document.body.classList.contains("sidebar-collapsed")) { showPage("templates"); return; }
   const group = button.closest("[data-nav-group]");
+  // 아이콘만 보이는 접힌 사이드바에서는 첫 하위 화면으로 바로 이동한다.
+  if (document.body.classList.contains("sidebar-collapsed")) { showPage(group.querySelector("[data-page]").dataset.page); return; }
   if (group) group.classList.toggle("open");
 }));
 
@@ -938,6 +940,471 @@ function printMc() {
 document.querySelector("#mcListItems").addEventListener("click", (event) => { const button = event.target.closest("[data-mc-id]"); if (button) selectMcTemplate(Number(button.dataset.mcId)); });
 document.querySelector("#mcPreview").addEventListener("click", (event) => { const question = event.target.closest("[data-mc-q]"); if (!question) return; mcSelectedQ = Number(question.dataset.mcQ); renderMcPreview(); renderMcSummary(); });
 document.querySelector("#mcPrint").addEventListener("click", printMc);
+/* ── 대시보드: 이번 주 현황·검토 대기·최근 기록·클래스별 평균 ── */
+const weeklyGrading = [["월",18,2],["화",22,4],["수",15,1],["목",27,3],["금",21,2],["토",9,1],["일",24,3]];
+const classAverages = [["고2 화학 I",84,46],["중3 화학 심화",79,38],["고1 통합과학 A",88,41],["고1 통합과학 B",72,29]];
+/** 대시보드 하단 카드들을 그린다. @returns {void} */
+function renderDashboard() {
+  const max = Math.max(...weeklyGrading.map(([, done, review]) => done + review));
+  document.querySelector("#weeklyTotal").textContent = weeklyGrading.reduce((sum, [, done, review]) => sum + done + review, 0);
+  document.querySelector("#weeklyChart").innerHTML = weeklyGrading.map(([day, done, review]) => `<div class="week-col"><b>${done + review}</b><div class="week-bar" style="height:${(done + review) / max * 100}%" title="${day}: 완료 ${done}장, 검토 필요 ${review}장"><i class="review" style="flex-grow:${review}"></i><i class="done" style="flex-grow:${done}"></i></div><span>${day}</span></div>`).join("");
+  const reviews = records.filter((record) => record.status === "검토 필요");
+  document.querySelector("#reviewCount").textContent = `${reviews.length}장`;
+  document.querySelector("#reviewQueue").innerHTML = reviews.map((record) => `<button class="review-item" type="button" data-page="records"><span class="review-avatar">${record.student[0]}</span><span class="review-text"><strong>${record.student}<em>${record.className}</em></strong><small>${record.paper} · ${record.date}</small></span><span class="review-arrow">›</span></button>`).join("") || '<p class="empty-state">검토할 시험지가 없습니다.</p>';
+  document.querySelector("#recentRecords").innerHTML = records.slice(0, 5).map((record) => `<tr><td>${record.date}</td><td><strong>${record.student}</strong><em>${record.className}</em></td><td>${record.paper}</td><td class="num"><strong>${record.score}</strong>점</td><td class="num"><span class="status ${record.status === "채점 완료" ? "done" : "review"}">${record.status}</span></td></tr>`).join("");
+  document.querySelector("#classScores").innerHTML = classAverages.map(([name, average, papers]) => `<li><div><b>${name}</b><span><strong>${average}</strong>점 · ${papers}장</span></div><p><i class="${average < 75 ? "low" : ""}" style="width:${average}%"></i></p></li>`).join("");
+}
+renderDashboard();
+
+/* ── 시스템 설정 (DELMA 시스템 설정 화면 구성)
+   최상위 그룹 = 탭, 하위 그룹 = 접는 구역. 키 = 소속 그룹 코드 + "." + 이름(영문 대문자).
+   실제 앱은 system_settings / system_setting_groups / system_setting_histories 테이블, 프로토타입은 브라우저 저장소에 저장한다. ── */
+const SYS_STORAGE_KEY = "prototype-system-settings-v3";
+const SYS_CHOICE_TYPES = ["RADIO","SEL","CHECK"];
+const SYS_CODE_PATTERN = /^[A-Z][A-Z0-9_]*$/;
+const SYS_ACTION = { I:{ label:"추가", tone:"add" }, U:{ label:"수정", tone:"edit" }, D:{ label:"삭제", tone:"del" } };
+const SYS_HISTORY_TAB = "history";
+const SYS_PAGE_SIZE = 10;
+const SYS_ICON_EDIT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5zM15 5l4 4"/></svg>';
+const SYS_ICON_REVERT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>';
+const SYS_ICON_DELETE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>';
+const SYS_INITIAL = {
+  groups:[
+    { id:"WM", name:"쪽지시험", description:"쪽지시험 관리도구 설정" },
+    { id:"WM.MAIL_BATCH", name:"메일 배치", description:"채점 결과 메일 자동 발송 설정" }
+  ],
+  settings:[
+    { key:"WM.MAIL_BATCH.CYCLE", groupId:"WM", subGroupId:"WM.MAIL_BATCH", name:"메일 배치 주기", description:"DAILY: 매일 전날분 / WEEKLY: 매주 월요일 지난주분 / MONTHLY: 매달 1일 지난달분. 오전 9시 5분(한국 시간) 실행.", type:"RADIO", value:"MONTHLY", options:["DAILY","WEEKLY","MONTHLY"], access:"W" },
+    { key:"WM.MAIL_BATCH.ENABLED", groupId:"WM", subGroupId:"WM.MAIL_BATCH", name:"메일 배치 사용 여부", description:"채점 결과 메일 자동 발송 여부. true면 발송 주기에 맞춰 학원 선생님 전원에게 요약과 CSV를 보낸다.", type:"BOOL", value:"false", options:null, access:"W" }
+  ],
+  histories:[]
+};
+/**
+ * 저장된 시스템 설정 데이터를 읽는다. 없거나 읽을 수 없으면 초기값.
+ * @returns {{groups: Array, settings: Array, histories: Array}} 시스템 설정 데이터
+ */
+function readSysStore() {
+  try { const saved = JSON.parse(localStorage.getItem(SYS_STORAGE_KEY)); if (saved?.groups && saved?.settings) return saved; } catch { /* 저장소를 쓸 수 없으면 초기값 */ }
+  return structuredClone(SYS_INITIAL);
+}
+let sysStore = readSysStore();
+/**
+ * 한국 시간 오늘 날짜(YYYY-MM-DD)
+ * @returns {string}
+ */
+function kstToday() { return new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10); }
+const sysView = { tab:null, query:"", drafts:{}, collapsed:new Set(), hist:{ date:kstToday(), groupId:"", key:"", page:1 }, modal:null, confirm:null };
+/** 시스템 설정 데이터를 저장한다. @returns {void} */
+function writeSysStore() { try { localStorage.setItem(SYS_STORAGE_KEY, JSON.stringify(sysStore)); } catch { /* 새로고침 시 초기화 */ } }
+/**
+ * HTML 특수문자를 바꾼다. (사용자가 입력한 값을 화면에 넣을 때)
+ * @param {*} value - 표시할 값
+ * @returns {string} 안전한 문자열
+ */
+function esc(value) { return String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[ch]); }
+/** 상위 그룹 코드 (최상위면 null) @param {string} code @returns {string|null} */
+function sysParent(code) { const index = code.lastIndexOf("."); return index < 0 ? null : code.slice(0, index); }
+/**
+ * 값이 유형·선택지에 맞는지 검사한다. 빈 값은 허용한다. (DB check 제약과 같은 규칙)
+ * @param {{type: string, options: (string[]|null)}} setting - 유형과 선택지
+ * @param {string} value - 검사할 값
+ * @returns {string|null} 오류 문구
+ */
+function sysValidate(setting, value) {
+  const options = setting.options ?? [];
+  if (SYS_CHOICE_TYPES.includes(setting.type) && !options.length) return "선택지를 하나 이상 추가하세요.";
+  if (value === "") return null;
+  if (setting.type === "BOOL" && value !== "true" && value !== "false") return "true 또는 false만 쓸 수 있습니다.";
+  if (setting.type === "NUM" && !/^-?\d+(\.\d+)?$/.test(value)) return "숫자만 입력할 수 있습니다. (예: 10, 0.85)";
+  if ((setting.type === "RADIO" || setting.type === "SEL") && !options.includes(value)) return `${options.join(", ")} 중 하나여야 합니다.`;
+  if (setting.type === "CHECK" && !value.split(",").every((item) => options.includes(item))) return `${options.join(", ")} 안에서만 고를 수 있습니다.`;
+  return null;
+}
+/**
+ * 변경 이력을 남긴다. (DB 트리거와 같은 규칙, 그룹은 최상위 그룹)
+ * @param {string} action - I/U/D
+ * @param {object} setting - 대상 설정
+ * @param {(string|null)} prevValue - 이전 값
+ * @returns {void}
+ */
+function sysLog(action, setting, prevValue) {
+  sysStore.histories.unshift({ id:Date.now() + Math.random(), key:setting.key, name:setting.name, groupId:setting.groupId, groupName:sysStore.groups.find((group) => group.id === setting.groupId)?.name ?? null, action, prevValue, nowValue:action === "D" ? null : setting.value, changedAt:new Date().toISOString(), changedBy:document.querySelector("#profileName").textContent });
+}
+/** 화면에서 고친 값 중 저장된 값과 다른 것 @returns {Array<{key: string, value: string}>} */
+function sysChanges() { return sysStore.settings.filter((setting) => setting.key in sysView.drafts && sysView.drafts[setting.key] !== (setting.value ?? "")).map((setting) => ({ key:setting.key, value:sysView.drafts[setting.key] })); }
+let sysToastTimer;
+/** 잠깐 안내 문구를 띄운다. @param {string} message - 문구 @param {boolean} [error] - 오류 여부 @returns {void} */
+function sysToast(message, error = false) {
+  const toast = document.querySelector("#sysToast");
+  toast.textContent = message; toast.classList.toggle("error", error); toast.classList.remove("hidden");
+  clearTimeout(sysToastTimer); sysToastTimer = setTimeout(() => toast.classList.add("hidden"), 2200);
+}
+/**
+ * 유형에 맞는 입력 요소 HTML. 목록과 추가·수정 창이 같은 모양으로 쓴다.
+ * String 텍스트 / Number 숫자 / Boolean 토글 / Radio 라디오 / Select 선택 상자 / Checkbox 체크박스(여러 개)
+ * @param {object} setting - 유형·선택지
+ * @param {string} value - 현재 값
+ * @param {{key: string, label: string, disabled?: boolean, id?: string, placeholder?: string}} opts - 대상 키·이름 등
+ * @returns {string} HTML
+ */
+function sysValueInput(setting, value, opts) {
+  const error = sysValidate(setting, value);
+  const message = error ? `<small class="sys-invalid">${esc(error)}</small>` : "";
+  const key = esc(opts.key);
+  const disabled = opts.disabled ? " disabled" : "";
+  const id = opts.id ? ` id="${opts.id}"` : "";
+  const label = esc(opts.label);
+  const options = setting.options ?? [];
+  if (setting.type === "BOOL") return `<span class="sys-bool"><button class="switch" type="button" role="switch" aria-checked="${value === "true"}" aria-label="${label}" data-sys-bool="${key}"${id}${disabled}><i></i></button><code>${value === "true" ? "true" : "false"}</code></span>${message}`;
+  if (setting.type === "RADIO" || setting.type === "CHECK") {
+    const radio = setting.type === "RADIO";
+    const selected = value ? value.split(",") : [];
+    return `<div class="sys-choices" role="${radio ? "radiogroup" : "group"}" aria-label="${label}"${id}>${options.map((option) => `<label><input type="${radio ? "radio" : "checkbox"}" name="sysv-${key}" value="${esc(option)}" ${radio ? `data-sys-value="${key}"` : `data-sys-check="${key}"`}${(radio ? value === option : selected.includes(option)) ? " checked" : ""}${disabled} />${esc(option)}</label>`).join("") || '<span class="sys-muted">선택지가 없습니다.</span>'}</div>${message}`;
+  }
+  if (setting.type === "SEL") return `<select class="sys-input${error ? " invalid" : ""}" data-sys-value="${key}" aria-label="${label}"${id}${disabled}><option value="">선택</option>${options.map((option) => `<option${option === value ? " selected" : ""}>${esc(option)}</option>`).join("")}</select>${message}`;
+  return `<input class="sys-input${error ? " invalid" : ""}" type="${setting.type === "NUM" ? "number" : "text"}"${setting.type === "NUM" ? ' step="any"' : ""} value="${esc(value)}" data-sys-value="${key}" aria-label="${label}"${id}${opts.placeholder ? ` placeholder="${esc(opts.placeholder)}"` : ""}${disabled} />${message}`;
+}
+/**
+ * 체크박스 묶음에서 체크된 값을 선택지 순서대로 쉼표로 잇는다.
+ * @param {Element} root - 체크박스를 담은 요소
+ * @param {string} key - 대상 키
+ * @returns {string} 저장 값
+ */
+function sysCheckedValue(root, key) {
+  return [...root.querySelectorAll("input[data-sys-check]")].filter((input) => input.dataset.sysCheck === key && input.checked).map((input) => input.value).join(",");
+}
+/** 최상위 그룹 목록 (코드 순) @returns {Array} */
+function sysRoots() { return sysStore.groups.filter((group) => !sysParent(group.id)).sort((a, b) => a.id.localeCompare(b.id)); }
+/** 현재 탭 (삭제된 탭이면 첫 탭) @returns {string} */
+function sysTab() { return sysView.tab === SYS_HISTORY_TAB || sysRoots().some((group) => group.id === sysView.tab) ? sysView.tab : (sysRoots()[0]?.id ?? SYS_HISTORY_TAB); }
+/** 탭을 그린다. @returns {void} */
+function renderSysTabs() {
+  const tab = sysTab();
+  document.querySelector("#sysTabs").innerHTML = [...sysRoots().map((group) => [group.id, group.id, group.name]), [SYS_HISTORY_TAB, "변경 이력", "변경 이력"]].map(([value, label, title]) => `<button type="button" role="tab" data-sys-tab="${esc(value)}" title="${esc(title)}" aria-selected="${value === tab}">${esc(label)}</button>`).join("");
+  document.querySelector('[data-sys-panel="settings"]').classList.toggle("hidden", tab === SYS_HISTORY_TAB);
+  document.querySelector('[data-sys-panel="history"]').classList.toggle("hidden", tab !== SYS_HISTORY_TAB);
+}
+/** 설정 구역(하위 그룹별)을 그린다. 항목 숨김(H)은 빼고 검색어로 거른다. @returns {void} */
+function renderSysSections() {
+  const tab = sysTab();
+  const query = sysView.query.trim().toLowerCase();
+  const sections = new Map();
+  [...sysStore.settings].sort((a, b) => a.key.localeCompare(b.key)).forEach((setting) => {
+    if (setting.groupId !== tab || setting.access === "H") return;
+    if (query && ![setting.name, setting.key, setting.description, setting.value].some((text) => text && text.toLowerCase().includes(query))) return;
+    const id = setting.subGroupId ?? setting.groupId;
+    sections.set(id, [...(sections.get(id) ?? []), setting]);
+  });
+  const ordered = [...sections.entries()].sort(([a], [b]) => a.localeCompare(b));
+  document.querySelector("#sysCount").textContent = ordered.reduce((sum, [, items]) => sum + items.length, 0);
+  document.querySelector("#sysSections").innerHTML = ordered.map(([id, items]) => {
+    const open = !sysView.collapsed.has(id);
+    const name = sysStore.groups.find((group) => group.id === id)?.name ?? id;
+    const rows = open ? items.map((setting) => {
+      const value = sysView.drafts[setting.key] ?? setting.value ?? "";
+      const dirty = setting.key in sysView.drafts && value !== (setting.value ?? "");
+      return `<div class="sys-row${dirty ? " dirty" : ""}"><div class="sys-name"><span title="${esc(setting.key)}">${esc(setting.name)}</span>${dirty ? sysDirtyBadge(setting) : ""}</div><div class="sys-value">${sysValueInput(setting, value, { key:setting.key, label:`${setting.name} 값`, disabled:setting.access === "R" })}</div><p class="sys-desc">${esc(setting.description)}</p><div class="sys-row-actions">${dirty ? sysRevertButton(setting) : ""}<button type="button" data-sys-edit="${esc(setting.key)}" aria-label="${esc(setting.name)} 수정">${SYS_ICON_EDIT}</button><button type="button" data-sys-delete="${esc(setting.key)}" aria-label="${esc(setting.name)} 삭제">${SYS_ICON_DELETE}</button></div></div>`;
+    }).join("") : "";
+    return `<section class="sys-section"><button class="sys-section-head" type="button" data-sys-toggle="${esc(id)}" aria-expanded="${open}"><i>${open ? "⌄" : "›"}</i>${esc(name)}<span>(${items.length})</span></button>${rows}</section>`;
+  }).join("") || `<p class="sys-empty">${query ? "검색 결과가 없습니다." : "설정이 없습니다. 설정 추가로 만들어 보세요."}</p>`;
+  renderSysSaveButton();
+}
+/** 고친 행의 "변경됨" 배지 (저장된 값은 툴팁) @param {object} setting @returns {string} HTML */
+function sysDirtyBadge(setting) { return `<span class="sys-dirty-badge" title="저장된 값: ${esc(setting.value || "(없음)")}"><i></i>변경됨</span>`; }
+/** 고친 행의 되돌리기 버튼 @param {object} setting @returns {string} HTML */
+function sysRevertButton(setting) { return `<button type="button" class="sys-revert" data-sys-revert="${esc(setting.key)}" aria-label="${esc(setting.name)} 되돌리기" title="저장된 값으로 되돌리기">${SYS_ICON_REVERT}</button>`; }
+/**
+ * 입력 중인 행의 변경 표시(강조선·배지·되돌리기)만 맞춘다. (다시 그리면 입력 포커스가 사라지므로)
+ * @param {Element} row - 행 요소
+ * @param {object} setting - 설정
+ * @param {boolean} dirty - 저장된 값과 다른지
+ * @returns {void}
+ */
+function syncSysRowDirty(row, setting, dirty) {
+  row.classList.toggle("dirty", dirty);
+  row.querySelector(".sys-dirty-badge")?.remove();
+  row.querySelector(".sys-revert")?.remove();
+  if (!dirty) return;
+  row.querySelector(".sys-name").insertAdjacentHTML("beforeend", sysDirtyBadge(setting));
+  row.querySelector(".sys-row-actions").insertAdjacentHTML("afterbegin", sysRevertButton(setting));
+}
+/** 저장 버튼 (바뀐 값이 있고 모두 올바를 때만 활성, 바뀐 개수 표시) @returns {void} */
+function renderSysSaveButton() {
+  const changes = sysChanges();
+  const invalid = changes.some((change) => sysValidate(sysStore.settings.find((setting) => setting.key === change.key), change.value));
+  const button = document.querySelector("#sysSave");
+  button.textContent = changes.length ? `저장 (${changes.length})` : "저장";
+  button.classList.toggle("primary-button", changes.length > 0);
+  button.classList.toggle("secondary-button", changes.length === 0);
+  button.disabled = changes.length === 0 || invalid;
+  button.title = invalid ? "잘못된 값을 고쳐야 저장할 수 있습니다." : "";
+}
+/** 변경 이력(검색 조건·페이지)을 그린다. @returns {void} */
+function renderSysHistory() {
+  const { date, groupId, key, page } = sysView.hist;
+  const from = date ? new Date(`${date}T00:00:00+09:00`).toISOString() : null;
+  const to = date ? new Date(new Date(`${date}T00:00:00+09:00`).getTime() + 86400000).toISOString() : null;
+  const keyword = key.trim().toLowerCase();
+  const matched = sysStore.histories.filter((history) => (!date || (history.changedAt >= from && history.changedAt < to)) && (!groupId || history.groupId === groupId) && (!keyword || (history.key ?? "").toLowerCase().includes(keyword)));
+  const pages = Math.max(1, Math.ceil(matched.length / SYS_PAGE_SIZE));
+  const current = Math.min(page, pages);
+  const format = new Intl.DateTimeFormat("sv-SE", { timeZone:"Asia/Seoul", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:false });
+  document.querySelector("#sysHistDate").value = date ?? "";
+  document.querySelector("#sysHistDateClear").classList.toggle("hidden", !date);
+  document.querySelector("#sysHistGroup").innerHTML = '<option value="">전체</option>' + sysRoots().map((group) => `<option value="${esc(group.id)}"${group.id === groupId ? " selected" : ""}>${esc(group.id)}</option>`).join("");
+  document.querySelector("#sysHistKey").value = key;
+  document.querySelector("#sysHistCount").textContent = matched.length;
+  document.querySelector("#sysHistBody").innerHTML = matched.slice((current - 1) * SYS_PAGE_SIZE, current * SYS_PAGE_SIZE).map((history) => `<tr><td>${esc(history.groupId)}</td><td>${esc(history.groupName)}</td><td class="mono">${esc(history.key)}</td><td>${esc(history.name)}</td><td>${esc(history.nowValue ?? "")}</td><td><span class="sys-action ${SYS_ACTION[history.action].tone}">${SYS_ACTION[history.action].label}</span></td><td>${esc(history.prevValue ?? "")}</td><td class="nowrap">${format.format(new Date(history.changedAt)).replace(/-/g, ".")}</td><td>${esc(history.changedBy)}</td></tr>`).join("");
+  document.querySelector("#sysHistEmpty").classList.toggle("hidden", matched.length > 0);
+  const nav = (target, label, text) => `<button type="button" data-sys-page="${target}" aria-label="${label}"${target < 1 || target > pages || target === current ? " disabled" : ""}>${text}</button>`;
+  document.querySelector("#sysHistPages").innerHTML = matched.length ? nav(1, "처음 페이지", "«") + nav(current - 1, "이전 페이지", "‹") + Array.from({ length:pages }, (_, index) => `<button type="button" class="page${index + 1 === current ? " active" : ""}" data-sys-page="${index + 1}">${index + 1}</button>`).join("") + nav(current + 1, "다음 페이지", "›") + nav(pages, "마지막 페이지", "»") : "";
+}
+/** 시스템 설정 화면 전체를 다시 그린다. @returns {void} */
+function renderSys() {
+  renderSysTabs();
+  if (sysTab() === SYS_HISTORY_TAB) renderSysHistory(); else renderSysSections();
+  if (!document.querySelector("#sysGroupModal").classList.contains("hidden")) renderSysGroupTable();
+}
+/** 모달을 연다/닫는다. @param {string|null} id - 열 모달 id (null이면 설정·그룹 창 모두 닫기) @returns {void} */
+function sysModal(id) {
+  ["#sysSettingModal","#sysGroupModal"].forEach((selector) => document.querySelector(selector).classList.toggle("hidden", selector !== id));
+}
+/** 삭제 확인 창 닫기 @returns {void} */
+function sysCloseConfirm() { document.querySelector("#sysConfirmModal").classList.add("hidden"); sysView.confirm = null; }
+/**
+ * 삭제 확인 창을 연다. (그룹 관리 창 위에 겹쳐 열릴 수 있다)
+ * @param {string} kind - "setting" | "group"
+ * @param {object} target - 삭제할 설정 또는 그룹
+ * @returns {void}
+ */
+function openSysConfirm(kind, target) {
+  sysView.confirm = { kind, target };
+  document.querySelector("#sysConfirmTitle").textContent = kind === "setting" ? "설정을 삭제할까요?" : "그룹을 삭제할까요?";
+  document.querySelector("#sysConfirmText").textContent = kind === "setting" ? `${target.name} (${target.key}) 설정을 삭제합니다. 삭제 기록은 변경 이력에 남습니다.` : `${target.name} (${target.id}) 그룹을 삭제합니다. 하위 그룹이나 설정이 남아 있으면 삭제되지 않습니다.`;
+  document.querySelector("#sysConfirmError").textContent = "";
+  document.querySelector("#sysConfirmModal").classList.remove("hidden");
+}
+
+/* 설정 추가·수정 창 */
+/** 설정 창의 입력 상태로 키 안내·값 입력·확인 버튼을 다시 그린다. @returns {void} */
+function renderSysSettingForm() {
+  const form = sysView.modal.form;
+  document.querySelector("#sysFormKeyHint").innerHTML = form.ownerId && form.keyName ? `저장될 키: <code>${esc(form.ownerId)}.${esc(form.keyName)}</code>` : "";
+  const choice = SYS_CHOICE_TYPES.includes(form.type);
+  document.querySelectorAll(".sys-option-field").forEach((element) => element.classList.toggle("hidden", !choice));
+  document.querySelector("#sysFormOptionList").innerHTML = (form.options ?? []).map((option) => `<li>${esc(option)}<button type="button" data-sys-option-remove="${esc(option)}" aria-label="${esc(option)} 선택지 삭제">×</button></li>`).join("");
+  document.querySelector("#sysFormValue").innerHTML = sysValueInput({ type:form.type || "STR", options:choice ? form.options : null }, form.value, { key:"__form__", label:"설정 값", id:"sysFormValueInput", placeholder:"값 입력" });
+  document.querySelector("#sysSettingSubmit").disabled = !(form.ownerId && form.keyName && form.name.trim() && form.type && form.access && (!choice || form.options?.length));
+}
+/**
+ * 설정 추가(setting 없음)·수정 창을 연다.
+ * @param {object} [setting] - 수정할 설정
+ * @returns {void}
+ */
+function openSysSettingModal(setting) {
+  const ownerId = setting ? (setting.subGroupId ?? setting.groupId) : "";
+  sysView.modal = { mode:setting ? "update" : "create", form:{ ownerId, keyName:setting ? setting.key.slice(ownerId.length + 1) : "", name:setting?.name ?? "", type:setting?.type ?? "", value:setting?.value ?? "", description:setting?.description ?? "", access:setting?.access ?? "", options:setting?.options ?? [] } };
+  const form = sysView.modal.form;
+  document.querySelector("#sysSettingTitle").textContent = setting ? "설정 수정" : "설정 추가";
+  const owner = document.querySelector("#sysFormOwner");
+  owner.innerHTML = '<option value="">상위그룹 선택</option>' + [...sysStore.groups].sort((a, b) => a.id.localeCompare(b.id)).map((group) => `<option value="${esc(group.id)}"${group.id === ownerId ? " selected" : ""}>${esc(group.id)} (${esc(group.name)})</option>`).join("");
+  owner.disabled = Boolean(setting);
+  const key = document.querySelector("#sysFormKey");
+  key.value = form.keyName; key.disabled = Boolean(setting);
+  document.querySelector("#sysFormName").value = form.name;
+  document.querySelector("#sysFormType").value = form.type;
+  document.querySelector("#sysFormDesc").value = form.description;
+  document.querySelectorAll('[name="sysAccess"]').forEach((radio) => { radio.checked = radio.value === form.access; });
+  document.querySelector("#sysSettingError").textContent = "";
+  document.querySelector("#sysFormOptionInput").value = "";
+  document.querySelector("#sysFormOptionError").textContent = "";
+  renderSysSettingForm();
+  sysModal("#sysSettingModal");
+}
+document.querySelector("#sysFormOwner").addEventListener("change", (event) => { sysView.modal.form.ownerId = event.target.value; renderSysSettingForm(); });
+document.querySelector("#sysFormKey").addEventListener("input", (event) => { event.target.value = event.target.value.toUpperCase(); sysView.modal.form.keyName = event.target.value; renderSysSettingForm(); });
+document.querySelector("#sysFormName").addEventListener("input", (event) => { sysView.modal.form.name = event.target.value; renderSysSettingForm(); });
+document.querySelector("#sysFormDesc").addEventListener("input", (event) => { sysView.modal.form.description = event.target.value; });
+document.querySelector("#sysFormType").addEventListener("change", (event) => {
+  const form = sysView.modal.form;
+  form.type = event.target.value;
+  // 유형을 바꾸면 값을 비우고(Boolean은 false), 선택형끼리는 선택지를 그대로 둔다.
+  form.value = form.type === "BOOL" ? "false" : "";
+  if (!SYS_CHOICE_TYPES.includes(form.type)) form.options = [];
+  renderSysSettingForm();
+});
+document.querySelectorAll('[name="sysAccess"]').forEach((radio) => radio.addEventListener("change", () => { sysView.modal.form.access = radio.value; renderSysSettingForm(); }));
+const sysFormValue = document.querySelector("#sysFormValue");
+sysFormValue.addEventListener("click", (event) => { if (!event.target.closest("[data-sys-bool]")) return; const form = sysView.modal.form; form.value = form.value === "true" ? "false" : "true"; renderSysSettingForm(); });
+sysFormValue.addEventListener("change", (event) => {
+  const form = sysView.modal.form;
+  if (event.target.matches("[data-sys-check]")) form.value = sysCheckedValue(sysFormValue, "__form__");
+  else if (event.target.matches("select, input[type=radio]")) form.value = event.target.value;
+  else return;
+  renderSysSettingForm();
+});
+sysFormValue.addEventListener("input", (event) => { if (event.target.matches("input[type=text], input[type=number]")) sysView.modal.form.value = event.target.value; });
+/** 입력한 선택지를 추가한다. (비거나 쉼표·중복이면 안내) @returns {void} */
+function addSysOption() {
+  const input = document.querySelector("#sysFormOptionInput");
+  const option = input.value.trim();
+  const form = sysView.modal.form;
+  const error = !option ? "선택지를 입력하세요." : option.includes(",") ? "선택지에는 쉼표(,)를 쓸 수 없습니다." : form.options.includes(option) ? "이미 있는 선택지입니다." : "";
+  document.querySelector("#sysFormOptionError").textContent = error;
+  if (error) return;
+  form.options = [...form.options, option];
+  input.value = "";
+  renderSysSettingForm();
+}
+document.querySelector("#sysFormOptionAdd").addEventListener("click", addSysOption);
+document.querySelector("#sysFormOptionInput").addEventListener("keydown", (event) => { if (event.key !== "Enter") return; event.preventDefault(); addSysOption(); });
+document.querySelector("#sysFormOptionList").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-sys-option-remove]");
+  if (!button) return;
+  const form = sysView.modal.form;
+  form.options = form.options.filter((option) => option !== button.dataset.sysOptionRemove);
+  // 지운 선택지는 고른 값에서도 뺀다.
+  form.value = form.type === "CHECK" ? form.value.split(",").filter((item) => form.options.includes(item)).join(",") : (form.options.includes(form.value) ? form.value : "");
+  renderSysSettingForm();
+});
+document.querySelector("#sysSettingForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const { mode, form } = sysView.modal;
+  const key = `${form.ownerId}.${form.keyName}`;
+  const rootId = form.ownerId.split(".")[0];
+  const error = !form.ownerId ? "상위그룹을 선택하세요."
+    : !SYS_CODE_PATTERN.test(form.keyName) ? "키는 영문 대문자로 시작하고 대문자·숫자·밑줄(_)만 쓸 수 있습니다."
+    : !form.name.trim() ? "속성명을 입력하세요."
+    : mode === "create" && sysStore.settings.some((setting) => setting.key === key) ? "이미 같은 키가 있습니다. 다른 키로 입력하세요."
+    : sysValidate({ type:form.type, options:SYS_CHOICE_TYPES.includes(form.type) ? form.options : null }, form.value);
+  if (error) { document.querySelector("#sysSettingError").textContent = error; return; }
+  const next = { key, groupId:rootId, subGroupId:form.ownerId === rootId ? null : form.ownerId, name:form.name.trim(), description:form.description.trim() || null, type:form.type, value:form.value || null, options:SYS_CHOICE_TYPES.includes(form.type) ? form.options : null, access:form.access };
+  if (mode === "create") { sysStore.settings.push(next); sysLog("I", next, null); }
+  else {
+    const setting = sysStore.settings.find((item) => item.key === key);
+    const prev = setting.value;
+    Object.assign(setting, next);
+    if (prev !== setting.value) sysLog("U", setting, prev);
+    delete sysView.drafts[key];
+  }
+  writeSysStore(); sysModal(null); renderSys(); sysToast("설정을 저장했습니다.");
+});
+
+/* 그룹 관리 창 */
+/** 그룹 관리 창의 추가 줄 안내·버튼과 표를 그린다. @returns {void} */
+function renderSysGroupTable() {
+  const groups = [...sysStore.groups].sort((a, b) => a.id.localeCompare(b.id));
+  const parent = document.querySelector("#sysGroupParent");
+  const selected = parent.value;
+  parent.innerHTML = '<option value="">상위 그룹 선택</option>' + groups.map((group) => `<option value="${esc(group.id)}"${group.id === selected ? " selected" : ""}>${esc(group.id)}</option>`).join("");
+  document.querySelector("#sysGroupBody").innerHTML = groups.map((group) => `<tr><td>${esc(sysParent(group.id) ?? "최상위")}</td><td class="mono">${esc(group.id)}</td><td>${esc(group.name)}</td><td><input class="sys-input" value="${esc(group.description ?? "")}" data-sys-group-desc="${esc(group.id)}" aria-label="${esc(group.name)} 그룹 설명" maxlength="200" placeholder="그룹 설명 입력" /></td><td><button type="button" class="sys-icon-button" data-sys-group-delete="${esc(group.id)}" aria-label="${esc(group.name)} 그룹 삭제">${SYS_ICON_DELETE}</button></td></tr>`).join("");
+  renderSysGroupHint();
+}
+/** 추가될 그룹코드 안내와 그룹 추가 버튼 상태 @returns {void} */
+function renderSysGroupHint() {
+  const parent = document.querySelector("#sysGroupParent").value;
+  const code = document.querySelector("#sysGroupCode").value;
+  const name = document.querySelector("#sysGroupName").value.trim();
+  const invalid = code && !SYS_CODE_PATTERN.test(code);
+  document.querySelector("#sysGroupHint").innerHTML = invalid ? '<span class="sys-invalid">영문 대문자로 시작하고 대문자·숫자·밑줄(_)만 쓸 수 있습니다.</span>' : `추가될 그룹코드: <code>${code ? esc(parent ? `${parent}.${code}` : code) : "-"}</code>${parent ? "" : " (상위 그룹을 고르지 않으면 최상위 그룹 = 화면 탭)"}`;
+  document.querySelector("#sysGroupAdd").disabled = !code || invalid || !name;
+}
+document.querySelector("#sysGroupParent").addEventListener("change", renderSysGroupHint);
+document.querySelector("#sysGroupCode").addEventListener("input", (event) => { event.target.value = event.target.value.toUpperCase(); renderSysGroupHint(); });
+document.querySelector("#sysGroupName").addEventListener("input", renderSysGroupHint);
+document.querySelector("#sysGroupForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const parent = document.querySelector("#sysGroupParent").value;
+  const code = document.querySelector("#sysGroupCode").value;
+  const id = parent ? `${parent}.${code}` : code;
+  if (!SYS_CODE_PATTERN.test(code) || !document.querySelector("#sysGroupName").value.trim()) return;
+  if (sysStore.groups.some((group) => group.id === id)) { sysToast("이미 같은 코드의 그룹이 있습니다.", true); return; }
+  sysStore.groups.push({ id, name:document.querySelector("#sysGroupName").value.trim(), description:document.querySelector("#sysGroupDesc").value.trim() || null });
+  ["#sysGroupCode","#sysGroupName","#sysGroupDesc"].forEach((selector) => { document.querySelector(selector).value = ""; });
+  writeSysStore(); renderSys(); sysToast("그룹을 추가했습니다.");
+});
+document.querySelector("#sysGroupBody").addEventListener("change", (event) => {
+  const input = event.target.closest("[data-sys-group-desc]");
+  if (!input) return;
+  const group = sysStore.groups.find((item) => item.id === input.dataset.sysGroupDesc);
+  if ((group.description ?? "") === input.value.trim()) return;
+  group.description = input.value.trim() || null;
+  writeSysStore(); sysToast("그룹 설명을 저장했습니다.");
+});
+document.querySelector("#sysGroupBody").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-sys-group-delete]");
+  if (button) openSysConfirm("group", sysStore.groups.find((group) => group.id === button.dataset.sysGroupDelete));
+});
+
+/* 목록·탭·이력 이벤트 */
+document.querySelector("#sysTabs").addEventListener("click", (event) => { const tab = event.target.closest("[data-sys-tab]"); if (!tab) return; sysView.tab = tab.dataset.sysTab; renderSys(); });
+document.querySelector("#sysSearch").addEventListener("input", (event) => { sysView.query = event.target.value; renderSysSections(); });
+const sysSections = document.querySelector("#sysSections");
+sysSections.addEventListener("click", (event) => {
+  const toggle = event.target.closest("[data-sys-toggle]");
+  if (toggle) { const id = toggle.dataset.sysToggle; if (sysView.collapsed.has(id)) sysView.collapsed.delete(id); else sysView.collapsed.add(id); renderSysSections(); return; }
+  const edit = event.target.closest("[data-sys-edit]");
+  if (edit) { openSysSettingModal(sysStore.settings.find((setting) => setting.key === edit.dataset.sysEdit)); return; }
+  const remove = event.target.closest("[data-sys-delete]");
+  if (remove) { openSysConfirm("setting", sysStore.settings.find((setting) => setting.key === remove.dataset.sysDelete)); return; }
+  const revert = event.target.closest("[data-sys-revert]");
+  if (revert) { delete sysView.drafts[revert.dataset.sysRevert]; renderSysSections(); return; }
+  const toggleValue = event.target.closest("[data-sys-bool]");
+  if (toggleValue) { const key = toggleValue.dataset.sysBool; const current = sysView.drafts[key] ?? sysStore.settings.find((setting) => setting.key === key).value ?? "false"; sysView.drafts[key] = current === "true" ? "false" : "true"; renderSysSections(); }
+});
+sysSections.addEventListener("change", (event) => {
+  const check = event.target.closest("input[data-sys-check]");
+  if (check) { sysView.drafts[check.dataset.sysCheck] = sysCheckedValue(sysSections, check.dataset.sysCheck); renderSysSections(); return; }
+  const input = event.target.closest("select[data-sys-value], input[type=radio][data-sys-value]");
+  if (!input) return;
+  sysView.drafts[input.dataset.sysValue] = input.value;
+  renderSysSections();
+});
+sysSections.addEventListener("input", (event) => {
+  const input = event.target.closest("input[type=text][data-sys-value], input[type=number][data-sys-value]");
+  if (!input) return;
+  sysView.drafts[input.dataset.sysValue] = input.value;
+  // 입력 중 포커스를 잃지 않도록 해당 행 표시만 갱신한다.
+  const setting = sysStore.settings.find((item) => item.key === input.dataset.sysValue);
+  const error = sysValidate(setting, input.value);
+  input.classList.toggle("invalid", Boolean(error));
+  if (input.nextElementSibling?.classList.contains("sys-invalid")) input.nextElementSibling.remove();
+  if (error) input.insertAdjacentHTML("afterend", `<small class="sys-invalid">${esc(error)}</small>`);
+  syncSysRowDirty(input.closest(".sys-row"), setting, input.value !== (setting.value ?? ""));
+  renderSysSaveButton();
+});
+document.querySelector("#sysSave").addEventListener("click", () => {
+  const changes = sysChanges();
+  if (changes.some((change) => sysValidate(sysStore.settings.find((setting) => setting.key === change.key), change.value))) return;
+  changes.forEach((change) => { const setting = sysStore.settings.find((item) => item.key === change.key); const prev = setting.value; setting.value = change.value || null; if (prev !== setting.value) sysLog("U", setting, prev); });
+  sysView.drafts = {}; writeSysStore(); renderSys(); sysToast("저장했습니다.");
+});
+document.querySelector("#sysAddSetting").addEventListener("click", () => openSysSettingModal());
+document.querySelector("#sysOpenGroups").addEventListener("click", () => { ["#sysGroupCode","#sysGroupName","#sysGroupDesc"].forEach((selector) => { document.querySelector(selector).value = ""; }); document.querySelector("#sysGroupParent").value = ""; sysModal("#sysGroupModal"); renderSysGroupTable(); });
+document.querySelectorAll("[data-sys-close]").forEach((button) => button.addEventListener("click", () => sysModal(null)));
+["#sysSettingModal","#sysGroupModal"].forEach((selector) => document.querySelector(selector).addEventListener("click", (event) => { if (event.target.id === selector.slice(1)) sysModal(null); }));
+document.querySelector("[data-sys-confirm-cancel]").addEventListener("click", sysCloseConfirm);
+document.querySelector("#sysConfirmModal").addEventListener("click", (event) => { if (event.target.id === "sysConfirmModal") sysCloseConfirm(); });
+document.querySelector("#sysConfirmOk").addEventListener("click", () => {
+  const { kind, target } = sysView.confirm;
+  if (kind === "group") {
+    if (sysStore.groups.some((group) => group.id.startsWith(`${target.id}.`)) || sysStore.settings.some((setting) => setting.groupId === target.id || setting.subGroupId === target.id)) { document.querySelector("#sysConfirmError").textContent = "사용 중이라 삭제할 수 없습니다. 하위 그룹이나 설정을 먼저 삭제하세요."; return; }
+    sysStore.groups = sysStore.groups.filter((group) => group.id !== target.id);
+  } else {
+    sysStore.settings = sysStore.settings.filter((setting) => setting.key !== target.key);
+    delete sysView.drafts[target.key];
+    sysLog("D", target, target.value);
+  }
+  writeSysStore(); sysCloseConfirm(); renderSys(); sysToast(kind === "group" ? "그룹을 삭제했습니다." : "설정을 삭제했습니다.");
+});
+document.querySelector("#sysHistDate").addEventListener("change", (event) => { sysView.hist = { ...sysView.hist, date:event.target.value || null, page:1 }; renderSysHistory(); });
+document.querySelector("#sysHistDateClear").addEventListener("click", () => { sysView.hist = { ...sysView.hist, date:null, page:1 }; renderSysHistory(); });
+document.querySelector("#sysHistGroup").addEventListener("change", (event) => { sysView.hist = { ...sysView.hist, groupId:event.target.value, page:1 }; renderSysHistory(); });
+document.querySelector("#sysHistKey").addEventListener("input", (event) => { sysView.hist = { ...sysView.hist, key:event.target.value, page:1 }; renderSysHistory(); });
+document.querySelector("#sysHistReset").addEventListener("click", () => { sysView.hist = { date:kstToday(), groupId:"", key:"", page:1 }; renderSysHistory(); });
+document.querySelector("#sysHistPages").addEventListener("click", (event) => { const button = event.target.closest("[data-sys-page]"); if (!button || button.disabled) return; sysView.hist = { ...sysView.hist, page:Number(button.dataset.sysPage) }; renderSysHistory(); });
+renderSys();
+
 renderRecords(); renderStaticCards(); renderTemplateList(); renderAnswerOverview(); updateHistoryPeriodOptions(); syncOuterTemplatePreview(); setInlineEditMode(false); selectRegion(document.querySelector('#printableTemplate [data-region="1"]'));
 renderMcList(); renderMcPreview(); renderMcSummary();
 syncRoleToViewport();

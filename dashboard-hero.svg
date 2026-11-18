@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" fill="none" role="img" aria-label="채점된 쪽지시험 일러스트">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f7f5ee"/>
+    </linearGradient>
+    <linearGradient id="scan" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d7658" stop-opacity="0"/>
+      <stop offset="1" stop-color="#1d7658" stop-opacity="0.22"/>
+    </linearGradient>
+    <linearGradient id="liquid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7fd3ad"/>
+      <stop offset="1" stop-color="#1d7658"/>
+    </linearGradient>
+    <linearGradient id="pencil" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f7c948"/>
+      <stop offset="1" stop-color="#f0b429"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#29443b" flood-opacity="0.16"/>
+    </filter>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#29443b" flood-opacity="0.14"/>
+    </filter>
+  </defs>
+
+  <!-- 배경 원 -->
+  <circle cx="214" cy="122" r="104" fill="#ffffff" opacity="0.45"/>
+  <circle cx="292" cy="54" r="34" fill="#ffffff" opacity="0.5"/>
+  <circle cx="92" cy="196" r="22" fill="#ffffff" opacity="0.55"/>
+
+  <!-- 뒤에 깔린 종이 -->
+  <g transform="rotate(7 220 124)">
+    <rect x="150" y="34" width="150" height="184" rx="12" fill="#e9f4ee" filter="url(#soft)"/>
+  </g>
+
+  <!-- 채점된 시험지 -->
+  <g transform="rotate(-5 206 122)" filter="url(#shadow)">
+    <rect x="134" y="26" width="150" height="188" rx="12" fill="url(#paper)"/>
+    <!-- 머리 -->
+    <rect x="150" y="42" width="70" height="8" rx="4" fill="#29443b" opacity="0.85"/>
+    <rect x="150" y="56" width="46" height="5" rx="2.5" fill="#b9c6c0"/>
+    <!-- 점수 -->
+    <circle cx="258" cy="54" r="17" stroke="#e5484d" stroke-width="3" fill="#fff4f3"/>
+    <text x="258" y="60" text-anchor="middle" font-family="Pretendard, system-ui, sans-serif" font-size="15" font-weight="800" fill="#e5484d">90</text>
+    <line x1="150" y1="76" x2="268" y2="76" stroke="#ece7dc" stroke-width="1.5"/>
+    <!-- 문항 1 -->
+    <rect x="150" y="90" width="9" height="9" rx="2" fill="#d8efe4"/>
+    <rect x="166" y="91" width="58" height="6" rx="3" fill="#c9d3ce"/>
+    <path d="M168 110 q8 -6 16 0 t16 0 t14 -1" stroke="#2c4a8c" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+    <circle cx="252" cy="101" r="10" stroke="#e5484d" stroke-width="3" fill="none"/>
+    <!-- 문항 2 -->
+    <rect x="150" y="126" width="9" height="9" rx="2" fill="#d8efe4"/>
+    <rect x="166" y="127" width="70" height="6" rx="3" fill="#c9d3ce"/>
+    <path d="M168 146 q7 -5 14 0 t14 0 t12 -2" stroke="#2c4a8c" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+    <circle cx="252" cy="137" r="10" stroke="#e5484d" stroke-width="3" fill="none"/>
+    <!-- 문항 3 (오답) -->
+    <rect x="150" y="162" width="9" height="9" rx="2" fill="#fce8e2"/>
+    <rect x="166" y="163" width="50" height="6" rx="3" fill="#c9d3ce"/>
+    <path d="M168 182 q6 -6 12 0 t12 0" stroke="#2c4a8c" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+    <path d="M244 166 l16 16 M260 166 l-16 16" stroke="#e5484d" stroke-width="3" stroke-linecap="round"/>
+    <!-- 문항 4 -->
+    <rect x="150" y="196" width="9" height="9" rx="2" fill="#d8efe4"/>
+    <rect x="166" y="197" width="62" height="6" rx="3" fill="#c9d3ce"/>
+  </g>
+
+  <!-- OCR 스캔 프레임 -->
+  <g stroke="#1d7658" stroke-width="4" stroke-linecap="round" fill="none">
+    <path d="M118 30 v-14 h14"/>
+    <path d="M300 16 h14 v14"/>
+    <path d="M118 210 v14 h14"/>
+    <path d="M300 224 h14 v-14"/>
+  </g>
+  <rect x="122" y="96" width="188" height="40" fill="url(#scan)"/>
+  <rect x="122" y="134" width="188" height="3" rx="1.5" fill="#1d7658" opacity="0.75"/>
+
+  <!-- 연필 -->
+  <g transform="rotate(38 318 178)" filter="url(#soft)">
+    <rect x="296" y="120" width="16" height="92" rx="3" fill="url(#pencil)"/>
+    <rect x="296" y="120" width="5" height="92" fill="#ffffff" opacity="0.25"/>
+    <rect x="296" y="110" width="16" height="12" rx="3" fill="#f08b72"/>
+    <rect x="296" y="120" width="16" height="5" fill="#b8c2bd"/>
+    <path d="M296 212 l8 18 l8 -18 z" fill="#f3d9b1"/>
+    <path d="M301.5 224 l2.5 6 l2.5 -6 z" fill="#29443b"/>
+  </g>
+
+  <!-- 플라스크 -->
+  <g filter="url(#soft)">
+    <path d="M58 70 h24 v26 l24 46 a12 12 0 0 1 -10.6 17.6 h-51 a12 12 0 0 1 -10.6 -17.6 l24 -46 z" fill="#ffffff"/>
+    <path d="M44 132 h52 l7 13 a8 8 0 0 1 -7 11.6 h-52 a8 8 0 0 1 -7 -11.6 z" fill="url(#liquid)"/>
+    <rect x="54" y="62" width="32" height="10" rx="5" fill="#29443b"/>
+    <path d="M58 70 h24 v26 l24 46 a12 12 0 0 1 -10.6 17.6 h-51 a12 12 0 0 1 -10.6 -17.6 l24 -46 z" stroke="#29443b" stroke-opacity="0.15" stroke-width="2" fill="none"/>
+  </g>
+  <circle cx="66" cy="120" r="4" fill="#7fd3ad" opacity="0.8"/>
+  <circle cx="78" cy="108" r="3" fill="#7fd3ad" opacity="0.65"/>
+  <circle cx="72" cy="94" r="2.2" fill="#7fd3ad" opacity="0.5"/>
+
+  <!-- 반짝임 -->
+  <g fill="#f5d877">
+    <path d="M100 34 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 z"/>
+    <path d="M330 104 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 z"/>
+  </g>
+  <circle cx="122" cy="72" r="3" fill="#f08b72"/>
+  <circle cx="342" cy="150" r="2.5" fill="#1d7658" opacity="0.5"/>
+</svg>

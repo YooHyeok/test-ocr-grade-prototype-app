@@ -6,7 +6,7 @@
     <title>쪽지시험 | 단답형 채점 관리</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=52" />
+    <link rel="stylesheet" href="./styles.css?v=58" />
   </head>
   <body>
     <aside class="sidebar">
@@ -23,7 +23,13 @@
         <button class="nav-link teacher-only" type="button" data-page="records" data-tooltip="채점 관리"><span>▤</span>채점 관리</button>
         <button class="nav-link teacher-only" type="button" data-page="students" data-tooltip="학생 관리"><span>♧</span>학생 관리</button>
         <button class="nav-link teacher-only" type="button" data-page="categories" data-tooltip="그룹 관리"><span>▦</span>그룹 관리</button>
-        <button class="nav-link teacher-only" type="button" data-page="settings" data-tooltip="설정"><span>⚙</span>설정</button>
+        <div class="nav-group teacher-only" data-nav-group="settings">
+          <button class="nav-link nav-parent" type="button" data-accordion-toggle="settings" data-tooltip="설정"><span>⚙</span>설정<i class="nav-caret"></i></button>
+          <div class="nav-children" data-accordion="settings">
+            <button class="nav-link nav-child" type="button" data-page="system-settings" data-tooltip="시스템">시스템</button>
+            <button class="nav-link nav-child" type="button" data-page="settings" data-tooltip="채점 정책">채점 정책</button>
+          </div>
+        </div>
         <button class="nav-link student-only" type="button" data-page="my-papers" data-tooltip="내 시험지"><span>▤</span>내 시험지</button>
         <button class="nav-link student-only" type="button" data-open-upload data-tooltip="시험지 첨부"><span>＋</span>시험지 첨부</button>
       </nav>
@@ -49,19 +55,27 @@
       <section class="app-page active" data-page-panel="dashboard">
         <section class="hero-grid">
           <article class="hero-card">
-            <div><p class="eyebrow mint">TODAY'S PROGRESS</p><h2>오늘 24장의 시험지를<br /><em>차근차근</em> 정리했어요.</h2><p class="hero-copy">OCR이 먼저 읽고, 선생님은 애매한 답만 확인하세요.<br />현재 검토 대기 시험지는 3장입니다.</p><button class="dark-button" type="button" data-show-records>검토 대기 보기 <span>→</span></button></div>
-            <div class="molecule-visual" aria-hidden="true"><span class="atom atom-a">H</span><span class="bond bond-a"></span><span class="atom atom-b">O</span><span class="bond bond-b"></span><span class="atom atom-c">H</span><span class="orbital orbital-a"></span><span class="orbital orbital-b"></span></div>
+            <div><p class="eyebrow mint">TODAY'S PROGRESS</p><h2>오늘 24장의 시험지를<br /><em>차근차근</em> 정리했어요.</h2><p class="hero-copy">OCR이 먼저 읽고, 선생님은 애매한 답만 확인하세요.<br />현재 검토 대기 시험지는 2장입니다.</p><button class="dark-button" type="button" data-show-records>검토 대기 보기 <span>→</span></button></div>
+            <img class="hero-art" src="./dashboard-hero.svg" alt="" aria-hidden="true" />
           </article>
           <div class="stat-stack">
             <article class="stat-card"><span class="stat-icon green">✓</span><div><p>오늘 채점 완료</p><strong>24<small> 장</small></strong></div><span class="trend">+18%</span></article>
-            <article class="stat-card"><span class="stat-icon coral">!</span><div><p>직접 검토 필요</p><strong>3<small> 장</small></strong></div><span class="stat-note">확인하기 →</span></article>
+            <article class="stat-card"><span class="stat-icon coral">!</span><div><p>직접 검토 필요</p><strong>2<small> 장</small></strong></div><span class="stat-note">확인하기 →</span></article>
           </div>
         </section>
         <section class="quick-grid">
-          <button class="quick-card" type="button" data-page="templates"><span>▧</span><strong>시험지 관리</strong><small>양식 이미지와 OCR 영역 설정</small></button>
-          <button class="quick-card" type="button" data-page="records"><span>▤</span><strong>채점 관리</strong><small>전체 시험지 이력 확인</small></button>
-          <button class="quick-card" type="button" data-page="students"><span>♧</span><strong>학생 관리</strong><small>클래스별 학생 관리</small></button>
-          <button class="quick-card" type="button" data-page="categories"><span>▦</span><strong>그룹 관리</strong><small>학교급 · 과목 · 단원 분류</small></button>
+          <button class="quick-card" type="button" data-page="templates"><span>▧</span><div><strong>시험지 관리</strong><small>양식 이미지와 OCR 영역 설정</small></div></button>
+          <button class="quick-card" type="button" data-page="records"><span>▤</span><div><strong>채점 관리</strong><small>전체 시험지 이력 확인</small></div></button>
+          <button class="quick-card" type="button" data-page="students"><span>♧</span><div><strong>학생 관리</strong><small>클래스별 학생 관리</small></div></button>
+          <button class="quick-card" type="button" data-page="categories"><span>▦</span><div><strong>그룹 관리</strong><small>학교급 · 과목 · 단원 분류</small></div></button>
+        </section>
+        <section class="dash-row">
+          <article class="dash-card"><div class="dash-head"><div><p class="eyebrow mint">THIS WEEK</p><h3>이번 주 채점 현황</h3></div><p class="dash-total">총 <strong id="weeklyTotal">0</strong>장</p></div><div class="weekly-chart" id="weeklyChart"></div><div class="chart-legend"><span><i class="done"></i>채점 완료</span><span><i class="review"></i>검토 필요</span></div></article>
+          <article class="dash-card"><div class="dash-head"><div><p class="eyebrow coral">NEEDS REVIEW</p><h3>검토 대기</h3></div><span class="review-count" id="reviewCount">0장</span></div><div class="review-queue" id="reviewQueue"></div></article>
+        </section>
+        <section class="dash-row">
+          <article class="dash-card"><div class="dash-head"><div><p class="eyebrow mint">RECENT</p><h3>최근 채점 기록</h3></div><button class="dash-link" type="button" data-page="records">전체 보기 →</button></div><div class="dash-table-wrap"><table class="dash-table"><thead><tr><th>채점일</th><th>학생</th><th>시험지</th><th class="num">점수</th><th class="num">상태</th></tr></thead><tbody id="recentRecords"></tbody></table></div></article>
+          <article class="dash-card"><div class="dash-head"><div><p class="eyebrow mint">THIS MONTH</p><h3>클래스별 평균 점수</h3></div></div><ul class="class-scores" id="classScores"></ul></article>
         </section>
       </section>
 
@@ -172,6 +186,27 @@
         <div class="settings-card"><h3>채점 정책</h3><label><input type="checkbox" checked /> OCR 결과는 학생이 `채점하기` 버튼을 누른 뒤에만 처리</label><label><input type="checkbox" checked /> 채점 완료된 시험지는 이미지 교체 금지</label><label><input type="checkbox" checked /> 낮은 신뢰도의 화학식은 선생님 검토 대상으로 이동</label></div>
       </section>
 
+      <section class="app-page" data-page-panel="system-settings">
+        <div class="section-heading"><div><p class="eyebrow">SYSTEM SETTINGS</p><h2>시스템 설정</h2><p>모든 학원에 공통 적용되는 설정을 관리합니다.</p></div></div>
+        <nav class="sys-tabs" id="sysTabs" role="tablist" aria-label="시스템 설정 탭"></nav>
+        <div data-sys-panel="settings">
+          <label class="sys-search"><span>⌕</span><input id="sysSearch" type="search" placeholder="검색어 입력" aria-label="설정 검색" /></label>
+          <div class="sys-bar"><p>검색결과 총 <strong id="sysCount">0</strong>건</p><div class="sys-actions"><button class="outline-button" type="button" id="sysOpenGroups">▣ 그룹 관리</button><button class="primary-button" type="button" id="sysAddSetting">＋ 설정 추가</button><button class="secondary-button" type="button" id="sysSave" disabled>저장</button></div></div>
+          <div class="sys-sections" id="sysSections"></div>
+        </div>
+        <div class="hidden" data-sys-panel="history">
+          <div class="sys-hist-filters">
+            <label>조회 일자<span class="sys-field-box"><input id="sysHistDate" type="date" aria-label="조회 일자" /><button type="button" id="sysHistDateClear" aria-label="조회 일자 지우기">×</button></span></label>
+            <label>그룹 코드 선택<select id="sysHistGroup"></select></label>
+            <label>속성키<span class="sys-field-box"><span>⌕</span><input id="sysHistKey" type="search" placeholder="속성키 검색" /></span></label>
+            <button class="outline-button" type="button" id="sysHistReset">초기화</button>
+          </div>
+          <p class="sys-hist-count">변경 이력 검색결과 총 <strong id="sysHistCount">0</strong>건</p>
+          <div class="sys-table-wrap"><table class="sys-table"><thead><tr><th>그룹코드</th><th>그룹명</th><th>속성키</th><th>속성명</th><th>변경값</th><th>액션</th><th>이전값</th><th>변경일시</th><th>변경자</th></tr></thead><tbody id="sysHistBody"></tbody></table><p class="empty-state hidden" id="sysHistEmpty">조건에 맞는 변경 이력이 없습니다.</p></div>
+          <div class="sys-pagination" id="sysHistPages"></div>
+        </div>
+      </section>
+
       <section class="app-page" data-page-panel="my-papers">
         <div class="section-heading"><div><p class="eyebrow">MY TEST HISTORY</p><h2>시험지 이력</h2><p>올린 시험지를 확인하고, 준비가 끝났을 때 직접 채점을 시작하세요.</p></div></div>
         <div class="student-notice">시험지를 올리는 것만으로는 채점되지 않습니다. 사진을 확인한 뒤 <strong>채점하기</strong>를 눌러주세요.</div>
@@ -261,7 +296,46 @@
         </div>
       </section>
     </div>
-    <div id="printArea" aria-hidden="true"></div>
-    <script src="./app.js?v=52"></script>
+    <div class="modal-backdrop hidden" id="sysSettingModal">
+      <section class="sys-modal" role="dialog" aria-modal="true" aria-labelledby="sysSettingTitle">
+        <header><h2 id="sysSettingTitle">설정 추가</h2><button class="sys-close" type="button" data-sys-close aria-label="닫기">×</button></header>
+        <form class="sys-form" id="sysSettingForm" novalidate>
+          <label>상위그룹 <b>*</b></label><div><select id="sysFormOwner"></select></div>
+          <label>키 <b>*</b></label><div><input id="sysFormKey" class="mono" placeholder="키 입력 (영문 대문자)" /><small id="sysFormKeyHint"></small></div>
+          <label>속성명 <b>*</b></label><div><input id="sysFormName" placeholder="속성명 입력" /></div>
+          <label>유형 <b>*</b></label><div><select id="sysFormType"><option value="">타입 선택</option><option value="STR">String</option><option value="NUM">Number</option><option value="BOOL">Boolean</option><option value="RADIO">Radio</option><option value="SEL">Select</option><option value="CHECK">Checkbox</option></select></div>
+          <label class="sys-option-field hidden">선택지 <b>*</b></label><div class="sys-option-field hidden"><div class="sys-option-add"><input id="sysFormOptionInput" placeholder="선택지 입력" aria-label="추가할 선택지" /><button class="outline-button" type="button" id="sysFormOptionAdd">＋ 추가</button></div><small class="sys-invalid" id="sysFormOptionError"></small><ul class="sys-option-list" id="sysFormOptionList" aria-label="선택지 목록"></ul></div>
+          <label>값 입력</label><div id="sysFormValue"></div>
+          <label>설명</label><div><input id="sysFormDesc" maxlength="200" placeholder="설명 입력" /></div>
+          <label>열람 권한 <b>*</b></label><div class="sys-radios" role="radiogroup" aria-label="열람 권한"><label><input type="radio" name="sysAccess" value="R" /> 열람만 가능</label><label><input type="radio" name="sysAccess" value="W" /> 수정 가능</label><label><input type="radio" name="sysAccess" value="H" /> 항목 숨김</label></div>
+        </form>
+        <p class="sys-form-error" id="sysSettingError" role="alert"></p>
+        <footer><button class="outline-button" type="button" data-sys-close>취소</button><button class="primary-button" type="submit" form="sysSettingForm" id="sysSettingSubmit" disabled>확인</button></footer>
+      </section>
+    </div>
+    <div class="modal-backdrop hidden" id="sysGroupModal">
+      <section class="sys-modal sys-modal-wide" role="dialog" aria-modal="true" aria-labelledby="sysGroupTitle">
+        <header><h2 id="sysGroupTitle">그룹 관리</h2><button class="sys-close" type="button" data-sys-close aria-label="닫기">×</button></header>
+        <form class="sys-group-form" id="sysGroupForm" novalidate>
+          <label>상위 그룹<select id="sysGroupParent"></select></label>
+          <label>그룹코드<input id="sysGroupCode" class="mono" placeholder="그룹코드 입력" /></label>
+          <label>그룹명<input id="sysGroupName" placeholder="그룹명 입력" /></label>
+          <label>그룹 설명<input id="sysGroupDesc" maxlength="200" placeholder="그룹 설명 입력" /></label>
+          <button class="secondary-button" type="submit" id="sysGroupAdd" disabled>＋ 그룹 추가</button>
+        </form>
+        <p class="sys-hint" id="sysGroupHint"></p>
+        <div class="sys-table-wrap"><table class="sys-table sys-group-table"><thead><tr><th>상위</th><th>그룹코드</th><th>그룹명</th><th>그룹 설명</th><th>삭제</th></tr></thead><tbody id="sysGroupBody"></tbody></table></div>
+      </section>
+    </div>
+    <div class="modal-backdrop hidden" id="sysConfirmModal">
+      <section class="sys-modal sys-confirm" role="alertdialog" aria-modal="true" aria-labelledby="sysConfirmTitle">
+        <h2 id="sysConfirmTitle">삭제할까요?</h2><p id="sysConfirmText"></p>
+        <p class="sys-form-error" id="sysConfirmError" role="alert"></p>
+        <footer><button class="outline-button" type="button" data-sys-confirm-cancel>취소</button><button class="danger-button" type="button" id="sysConfirmOk">삭제</button></footer>
+      </section>
+    </div>
+    <div class="sys-toast hidden" id="sysToast" role="status"></div>
+    <div id="printArea" aria-hidden="true"></div>    <div id="printArea" aria-hidden="true"></div>
+    <script src="./app.js?v=58"></script>
   </body>
 </html>
