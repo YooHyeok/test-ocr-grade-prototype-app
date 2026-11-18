@@ -67,6 +67,23 @@ set role = 'teacher', academy_id = '<학원 id>'
 where id = (select id from auth.users where email = 'teacher@example.com');
 ```
 
+### 시스템 관리자
+
+모든 학원에 공통으로 적용되는 **설정 · 시스템** 화면(`/settings/system`)은 시스템 관리자만 볼 수 있습니다. DELMA 시스템 설정 화면과 같은 구성으로 최상위 그룹(탭)·하위 그룹(구역)별 설정을 추가·수정·삭제하고, 그룹 관리와 변경 이력 검색을 합니다. (DELMA Factory 시스템 속성 테이블 구조) 학원 권한(`role`)과 별개로 SQL Editor에서 지정합니다.
+
+```sql
+update public.profiles set is_admin = true
+where id = (select id from auth.users where email = 'admin@example.com');
+```
+
+mock 백엔드에서는 선생님 데모 계정(`teacher@demo.com`)이 시스템 관리자입니다.
+
+### 채점 결과 메일 배치
+
+학원별 채점 결과(요약 + CSV)를 선생님 전원에게 메일로 보내고, 보관 기간이 지난 원본 사진을 정리합니다. (Supabase Edge Function + pg_cron)
+사용 여부와 주기(매일 / 매주 월요일 / 매달 1일)는 **설정 · 시스템** 화면에서 바꿉니다. (기본값: 사용 안 함, 매월)
+설정·배포·수동 실행 방법: [docs/MONTHLY_REPORT.md](docs/MONTHLY_REPORT.md)
+
 ## 화면 구성
 
 로그인한 계정의 권한(`profiles.role`)에 따라 접근할 수 있는 화면이 나뉩니다.
@@ -80,6 +97,7 @@ where id = (select id from auth.users where email = 'teacher@example.com');
 | `/exam-sheets/objective` | 시험지 관리 · 객관식 | 선생님 |
 | `/students` | 학생 관리 | 선생님 |
 | `/groups` | 그룹 관리 | 선생님 |
-| `/settings` | 설정 | 선생님 |
+| `/settings/grading` | 설정 · 채점 정책 | 선생님 |
+| `/settings/system` | 설정 · 시스템 (그룹 관리, 설정 추가·수정·삭제, 변경 이력) | 선생님 중 시스템 관리자(`profiles.is_admin`) |
 | `/my-papers` | 내 시험지 | 학생 |
 | `/upload` | 시험지 첨부 | 학생 |
