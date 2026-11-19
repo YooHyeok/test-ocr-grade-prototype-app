@@ -1,4 +1,5 @@
 import type { SubjectiveQuestion } from "@/type";
+import AnswerTester from "./answer-tester";
 import SummaryField from "./summary-field";
 
 type Props = {
@@ -10,7 +11,7 @@ type Props = {
 const COORDINATE_KEYS = ["x", "y", "w", "h"] as const;
 
 /**
- * 선택한 주관식 문항의 허용 표기와 OCR 영역 좌표 요약.
+ * 선택한 주관식 문항의 허용 표기, 판정 테스트, OCR 영역 좌표 요약.
  * 편집 모드 전까지는 입력을 비활성화한다.
  * @param {Props} props
  * @returns {JSX.Element}
@@ -25,6 +26,12 @@ export default function QuestionSummary({ index, question }: Readonly<Props>) {
         label="허용 표기 변형"
         value={question?.aliases ?? ""}
         placeholder="쉼표로 구분해 입력"
+      />
+
+      <AnswerTester
+        key={question?.id}
+        answer={question?.answer ?? ""}
+        aliases={question?.aliases ?? ""}
       />
 
       <div className="mt-1 grid grid-cols-2 gap-x-2">

@@ -69,6 +69,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // 서버 함수와 화면이 함께 쓰는 순수 로직 (예: 답안 판정 엔진)
+      "@shared": path.resolve(__dirname, "./supabase/functions/_shared"),
     },
   },
   build: {
