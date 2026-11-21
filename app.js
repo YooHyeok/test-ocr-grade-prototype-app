@@ -14,7 +14,7 @@ let myPapers = [
   { id:6, title:"물질의 규칙성 주간 테스트", category:"통합과학 · 물질", uploaded:"04.27 18:30", date:"2026-04-27", status:"채점 완료", score:95 },
   { id:7, title:"산과 염기 개념 점검", category:"중등 화학 · 산과 염기", uploaded:"04.18 13:22", date:"2026-04-18", status:"채점 완료", score:70 }
 ];
-const pageTitles = { dashboard:"대시보드", records:"채점 관리", templates:"시험지 관리 · 주관식", "templates-mc":"시험지 관리 · 객관식", students:"학생 관리", categories:"그룹 관리", settings:"설정 · 채점 정책", "system-settings":"설정 · 시스템", "my-papers":"내 시험지" };
+const pageTitles = { dashboard:"대시보드", records:"채점 관리", templates:"시험지 관리 · 주관식", "templates-mc":"시험지 관리 · 객관식", students:"학생 관리", categories:"그룹 관리", settings:"설정 · 채점 정책", "system-settings":"설정 · 시스템", "my-papers":"내 시험지", "my-info":"내 정보" };
 const pageSubtitles = {
   dashboard:"",
   records:"학원, 클래스, 카테고리, 학생별로 시험지 원본과 결과를 관리합니다.",
@@ -91,6 +91,8 @@ function showPage(name) {
     group.classList.toggle("open", inGroup);
     group.querySelector(".nav-parent").classList.toggle("active", inGroup);
   });
+  document.body.dataset.currentPage = name;
+  if (name === "my-info") renderMyInfo();
   window.scrollTo({ top:0, behavior:"smooth" });
 }
 document.addEventListener("click", (event) => {
@@ -146,7 +148,9 @@ recordBody.addEventListener("click", (event) => {
 function renderStaticCards() {
   const seenStudents = new Set();
   const students = records.filter((record) => { if (seenStudents.has(record.student)) return false; seenStudents.add(record.student); return true; });
-  document.querySelector("#studentCards").innerHTML = students.map((record) => { const note = record.status === "검토 필요" ? "검토 필요 1건" : "최근 채점 완료"; return `<article class="manage-card"><span class="avatar">${record.student[0]}</span><div><h3>${record.student}</h3><p>${record.className}</p><small>${note}</small></div><button type="button" data-student-detail="${record.student}">상세 보기</button></article>`; }).join("");
+  // 가입 승인을 마친 학생은 목록 앞에 '신규 가입'으로 보인다.
+  const joined = accountStore.signups.filter((item) => item.type === "student" && item.status === "approved").reverse();
+  document.querySelector("#studentCards").innerHTML = joined.map((item) => `<article class="manage-card"><span class="avatar">${escapeHtml(item.name[0])}</span><div><h3>${escapeHtml(item.name)} <span class="new-badge">신규 가입</span></h3><p>${escapeHtml(item.className)}</p><small>${escapeHtml(item.decidedAt)} 승인</small></div><button type="button" data-student-detail="${escapeHtml(item.name)}">상세 보기</button></article>`).join("") + students.map((record) => { const note = record.status === "검토 필요" ? "검토 필요 1건" : "최근 채점 완료"; return `<article class="manage-card"><span class="avatar">${record.student[0]}</span><div><h3>${record.student}</h3><p>${record.className}</p><small>${note}</small></div><button type="button" data-student-detail="${record.student}">상세 보기</button></article>`; }).join("");
   document.querySelector("#categoryCards").innerHTML = ["중등 과학|화학 반응 · 이온 · 기체","통합과학|물질의 규칙성 · 화학 변화","화학 I|몰 · 산화 환원 · 중화 반응"].map((item) => { const [title,units]=item.split("|"); return `<article class="category-card"><span>▦</span><h3>${title}</h3><p>${units}</p><button>카테고리 관리</button></article>`; }).join("");
 }
 function renderAnswerOverview() {
@@ -834,6 +838,7 @@ function applyRole(nextRole) {
   document.body.classList.toggle("student-mode", student);
   document.querySelectorAll("[data-role]").forEach((item) => item.classList.toggle("active", item.dataset.role === role));
   document.querySelector("#profileName").textContent=student ? "유재혁" : "전선생";
+  document.querySelector(".profile-button .avatar").textContent=student ? "유" : "전";
   document.querySelector("#profileRole").textContent=student ? "student account" : "academy admin";
   const collapsedToggle=document.querySelector("[data-collapsed-role-toggle]");
   const tooltip=student ? "선생님 모드로 전환" : "학생 모드로 전환";
@@ -1405,6 +1410,466 @@ document.querySelector("#sysHistReset").addEventListener("click", () => { sysVie
 document.querySelector("#sysHistPages").addEventListener("click", (event) => { const button = event.target.closest("[data-sys-page]"); if (!button || button.disabled) return; sysView.hist = { ...sysView.hist, page:Number(button.dataset.sysPage) }; renderSysHistory(); });
 renderSys();
 
+/* ───────── 회원가입 · 가입 승인 · 내 정보 (화면 기획용 목업: 실제 인증·발송·저장 없음) ───────── */
+const ACCOUNT_STORE_KEY = "prototype-account-v1";
+/** 데모 학원 코드 → 학원명 */
+const ACADEMY_CODES = { RAON:"라온 과학학원", BRIDGE:"브릿지 사이언스" };
+const CLASS_OPTIONS = ["중3 화학 심화","고1 통합과학 A","고2 화학 I"];
+/** 알림 받는 방법. paid: 학원이 유료 발송을 연결해야 실제로 받을 수 있음 */
+const NOTIFY_METHODS = [
+  { id:"email", icon:"✉", name:"이메일", desc:"채점 결과·공지를 메일로 받아요", chip:"무료" },
+  { id:"push", icon:"◉", name:"앱 푸시", desc:"이 기기 브라우저 알림으로 바로 받아요", chip:"무료" },
+  { id:"sms", icon:"✆", name:"문자 메시지", desc:"휴대폰 문자로 받아요", chip:"준비 중", paid:true },
+  { id:"kakao", icon:"TALK", name:"카카오톡", desc:"카카오톡 알림톡으로 받아요", chip:"준비 중", paid:true }
+];
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_PATTERN = /^01[016789]-?\d{3,4}-?\d{4}$/;
+/** 역할별 내 정보 데모 계정 */
+const ACCOUNT_PROFILES = {
+  student:{ name:"유재혁", role:"학생", academy:"라온 과학학원", email:"jaehyuk@student.kr", phone:"01012345678", classLabel:"클래스", className:"고2 화학 I", joined:"2026-03-02" },
+  admin:{ name:"전선생", role:"선생님 · 학원 관리자", academy:"라온 과학학원", email:"jeon@raon.kr", phone:"01098765432", classLabel:"담당 클래스", className:"고2 화학 I 외 2개", joined:"2025-12-15" }
+};
+
+/**
+ * 기본 알림 설정(아무것도 고르지 않은 상태).
+ * @returns {{methods: string[], email: string, pushAllowed: boolean, sms: {useVerified: boolean, phone: string}, kakao: {useVerified: boolean, phone: string}}}
+ */
+function defaultNotify() {
+  return { methods:["email"], email:ACCOUNT_PROFILES.student.email, pushAllowed:false, sms:{ useVerified:true, phone:"" }, kakao:{ useVerified:true, phone:"" } };
+}
+/**
+ * 저장된 목업 상태(가입 신청 목록·알림 설정)를 읽는다. 없거나 읽지 못하면 기본값.
+ * @returns {{signups: object[], notify: object}}
+ */
+function readAccountStore() {
+  const seed = {
+    signups:[
+      { id:1, type:"student", name:"이서연", grade:"중3", academy:"라온 과학학원", email:"seoyeon@student.kr", phone:"01023456789", requestedAt:"2026-11-20 18:42", status:"pending" },
+      { id:2, type:"student", name:"최민준", grade:"고1", academy:"라온 과학학원", email:"minjun@student.kr", phone:"01034567890", requestedAt:"2026-11-21 09:15", status:"pending" },
+      { id:3, type:"student", name:"정하은", grade:"고2", academy:"라온 과학학원", email:"haeun@student.kr", phone:"01045678901", requestedAt:"2026-11-21 10:03", status:"pending" }
+    ],
+    notify:defaultNotify()
+  };
+  try {
+    const saved = JSON.parse(localStorage.getItem(ACCOUNT_STORE_KEY));
+    return saved && Array.isArray(saved.signups) ? { signups:saved.signups, notify:{ ...seed.notify, ...saved.notify } } : seed;
+  } catch { return seed; }
+}
+const accountStore = readAccountStore();
+/** @returns {void} */
+function writeAccountStore() {
+  try { localStorage.setItem(ACCOUNT_STORE_KEY, JSON.stringify(accountStore)); } catch { /* 저장소를 쓸 수 없으면 새로고침 시 초기화된다 */ }
+}
+/**
+ * 휴대폰 번호를 010-1234-5678 형태로 바꾼다.
+ * @param {string} phone - 숫자만 또는 하이픈 포함 번호
+ * @returns {string}
+ */
+function formatPhone(phone) {
+  const digits = String(phone).replaceAll(/\D/g, "");
+  return digits.length === 11 ? `${digits.slice(0,3)}-${digits.slice(3,7)}-${digits.slice(7)}` : digits.replace(/^(\d{3})(\d{3})(\d{4})$/, "$1-$2-$3");
+}
+/**
+ * 휴대폰 번호 가운데를 가린다. (010-****-5678)
+ * @param {string} phone - 휴대폰 번호
+ * @returns {string}
+ */
+function maskPhone(phone) {
+  const [head,,tail] = formatPhone(phone).split("-");
+  return tail ? `${head}-****-${tail}` : formatPhone(phone);
+}
+/**
+ * HTML에 넣을 문자열의 특수 문자를 바꾼다.
+ * @param {string} text - 원본 문자열
+ * @returns {string}
+ */
+function escapeHtml(text) {
+  return String(text ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+}
+/** @returns {string} 지금 시각 "YYYY-MM-DD HH:MM" */
+function nowStamp() {
+  const date = new Date();
+  const pad = (value) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+/* ── 로그인 · 회원가입 화면 ── */
+const authScreen = document.querySelector("#authScreen");
+const signupDraft = { type:"student", academy:null, name:"", grade:"", email:"", phone:"", verified:false };
+let verifyTimer;
+/**
+ * 로그인/회원가입 화면을 연다.
+ * @param {"login"|"signup"} view - 보여줄 화면
+ * @returns {void}
+ */
+function openAuth(view) {
+  authScreen.hidden = false;
+  document.body.classList.add("auth-open");
+  authScreen.querySelectorAll("[data-auth-view]").forEach((card) => { card.hidden = card.dataset.authView !== view; });
+  if (view === "signup") showSignupStep(1);
+  authScreen.querySelector(".auth-main").scrollTo?.({ top:0 });
+}
+/** @returns {void} 로그인 화면을 닫고 둘러보던 화면으로 돌아간다. */
+function closeAuth() {
+  authScreen.hidden = true;
+  document.body.classList.remove("auth-open");
+  clearInterval(verifyTimer);
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+}
+/**
+ * 회원가입 단계를 바꾼다.
+ * @param {number} step - 1 기본 정보, 2 본인인증, 3 승인 대기
+ * @returns {void}
+ */
+function showSignupStep(step) {
+  authScreen.querySelectorAll("[data-signup-step]").forEach((panel) => { panel.hidden = Number(panel.dataset.signupStep) !== step; });
+  document.querySelectorAll("#signupSteps [data-step]").forEach((item) => {
+    const index = Number(item.dataset.step);
+    item.classList.toggle("active", index === step);
+    item.classList.toggle("done", index < step);
+  });
+}
+/** @returns {void} 학생만 입력하는 항목(학년·보호자 안내)을 가입 유형에 맞게 보인다. */
+function syncSignupType() {
+  signupDraft.type = authScreen.querySelector('[name="signupType"]:checked').value;
+  authScreen.querySelectorAll("[data-student-field]").forEach((field) => { field.hidden = signupDraft.type !== "student"; });
+}
+/** @returns {void} 학원 코드를 확인해 학원명을 보여준다. */
+function checkAcademyCode() {
+  const code = document.querySelector("#signupAcademyCode").value.trim().toUpperCase();
+  const result = document.querySelector("#signupAcademyResult");
+  signupDraft.academy = ACADEMY_CODES[code] ?? null;
+  result.classList.toggle("ok", Boolean(signupDraft.academy));
+  result.classList.toggle("bad", Boolean(code) && !signupDraft.academy);
+  if (signupDraft.academy) result.textContent = `✓ ${signupDraft.academy}`;
+  else result.textContent = code ? "학원 코드를 찾을 수 없습니다. (데모: RAON, BRIDGE)" : "학원에서 받은 코드를 입력하세요.";
+}
+document.querySelectorAll("[data-auth-go]").forEach((button) => button.addEventListener("click", () => openAuth(button.dataset.authGo)));
+document.querySelectorAll("[data-auth-close]").forEach((button) => button.addEventListener("click", closeAuth));
+/* 계정 메뉴(사이드바 ⋯): 내 정보 · 로그아웃. 사이드바 밖으로 띄우려고 fixed로 위치를 잡는다. */
+const profileMenu = document.querySelector("#profileMenu");
+const profileMenuToggle = document.querySelector("#profileMenuToggle");
+/**
+ * 계정 메뉴를 열거나 닫는다.
+ * @param {boolean} open - 열지 여부
+ * @returns {void}
+ */
+function setProfileMenu(open) {
+  profileMenu.hidden = !open;
+  profileMenuToggle.setAttribute("aria-expanded", String(open));
+  if (!open) return;
+  const rect = profileMenuToggle.getBoundingClientRect();
+  // 펼친 사이드바(238px): 버튼 위쪽 / 접힌 사이드바(68px): 사이드바 오른쪽. 접히는 애니메이션 중에도 맞도록 폭은 상수로 둔다.
+  const collapsed = document.body.classList.contains("sidebar-collapsed") || globalThis.matchMedia("(max-width: 820px)").matches;
+  profileMenu.style.left = `${collapsed ? 76 : 12}px`;
+  profileMenu.style.bottom = `${window.innerHeight - (collapsed ? rect.bottom : rect.top - 6)}px`;
+  profileMenu.style.width = collapsed ? "180px" : "214px";
+}
+profileMenuToggle.addEventListener("click", (event) => { event.stopPropagation(); setProfileMenu(profileMenu.hidden); });
+profileMenu.addEventListener("click", (event) => { if (event.target.closest("button")) setProfileMenu(false); });
+document.addEventListener("click", (event) => { if (!profileMenu.hidden && !profileMenu.contains(event.target)) setProfileMenu(false); });
+document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !profileMenu.hidden) { setProfileMenu(false); profileMenuToggle.focus(); } });
+window.addEventListener("resize", () => setProfileMenu(false));
+// 로그아웃은 어느 화면에서든: 사이드바 계정 메뉴, 모바일 상단 버튼
+document.querySelectorAll("[data-logout]").forEach((button) => button.addEventListener("click", () => openAuth("login")));
+authScreen.querySelectorAll('[name="signupType"]').forEach((radio) => radio.addEventListener("change", syncSignupType));
+document.querySelector("#signupAcademyCheck").addEventListener("click", checkAcademyCode);
+document.querySelector("#signupAcademyCode").addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); checkAcademyCode(); } });
+document.querySelector("#signupAcademyCode").addEventListener("input", () => { signupDraft.academy = null; document.querySelector("#signupAcademyResult").classList.remove("ok","bad"); });
+document.querySelector("#signupAgreeAll").addEventListener("change", (event) => { authScreen.querySelectorAll("[data-agree]").forEach((box) => { box.checked = event.target.checked; }); });
+authScreen.querySelectorAll("[data-agree]").forEach((box) => box.addEventListener("change", () => { document.querySelector("#signupAgreeAll").checked = [...authScreen.querySelectorAll("[data-agree]")].every((item) => item.checked); }));
+
+document.querySelector("#loginForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const email = document.querySelector("#loginEmail").value.trim().toLowerCase();
+  const error = document.querySelector("#loginError");
+  if (!EMAIL_PATTERN.test(email) || !document.querySelector("#loginPassword").value) { error.textContent = "이메일과 비밀번호를 입력해주세요."; return; }
+  const signup = accountStore.signups.find((item) => item.email === email);
+  if (signup?.status === "pending") { error.textContent = `${signup.academy} 선생님의 가입 승인을 기다리고 있습니다. 승인되면 이메일로 알려드려요.`; return; }
+  if (signup?.status === "rejected") { error.textContent = `가입이 거절되었습니다. (${signup.rejectReason}) 학원에 문의해주세요.`; return; }
+  error.textContent = "";
+  closeAuth();
+  let nextRole = role;
+  if (signup?.status === "approved") nextRole = signup.type === "teacher" ? "admin" : "student";
+  applyRole(nextRole);
+  sysToast("로그인했습니다. (데모)");
+});
+
+document.querySelector("#signupInfoForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  syncSignupType();
+  const value = (id) => document.querySelector(`#${id}`).value.trim();
+  const password = document.querySelector("#signupPassword").value;
+  const email = value("signupEmail").toLowerCase();
+  let message = "";
+  if (!signupDraft.academy) message = "학원 코드를 입력하고 확인을 눌러주세요.";
+  else if (!value("signupName")) message = "이름을 입력해주세요.";
+  else if (signupDraft.type === "student" && !value("signupGrade")) message = "학년을 선택해주세요.";
+  else if (!EMAIL_PATTERN.test(email)) message = "이메일 형식을 확인해주세요.";
+  else if (accountStore.signups.some((item) => item.email === email && item.status !== "rejected")) message = "이미 가입 신청한 이메일입니다.";
+  else if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) message = "비밀번호는 8자 이상, 영문과 숫자를 섞어주세요.";
+  else if (password !== document.querySelector("#signupPasswordConfirm").value) message = "비밀번호 확인이 일치하지 않습니다.";
+  else if (![...authScreen.querySelectorAll("[data-agree]")].every((box) => box.checked)) message = "필수 약관에 동의해주세요.";
+  document.querySelector("#signupInfoError").textContent = message;
+  if (message) return;
+  Object.assign(signupDraft, { name:value("signupName"), grade:signupDraft.type === "student" ? value("signupGrade") : "", email });
+  showSignupStep(2);
+});
+document.querySelector("[data-signup-back]").addEventListener("click", () => showSignupStep(1));
+
+/** @returns {void} 인증번호 입력 제한 시간(3분)을 센다. */
+function startVerifyTimer() {
+  clearInterval(verifyTimer);
+  let left = 180;
+  const timer = document.querySelector("#verifyTimer");
+  const tick = () => {
+    timer.textContent = `${String(Math.floor(left / 60)).padStart(2,"0")}:${String(left % 60).padStart(2,"0")}`;
+    timer.classList.toggle("expired", left === 0);
+    if (left === 0) clearInterval(verifyTimer);
+    left -= 1;
+  };
+  tick();
+  verifyTimer = setInterval(tick, 1000);
+}
+document.querySelector("#verifySend").addEventListener("click", (event) => {
+  const phone = document.querySelector("#verifyPhone").value.trim();
+  const error = document.querySelector("#signupVerifyError");
+  if (!PHONE_PATTERN.test(phone)) { error.textContent = "휴대폰 번호를 확인해주세요."; return; }
+  error.textContent = "";
+  signupDraft.phone = formatPhone(phone);
+  signupDraft.verified = false;
+  document.querySelector("#verifyPhone").value = signupDraft.phone;
+  document.querySelector("#verifyCodeField").hidden = false;
+  document.querySelector("#verifyDone").hidden = true;
+  document.querySelector("#signupSubmit").disabled = true;
+  document.querySelector("#verifyCode").value = "";
+  event.currentTarget.textContent = "다시 받기";
+  startVerifyTimer();
+  sysToast("인증번호를 보냈습니다. (데모)");
+});
+document.querySelector("#verifyConfirm").addEventListener("click", () => {
+  const error = document.querySelector("#signupVerifyError");
+  if (document.querySelector("#verifyTimer").classList.contains("expired")) { error.textContent = "입력 시간이 지났습니다. 인증번호를 다시 받아주세요."; return; }
+  if (!/^\d{6}$/.test(document.querySelector("#verifyCode").value)) { error.textContent = "인증번호 6자리를 입력해주세요."; return; }
+  clearInterval(verifyTimer);
+  error.textContent = "";
+  signupDraft.verified = true;
+  document.querySelector("#verifyCodeField").hidden = true;
+  document.querySelector("#verifyDone").hidden = false;
+  document.querySelector("#verifyDoneText").textContent = `${signupDraft.name} · ${signupDraft.phone}`;
+  document.querySelector("#signupSubmit").disabled = false;
+});
+document.querySelector("#verifyPhone").addEventListener("input", () => {
+  if (!signupDraft.verified) return;
+  signupDraft.verified = false;
+  document.querySelector("#verifyDone").hidden = true;
+  document.querySelector("#signupSubmit").disabled = true;
+});
+document.querySelector("#signupVerifyForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!signupDraft.verified) return;
+  const signup = { id:Date.now(), type:signupDraft.type, name:signupDraft.name, grade:signupDraft.grade, academy:signupDraft.academy, email:signupDraft.email, phone:signupDraft.phone, requestedAt:nowStamp(), status:"pending" };
+  accountStore.signups.push(signup);
+  writeAccountStore();
+  renderApprovals();
+  const teacher = signup.type === "teacher";
+  document.querySelector("#signupDoneText").textContent = teacher
+    ? `${signup.academy} 관리자가 승인하면 가입이 완료됩니다. 승인되면 이메일로 알려드려요.`
+    : `${signup.academy} 선생님이 승인하면 가입이 완료됩니다. 승인되면 이메일로 알려드려요.`;
+  document.querySelector("#signupWaitLabel").textContent = teacher ? "학원 관리자 승인 대기" : "선생님 승인 대기";
+  document.querySelector("#signupSummary").innerHTML = [["이름",signup.name],["학원",signup.academy],["가입 유형",teacher ? "선생님" : `학생 · ${signup.grade}`],["이메일",signup.email],["휴대폰",`${maskPhone(signup.phone)} (인증 완료)`]].map(([term,detail]) => `<div><dt>${term}</dt><dd>${escapeHtml(detail)}</dd></div>`).join("");
+  document.querySelector("#signupInfoForm").reset();
+  document.querySelector("#signupVerifyForm").reset();
+  document.querySelector("#verifyCodeField").hidden = true;
+  document.querySelector("#verifyDone").hidden = true;
+  document.querySelector("#verifySend").textContent = "인증번호 받기";
+  document.querySelector("#signupSubmit").disabled = true;
+  Object.assign(signupDraft, { type:"student", academy:null, phone:"", verified:false });
+  checkAcademyCode(); syncSignupType();
+  showSignupStep(3);
+});
+
+/* ── 학생 관리 › 가입 승인 ── */
+let rejectTargetId = null;
+/** @returns {object[]} 승인을 기다리는 학생 가입 신청 */
+function pendingStudentSignups() { return accountStore.signups.filter((item) => item.type === "student" && item.status === "pending"); }
+/** @returns {void} 가입 승인 표와 탭의 대기 건수를 그린다. */
+function renderApprovals() {
+  const pending = pendingStudentSignups();
+  const count = document.querySelector("#approvalCount");
+  count.textContent = pending.length;
+  count.hidden = pending.length === 0;
+  document.querySelector("#approvalEmpty").hidden = pending.length > 0;
+  document.querySelector("#approvalBody").innerHTML = pending.map((item) => `<tr data-signup-id="${item.id}"><td class="nowrap">${escapeHtml(item.requestedAt)}</td><td><strong>${escapeHtml(item.name)}</strong></td><td>${escapeHtml(item.grade)}</td><td>${escapeHtml(item.email)}</td><td class="nowrap">${maskPhone(item.phone)}</td><td><span class="verify-badge">✓ 완료</span></td><td><select data-approval-class aria-label="${escapeHtml(item.name)} 클래스 배정"><option value="">클래스 선택</option>${CLASS_OPTIONS.map((name) => `<option${name.startsWith(item.grade) ? " selected" : ""}>${name}</option>`).join("")}</select></td><td class="nowrap"><button class="primary-button small" type="button" data-approve>승인</button> <button class="outline-button small" type="button" data-reject>거절</button></td></tr>`).join("");
+}
+/**
+ * 학생 관리 탭(학생 목록/가입 승인)을 바꾼다.
+ * @param {"list"|"approvals"} tab - 보여줄 탭
+ * @returns {void}
+ */
+function showStudentTab(tab) {
+  document.querySelectorAll("[data-student-tab]").forEach((button) => button.setAttribute("aria-selected", String(button.dataset.studentTab === tab)));
+  document.querySelectorAll("[data-student-panel]").forEach((panel) => { panel.hidden = panel.dataset.studentPanel !== tab; });
+}
+document.querySelectorAll("[data-student-tab]").forEach((button) => button.addEventListener("click", () => showStudentTab(button.dataset.studentTab)));
+document.querySelector("#approvalBody").addEventListener("click", (event) => {
+  const row = event.target.closest("[data-signup-id]");
+  if (!row) return;
+  const signup = accountStore.signups.find((item) => item.id === Number(row.dataset.signupId));
+  if (event.target.closest("[data-approve]")) {
+    const className = row.querySelector("[data-approval-class]").value;
+    if (!className) { sysToast("클래스를 먼저 배정해주세요.", true); return; }
+    Object.assign(signup, { status:"approved", className, decidedAt:nowStamp() });
+    writeAccountStore(); renderApprovals(); renderStaticCards();
+    sysToast(`${signup.name} 학생의 가입을 승인했습니다. (${className})`);
+  } else if (event.target.closest("[data-reject]")) {
+    rejectTargetId = signup.id;
+    document.querySelector("#rejectText").textContent = `${signup.name} (${signup.grade} · ${signup.email}) 학생의 가입 신청을 거절합니다.`;
+    document.querySelector("#rejectForm").reset();
+    document.querySelector("#rejectEtcLabel").hidden = true;
+    document.querySelector("#rejectModal").classList.remove("hidden");
+  }
+});
+/** @returns {void} */
+function closeRejectModal() { document.querySelector("#rejectModal").classList.add("hidden"); rejectTargetId = null; }
+document.querySelectorAll("[data-reject-close]").forEach((button) => button.addEventListener("click", closeRejectModal));
+document.querySelector("#rejectReason").addEventListener("change", (event) => { document.querySelector("#rejectEtcLabel").hidden = event.target.value !== "etc"; });
+document.querySelector("#rejectForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const signup = accountStore.signups.find((item) => item.id === rejectTargetId);
+  if (!signup) return;
+  const select = document.querySelector("#rejectReason");
+  const reason = select.value === "etc" ? document.querySelector("#rejectEtc").value.trim() : select.value;
+  if (!reason) { sysToast("거절 사유를 입력해주세요.", true); return; }
+  Object.assign(signup, { status:"rejected", rejectReason:reason, decidedAt:nowStamp() });
+  writeAccountStore(); renderApprovals(); closeRejectModal();
+  sysToast(`${signup.name} 학생의 가입을 거절했습니다.`);
+});
+
+/* ── 내 정보 ── */
+let notifyDraft = structuredClone(accountStore.notify);
+/** @returns {boolean} 알림 설정을 고친 뒤 저장하지 않았는지 */
+function notifyDirty() { return JSON.stringify(notifyDraft) !== JSON.stringify(accountStore.notify); }
+/** @returns {void} 저장·되돌리기 버튼과 안내 문구를 지금 상태에 맞춘다. */
+function syncNotifyFooter() {
+  const dirty = notifyDirty();
+  document.querySelector("#notifySave").disabled = !dirty;
+  document.querySelector("#notifyReset").disabled = !dirty;
+  const hint = document.querySelector("#notifyHint");
+  if (notifyDraft.methods.length === 0) hint.textContent = "고른 방법이 없으면 채점 결과와 학원 공지를 알림으로 받을 수 없어요.";
+  else hint.textContent = dirty ? "바꾼 내용을 저장해주세요." : "";
+  hint.classList.toggle("warn", notifyDraft.methods.length === 0);
+}
+/**
+ * 문자·카카오톡 받을 번호 입력 (본인인증한 번호 / 다른 번호).
+ * @param {"sms"|"kakao"} id - 알림 방법
+ * @param {string} verifiedPhone - 본인인증한 번호
+ * @returns {string} HTML
+ */
+function notifyPhoneFields(id, verifiedPhone) {
+  const target = notifyDraft[id];
+  return `<div class="notify-radios"><label><input type="radio" name="${id}Phone" value="verified" data-notify-phone-mode="${id}"${target.useVerified ? " checked" : ""} /> 본인인증한 번호 <b>${maskPhone(verifiedPhone)}</b></label><label><input type="radio" name="${id}Phone" value="other" data-notify-phone-mode="${id}"${target.useVerified ? "" : " checked"} /> 다른 번호</label></div>${target.useVerified ? "" : `<input type="tel" inputmode="numeric" class="notify-input" data-notify-phone="${id}" value="${escapeHtml(target.phone)}" placeholder="010-0000-0000" aria-label="받을 휴대폰 번호" />`}`;
+}
+/**
+ * 고른 알림 방법 하나의 입력 영역.
+ * @param {object} method - NOTIFY_METHODS 항목
+ * @returns {string} HTML
+ */
+function notifyDetail(method) {
+  const profile = ACCOUNT_PROFILES.student;
+  let body = "";
+  if (method.id === "email") {
+    body = `<label class="notify-field">받을 이메일<input type="email" class="notify-input" data-notify-email value="${escapeHtml(notifyDraft.email)}" placeholder="example@email.com" /></label><small>계정 이메일(${profile.email})과 다른 주소로도 받을 수 있어요.</small>`;
+  } else if (method.id === "push") {
+    body = notifyDraft.pushAllowed
+      ? `<div class="push-state on"><span><strong>이 기기에서 받는 중</strong><small>Chrome · Windows</small></span><button class="text-button" type="button" data-push-toggle>끄기</button></div>`
+      : `<div class="push-state"><span><strong>이 기기는 아직 알림이 꺼져 있어요</strong><small>버튼을 누르면 브라우저가 알림 허용을 물어봐요.</small></span><button class="secondary-button" type="button" data-push-toggle>이 기기에서 알림 허용</button></div>`;
+    body += "<small>아이폰은 Safari에서 ‘홈 화면에 추가’한 뒤 알림을 허용할 수 있어요.</small>";
+  } else {
+    body = `<div class="notify-field">받을 휴대폰 번호${notifyPhoneFields(method.id, profile.phone)}</div><small>${method.id === "sms" ? "학원에서 문자 발송을 연결하면 받을 수 있어요." : "학원에서 카카오 알림톡을 연결하면 받을 수 있어요."} (유료 서비스 · 준비 중)</small>`;
+  }
+  return `<section class="notify-detail" data-notify-detail="${method.id}"><h4><span class="notify-icon ${method.id}">${method.icon}</span>${method.name}</h4>${body}</section>`;
+}
+/** @returns {void} 알림 방법 선택 칸과 고른 방법별 입력 영역을 그린다. */
+function renderNotify() {
+  document.querySelector("#notifyOptions").innerHTML = NOTIFY_METHODS.map((method) => `<label class="notify-option${notifyDraft.methods.includes(method.id) ? " checked" : ""}"><input type="checkbox" value="${method.id}" data-notify-method${notifyDraft.methods.includes(method.id) ? " checked" : ""} /><span class="notify-icon ${method.id}">${method.icon}</span><span class="notify-text"><strong>${method.name}</strong><small>${method.desc}</small></span><em class="notify-chip${method.paid ? " paid" : ""}">${method.chip}</em><i class="notify-check" aria-hidden="true"></i></label>`).join("");
+  const selected = NOTIFY_METHODS.filter((method) => notifyDraft.methods.includes(method.id));
+  document.querySelector("#notifyDetails").innerHTML = selected.length ? selected.map(notifyDetail).join("") : `<p class="notify-empty">위에서 알림 받을 방법을 골라주세요.</p>`;
+  syncNotifyFooter();
+}
+/** @returns {void} 지금 역할(학생/선생님)의 내 정보를 그린다. */
+function renderMyInfo() {
+  const student = role === "student";
+  const profile = ACCOUNT_PROFILES[student ? "student" : "admin"];
+  document.querySelector("#myInfoAvatar").textContent = profile.name[0];
+  document.querySelector("#myInfoName").textContent = profile.name;
+  document.querySelector("#myInfoRole").textContent = profile.role;
+  document.querySelector("#myInfoAcademy").textContent = profile.academy;
+  document.querySelector("#myInfoEmail").textContent = profile.email;
+  document.querySelector("#myInfoPhone").textContent = maskPhone(profile.phone);
+  document.querySelector("#myInfoClassLabel").textContent = profile.classLabel;
+  document.querySelector("#myInfoClass").textContent = profile.className;
+  document.querySelector("#myInfoJoined").textContent = profile.joined;
+  document.querySelector("#pageSubtitle").textContent = student ? "계정 정보와 알림 받는 방법을 관리합니다." : "계정 정보와 비밀번호를 관리합니다.";
+  if (student) renderNotify();
+}
+document.querySelector("#notifyOptions").addEventListener("change", (event) => {
+  const box = event.target.closest("[data-notify-method]");
+  if (!box) return;
+  const methods = new Set(notifyDraft.methods);
+  if (box.checked) methods.add(box.value); else methods.delete(box.value);
+  notifyDraft.methods = NOTIFY_METHODS.map((method) => method.id).filter((id) => methods.has(id));
+  renderNotify();
+});
+document.querySelector("#notifyDetails").addEventListener("input", (event) => {
+  if (event.target.matches("[data-notify-email]")) notifyDraft.email = event.target.value.trim();
+  else if (event.target.matches("[data-notify-phone]")) notifyDraft[event.target.dataset.notifyPhone].phone = event.target.value.trim();
+  else return;
+  syncNotifyFooter();
+});
+document.querySelector("#notifyDetails").addEventListener("change", (event) => {
+  const radio = event.target.closest("[data-notify-phone-mode]");
+  if (!radio) return;
+  notifyDraft[radio.dataset.notifyPhoneMode].useVerified = radio.value === "verified";
+  renderNotify();
+});
+document.querySelector("#notifyDetails").addEventListener("click", (event) => {
+  if (!event.target.closest("[data-push-toggle]")) return;
+  notifyDraft.pushAllowed = !notifyDraft.pushAllowed;
+  if (notifyDraft.pushAllowed) sysToast("이 기기에서 알림을 허용했습니다. (데모)");
+  renderNotify();
+});
+document.querySelector("#notifyReset").addEventListener("click", () => { notifyDraft = structuredClone(accountStore.notify); renderNotify(); });
+document.querySelector("#notifySave").addEventListener("click", () => {
+  const methods = new Set(notifyDraft.methods);
+  let message = "";
+  if (methods.has("email") && !EMAIL_PATTERN.test(notifyDraft.email)) message = "받을 이메일 주소를 확인해주세요.";
+  else if (methods.has("push") && !notifyDraft.pushAllowed) message = "앱 푸시를 받으려면 이 기기에서 알림을 허용해주세요.";
+  else if (["sms","kakao"].some((id) => methods.has(id) && !notifyDraft[id].useVerified && !PHONE_PATTERN.test(notifyDraft[id].phone))) message = "받을 휴대폰 번호를 확인해주세요.";
+  if (message) { sysToast(message, true); return; }
+  ["sms","kakao"].forEach((id) => { if (!notifyDraft[id].useVerified) notifyDraft[id].phone = formatPhone(notifyDraft[id].phone); });
+  accountStore.notify = structuredClone(notifyDraft);
+  writeAccountStore(); renderNotify();
+  sysToast("알림 받는 방법을 저장했습니다.");
+});
+document.querySelector("#myInfoPhoneChange").addEventListener("click", () => sysToast("번호를 바꾸려면 새 번호로 본인인증을 다시 합니다. (준비 중)"));
+document.querySelector("#passwordForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const next = document.querySelector("#pwNext").value;
+  let message = "";
+  if (!document.querySelector("#pwCurrent").value) message = "현재 비밀번호를 입력해주세요.";
+  else if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(next)) message = "새 비밀번호는 8자 이상, 영문과 숫자를 섞어주세요.";
+  else if (next !== document.querySelector("#pwConfirm").value) message = "새 비밀번호 확인이 일치하지 않습니다.";
+  document.querySelector("#pwError").textContent = message;
+  if (message) return;
+  event.target.reset();
+  sysToast("비밀번호를 변경했습니다. (데모)");
+});
+syncSignupType();
+renderApprovals();
+
 renderRecords(); renderStaticCards(); renderTemplateList(); renderAnswerOverview(); updateHistoryPeriodOptions(); syncOuterTemplatePreview(); setInlineEditMode(false); selectRegion(document.querySelector('#printableTemplate [data-region="1"]'));
 renderMcList(); renderMcPreview(); renderMcSummary();
 syncRoleToViewport();
+// 기획 확인용: 주소 끝에 #login, #signup을 붙이면 해당 화면이 바로 열린다.
+if (["#login","#signup"].includes(location.hash)) openAuth(location.hash.slice(1));
