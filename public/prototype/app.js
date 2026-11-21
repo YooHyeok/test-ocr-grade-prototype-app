@@ -146,7 +146,9 @@ recordBody.addEventListener("click", (event) => {
 function renderStaticCards() {
   const seenStudents = new Set();
   const students = records.filter((record) => { if (seenStudents.has(record.student)) return false; seenStudents.add(record.student); return true; });
-  document.querySelector("#studentCards").innerHTML = students.map((record) => { const note = record.status === "검토 필요" ? "검토 필요 1건" : "최근 채점 완료"; return `<article class="manage-card"><span class="avatar">${record.student[0]}</span><div><h3>${record.student}</h3><p>${record.className}</p><small>${note}</small></div><button type="button" data-student-detail="${record.student}">상세 보기</button></article>`; }).join("");
+  // 가입 승인을 마친 학생은 목록 앞에 '신규 가입'으로 보인다.
+  const joined = accountStore.signups.filter((item) => item.type === "student" && item.status === "approved").reverse();
+  document.querySelector("#studentCards").innerHTML = joined.map((item) => `<article class="manage-card"><span class="avatar">${escapeHtml(item.name[0])}</span><div><h3>${escapeHtml(item.name)} <span class="new-badge">신규 가입</span></h3><p>${escapeHtml(item.className)}</p><small>${escapeHtml(item.decidedAt)} 승인</small></div><button type="button" data-student-detail="${escapeHtml(item.name)}">상세 보기</button></article>`).join("") + students.map((record) => { const note = record.status === "검토 필요" ? "검토 필요 1건" : "최근 채점 완료"; return `<article class="manage-card"><span class="avatar">${record.student[0]}</span><div><h3>${record.student}</h3><p>${record.className}</p><small>${note}</small></div><button type="button" data-student-detail="${record.student}">상세 보기</button></article>`; }).join("");
   document.querySelector("#categoryCards").innerHTML = ["중등 과학|화학 반응 · 이온 · 기체","통합과학|물질의 규칙성 · 화학 변화","화학 I|몰 · 산화 환원 · 중화 반응"].map((item) => { const [title,units]=item.split("|"); return `<article class="category-card"><span>▦</span><h3>${title}</h3><p>${units}</p><button>카테고리 관리</button></article>`; }).join("");
 }
 function renderAnswerOverview() {
@@ -1666,6 +1668,7 @@ document.querySelector("#signupVerifyForm").addEventListener("submit", (event) =
   const signup = { id:Date.now(), type:signupDraft.type, name:signupDraft.name, grade:signupDraft.grade, academy:signupDraft.academy, email:signupDraft.email, phone:signupDraft.phone, requestedAt:nowStamp(), status:"pending" };
   accountStore.signups.push(signup);
   writeAccountStore();
+  renderApprovals();
   const teacher = signup.type === "teacher";
   document.querySelector("#signupDoneText").textContent = teacher
     ? `${signup.academy} 관리자가 승인하면 가입이 완료됩니다. 승인되면 이메일로 알려드려요.`
@@ -1683,7 +1686,65 @@ document.querySelector("#signupVerifyForm").addEventListener("submit", (event) =
   showSignupStep(3);
 });
 
+/* ── 학생 관리 › 가입 승인 ── */
+let rejectTargetId = null;
+/** @returns {object[]} 승인을 기다리는 학생 가입 신청 */
+function pendingStudentSignups() { return accountStore.signups.filter((item) => item.type === "student" && item.status === "pending"); }
+/** @returns {void} 가입 승인 표와 탭의 대기 건수를 그린다. */
+function renderApprovals() {
+  const pending = pendingStudentSignups();
+  const count = document.querySelector("#approvalCount");
+  count.textContent = pending.length;
+  count.hidden = pending.length === 0;
+  document.querySelector("#approvalEmpty").hidden = pending.length > 0;
+  document.querySelector("#approvalBody").innerHTML = pending.map((item) => `<tr data-signup-id="${item.id}"><td class="nowrap">${escapeHtml(item.requestedAt)}</td><td><strong>${escapeHtml(item.name)}</strong></td><td>${escapeHtml(item.grade)}</td><td>${escapeHtml(item.email)}</td><td class="nowrap">${maskPhone(item.phone)}</td><td><span class="verify-badge">✓ 완료</span></td><td><select data-approval-class aria-label="${escapeHtml(item.name)} 클래스 배정"><option value="">클래스 선택</option>${CLASS_OPTIONS.map((name) => `<option${name.startsWith(item.grade) ? " selected" : ""}>${name}</option>`).join("")}</select></td><td class="nowrap"><button class="primary-button small" type="button" data-approve>승인</button> <button class="outline-button small" type="button" data-reject>거절</button></td></tr>`).join("");
+}
+/**
+ * 학생 관리 탭(학생 목록/가입 승인)을 바꾼다.
+ * @param {"list"|"approvals"} tab - 보여줄 탭
+ * @returns {void}
+ */
+function showStudentTab(tab) {
+  document.querySelectorAll("[data-student-tab]").forEach((button) => button.setAttribute("aria-selected", String(button.dataset.studentTab === tab)));
+  document.querySelectorAll("[data-student-panel]").forEach((panel) => { panel.hidden = panel.dataset.studentPanel !== tab; });
+}
+document.querySelectorAll("[data-student-tab]").forEach((button) => button.addEventListener("click", () => showStudentTab(button.dataset.studentTab)));
+document.querySelector("#approvalBody").addEventListener("click", (event) => {
+  const row = event.target.closest("[data-signup-id]");
+  if (!row) return;
+  const signup = accountStore.signups.find((item) => item.id === Number(row.dataset.signupId));
+  if (event.target.closest("[data-approve]")) {
+    const className = row.querySelector("[data-approval-class]").value;
+    if (!className) { sysToast("클래스를 먼저 배정해주세요.", true); return; }
+    Object.assign(signup, { status:"approved", className, decidedAt:nowStamp() });
+    writeAccountStore(); renderApprovals(); renderStaticCards();
+    sysToast(`${signup.name} 학생의 가입을 승인했습니다. (${className})`);
+  } else if (event.target.closest("[data-reject]")) {
+    rejectTargetId = signup.id;
+    document.querySelector("#rejectText").textContent = `${signup.name} (${signup.grade} · ${signup.email}) 학생의 가입 신청을 거절합니다.`;
+    document.querySelector("#rejectForm").reset();
+    document.querySelector("#rejectEtcLabel").hidden = true;
+    document.querySelector("#rejectModal").classList.remove("hidden");
+  }
+});
+/** @returns {void} */
+function closeRejectModal() { document.querySelector("#rejectModal").classList.add("hidden"); rejectTargetId = null; }
+document.querySelectorAll("[data-reject-close]").forEach((button) => button.addEventListener("click", closeRejectModal));
+document.querySelector("#rejectReason").addEventListener("change", (event) => { document.querySelector("#rejectEtcLabel").hidden = event.target.value !== "etc"; });
+document.querySelector("#rejectForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const signup = accountStore.signups.find((item) => item.id === rejectTargetId);
+  if (!signup) return;
+  const select = document.querySelector("#rejectReason");
+  const reason = select.value === "etc" ? document.querySelector("#rejectEtc").value.trim() : select.value;
+  if (!reason) { sysToast("거절 사유를 입력해주세요.", true); return; }
+  Object.assign(signup, { status:"rejected", rejectReason:reason, decidedAt:nowStamp() });
+  writeAccountStore(); renderApprovals(); closeRejectModal();
+  sysToast(`${signup.name} 학생의 가입을 거절했습니다.`);
+});
+
 syncSignupType();
+renderApprovals();
 
 renderRecords(); renderStaticCards(); renderTemplateList(); renderAnswerOverview(); updateHistoryPeriodOptions(); syncOuterTemplatePreview(); setInlineEditMode(false); selectRegion(document.querySelector('#printableTemplate [data-region="1"]'));
 renderMcList(); renderMcPreview(); renderMcSummary();

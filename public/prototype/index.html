@@ -100,7 +100,15 @@
 
       <section class="app-page" data-page-panel="students">
         <div class="section-heading"><div><p class="eyebrow">STUDENT DIRECTORY</p><h2>학생 관리</h2><p>학원과 클래스별 학생 계정, 최근 성적, 업로드 현황을 관리합니다.</p></div><button class="primary-button">＋ 학생 등록</button></div>
-        <div class="content-grid" id="studentCards"></div>
+        <div class="sys-tabs student-tabs" role="tablist" aria-label="학생 관리 탭">
+          <button type="button" role="tab" aria-selected="true" data-student-tab="list">학생 목록</button>
+          <button type="button" role="tab" aria-selected="false" data-student-tab="approvals">가입 승인 <span class="tab-count" id="approvalCount">0</span></button>
+        </div>
+        <div data-student-panel="list"><div class="content-grid" id="studentCards"></div></div>
+        <div data-student-panel="approvals" hidden>
+          <div class="approval-guide"><strong>본인인증을 마친 가입 신청입니다.</strong><span>클래스를 배정하고 승인하면 학생의 가입이 완료되고, 학생이 로그인할 수 있습니다.</span></div>
+          <div class="sys-table-wrap"><table class="sys-table approval-table"><thead><tr><th>신청일</th><th>이름</th><th>학년</th><th>이메일</th><th>휴대폰</th><th>본인인증</th><th>클래스 배정</th><th>처리</th></tr></thead><tbody id="approvalBody"></tbody></table><p class="empty-state" id="approvalEmpty" hidden>대기 중인 가입 신청이 없습니다.</p></div>
+        </div>
       </section>
 
       <section class="app-page" data-page-panel="templates">
@@ -338,6 +346,18 @@
         <footer><button class="outline-button" type="button" data-sys-confirm-cancel>취소</button><button class="danger-button" type="button" id="sysConfirmOk">삭제</button></footer>
       </section>
     </div>
+    <div class="modal-backdrop hidden" id="rejectModal">
+      <section class="sys-modal sys-confirm" role="alertdialog" aria-modal="true" aria-labelledby="rejectTitle">
+        <h2 id="rejectTitle">가입을 거절할까요?</h2><p id="rejectText"></p>
+        <form class="auth-form" id="rejectForm" novalidate>
+          <label>거절 사유<select id="rejectReason"><option>우리 학원 학생이 아닙니다</option><option>이름이 등록 명단과 다릅니다</option><option>중복 가입입니다</option><option value="etc">직접 입력</option></select></label>
+          <label id="rejectEtcLabel" hidden>사유 입력<input id="rejectEtc" maxlength="100" placeholder="학생에게 안내할 사유" /></label>
+          <small class="auth-help">거절 사유는 가입 신청한 이메일로 안내됩니다. (발송은 준비 중)</small>
+        </form>
+        <footer><button class="outline-button" type="button" data-reject-close>취소</button><button class="danger-button" type="submit" form="rejectForm">거절</button></footer>
+      </section>
+    </div>
+
     <div class="auth-screen" id="authScreen" hidden>
       <aside class="auth-brand" aria-label="서비스 소개">
         <div class="auth-logo"><strong>쪽지시험</strong><span>단답형 채점 관리</span></div>
