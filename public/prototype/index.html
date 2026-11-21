@@ -36,7 +36,7 @@
       <div class="sidebar-bottom">
         <div class="academy-mini"><span class="mini-label">현재 학원</span><strong>라온 과학학원</strong><span>전체 권한</span></div>
         <div class="profile-row">
-          <button class="profile-button" type="button"><span class="avatar">전</span><span><strong id="profileName">전선생</strong><small id="profileRole">academy admin</small></span></button>
+          <button class="profile-button" type="button" data-page="my-info" data-tooltip="내 정보"><span class="avatar">전</span><span><strong id="profileName">전선생</strong><small id="profileRole">academy admin</small></span></button>
           <button class="profile-more" type="button" id="profileMenuToggle" aria-haspopup="menu" aria-expanded="false" aria-controls="profileMenu" aria-label="계정 메뉴">⋯</button>
         </div>
         <div class="mode-switch" role="group" aria-label="화면 모드 전환">
@@ -241,11 +241,43 @@
         <div class="paper-board" id="myPaperCards"></div>
         <div class="pagination" id="paperPagination" aria-label="시험지 이력 페이지"></div>
       </section>
+
+      <section class="app-page" data-page-panel="my-info">
+        <div class="myinfo-layout">
+          <div class="myinfo-col">
+            <article class="myinfo-card">
+              <div class="myinfo-head"><span class="avatar myinfo-avatar" id="myInfoAvatar">유</span><div><h3 id="myInfoName">유재혁</h3><p><span class="status done" id="myInfoRole">학생</span><span id="myInfoAcademy">라온 과학학원</span></p></div></div>
+              <dl class="myinfo-list">
+                <div><dt>아이디 (이메일)</dt><dd id="myInfoEmail"></dd></div>
+                <div><dt>휴대폰</dt><dd><span id="myInfoPhone"></span><span class="verify-badge">✓ 본인인증 완료</span><button class="text-button" type="button" id="myInfoPhoneChange">번호 변경</button></dd></div>
+                <div><dt id="myInfoClassLabel">클래스</dt><dd id="myInfoClass"></dd></div>
+                <div><dt>가입일</dt><dd id="myInfoJoined"></dd></div>
+              </dl>
+            </article>
+            <article class="myinfo-card">
+              <h3>비밀번호 변경</h3>
+              <form class="auth-form" id="passwordForm" novalidate>
+                <label>현재 비밀번호<input type="password" id="pwCurrent" autocomplete="current-password" /></label>
+                <label>새 비밀번호<input type="password" id="pwNext" autocomplete="new-password" placeholder="8자 이상, 영문·숫자 포함" /></label>
+                <label>새 비밀번호 확인<input type="password" id="pwConfirm" autocomplete="new-password" /></label>
+                <p class="auth-error" id="pwError" role="alert"></p>
+                <div class="myinfo-actions"><button class="secondary-button" type="submit">비밀번호 변경</button></div>
+              </form>
+            </article>
+          </div>
+          <article class="myinfo-card myinfo-student" id="notifyCard">
+            <div class="myinfo-card-head"><h3>알림 받는 방법</h3><p>채점 결과와 학원 공지를 받을 방법을 고르세요. 여러 개를 고를 수 있어요.</p></div>
+            <div class="notify-options" id="notifyOptions"></div>
+            <div class="notify-details" id="notifyDetails"></div>
+            <div class="notify-footer"><small id="notifyHint"></small><button class="outline-button" type="button" id="notifyReset" disabled>되돌리기</button><button class="primary-button" type="button" id="notifySave" disabled>저장</button></div>
+          </article>
+        </div>
+      </section>
       <footer><span>쪽지시험 UI prototype</span><span>Google OCR · Supabase ready</span></footer>
     </main>
 
     <nav class="mobile-nav" id="mobileNav">
-      <button class="active teacher-only" type="button" data-page="dashboard"><span>⌂</span>홈</button><button class="teacher-only" type="button" data-page="records"><span>▤</span>기록</button><button type="button" data-open-upload><span>＋</span><strong>시험지 첨부</strong></button><button class="teacher-only" type="button" data-page="students"><span>♧</span>학생</button><button class="teacher-only" type="button" data-page="settings"><span>⚙</span>설정</button><button class="student-only" type="button" data-page="my-papers"><span>▤</span>내 시험지</button>
+      <button class="active teacher-only" type="button" data-page="dashboard"><span>⌂</span>홈</button><button class="teacher-only" type="button" data-page="records"><span>▤</span>기록</button><button type="button" data-open-upload><span>＋</span><strong>시험지 첨부</strong></button><button class="teacher-only" type="button" data-page="students"><span>♧</span>학생</button><button class="teacher-only" type="button" data-page="settings"><span>⚙</span>설정</button><button class="student-only" type="button" data-page="my-papers"><span>▤</span>내 시험지</button><button class="student-only mobile-myinfo" type="button" data-page="my-info"><span>☺</span>내 정보</button>
     </nav>
 
     <div class="modal-backdrop hidden" id="uploadModal">
@@ -431,6 +463,7 @@
       </section>
     </div>
     <div class="profile-menu" id="profileMenu" role="menu" aria-label="계정 메뉴" hidden>
+      <button type="button" role="menuitem" data-page="my-info"><span>☺</span>내 정보</button>
       <button type="button" role="menuitem" data-logout><span>⎋</span>로그아웃</button>
     </div>
     <div class="sys-toast hidden" id="sysToast" role="status"></div>

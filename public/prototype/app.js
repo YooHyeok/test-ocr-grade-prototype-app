@@ -14,7 +14,7 @@ let myPapers = [
   { id:6, title:"물질의 규칙성 주간 테스트", category:"통합과학 · 물질", uploaded:"04.27 18:30", date:"2026-04-27", status:"채점 완료", score:95 },
   { id:7, title:"산과 염기 개념 점검", category:"중등 화학 · 산과 염기", uploaded:"04.18 13:22", date:"2026-04-18", status:"채점 완료", score:70 }
 ];
-const pageTitles = { dashboard:"대시보드", records:"채점 관리", templates:"시험지 관리 · 주관식", "templates-mc":"시험지 관리 · 객관식", students:"학생 관리", categories:"그룹 관리", settings:"설정 · 채점 정책", "system-settings":"설정 · 시스템", "my-papers":"내 시험지" };
+const pageTitles = { dashboard:"대시보드", records:"채점 관리", templates:"시험지 관리 · 주관식", "templates-mc":"시험지 관리 · 객관식", students:"학생 관리", categories:"그룹 관리", settings:"설정 · 채점 정책", "system-settings":"설정 · 시스템", "my-papers":"내 시험지", "my-info":"내 정보" };
 const pageSubtitles = {
   dashboard:"",
   records:"학원, 클래스, 카테고리, 학생별로 시험지 원본과 결과를 관리합니다.",
@@ -91,6 +91,8 @@ function showPage(name) {
     group.classList.toggle("open", inGroup);
     group.querySelector(".nav-parent").classList.toggle("active", inGroup);
   });
+  document.body.dataset.currentPage = name;
+  if (name === "my-info") renderMyInfo();
   window.scrollTo({ top:0, behavior:"smooth" });
 }
 document.addEventListener("click", (event) => {
@@ -836,6 +838,7 @@ function applyRole(nextRole) {
   document.body.classList.toggle("student-mode", student);
   document.querySelectorAll("[data-role]").forEach((item) => item.classList.toggle("active", item.dataset.role === role));
   document.querySelector("#profileName").textContent=student ? "유재혁" : "전선생";
+  document.querySelector(".profile-button .avatar").textContent=student ? "유" : "전";
   document.querySelector("#profileRole").textContent=student ? "student account" : "academy admin";
   const collapsedToggle=document.querySelector("[data-collapsed-role-toggle]");
   const tooltip=student ? "선생님 모드로 전환" : "학생 모드로 전환";
@@ -1743,6 +1746,125 @@ document.querySelector("#rejectForm").addEventListener("submit", (event) => {
   sysToast(`${signup.name} 학생의 가입을 거절했습니다.`);
 });
 
+/* ── 내 정보 ── */
+let notifyDraft = structuredClone(accountStore.notify);
+/** @returns {boolean} 알림 설정을 고친 뒤 저장하지 않았는지 */
+function notifyDirty() { return JSON.stringify(notifyDraft) !== JSON.stringify(accountStore.notify); }
+/** @returns {void} 저장·되돌리기 버튼과 안내 문구를 지금 상태에 맞춘다. */
+function syncNotifyFooter() {
+  const dirty = notifyDirty();
+  document.querySelector("#notifySave").disabled = !dirty;
+  document.querySelector("#notifyReset").disabled = !dirty;
+  const hint = document.querySelector("#notifyHint");
+  if (notifyDraft.methods.length === 0) hint.textContent = "고른 방법이 없으면 채점 결과와 학원 공지를 알림으로 받을 수 없어요.";
+  else hint.textContent = dirty ? "바꾼 내용을 저장해주세요." : "";
+  hint.classList.toggle("warn", notifyDraft.methods.length === 0);
+}
+/**
+ * 문자·카카오톡 받을 번호 입력 (본인인증한 번호 / 다른 번호).
+ * @param {"sms"|"kakao"} id - 알림 방법
+ * @param {string} verifiedPhone - 본인인증한 번호
+ * @returns {string} HTML
+ */
+function notifyPhoneFields(id, verifiedPhone) {
+  const target = notifyDraft[id];
+  return `<div class="notify-radios"><label><input type="radio" name="${id}Phone" value="verified" data-notify-phone-mode="${id}"${target.useVerified ? " checked" : ""} /> 본인인증한 번호 <b>${maskPhone(verifiedPhone)}</b></label><label><input type="radio" name="${id}Phone" value="other" data-notify-phone-mode="${id}"${target.useVerified ? "" : " checked"} /> 다른 번호</label></div>${target.useVerified ? "" : `<input type="tel" inputmode="numeric" class="notify-input" data-notify-phone="${id}" value="${escapeHtml(target.phone)}" placeholder="010-0000-0000" aria-label="받을 휴대폰 번호" />`}`;
+}
+/**
+ * 고른 알림 방법 하나의 입력 영역.
+ * @param {object} method - NOTIFY_METHODS 항목
+ * @returns {string} HTML
+ */
+function notifyDetail(method) {
+  const profile = ACCOUNT_PROFILES.student;
+  let body = "";
+  if (method.id === "email") {
+    body = `<label class="notify-field">받을 이메일<input type="email" class="notify-input" data-notify-email value="${escapeHtml(notifyDraft.email)}" placeholder="example@email.com" /></label><small>계정 이메일(${profile.email})과 다른 주소로도 받을 수 있어요.</small>`;
+  } else if (method.id === "push") {
+    body = notifyDraft.pushAllowed
+      ? `<div class="push-state on"><span><strong>이 기기에서 받는 중</strong><small>Chrome · Windows</small></span><button class="text-button" type="button" data-push-toggle>끄기</button></div>`
+      : `<div class="push-state"><span><strong>이 기기는 아직 알림이 꺼져 있어요</strong><small>버튼을 누르면 브라우저가 알림 허용을 물어봐요.</small></span><button class="secondary-button" type="button" data-push-toggle>이 기기에서 알림 허용</button></div>`;
+    body += "<small>아이폰은 Safari에서 ‘홈 화면에 추가’한 뒤 알림을 허용할 수 있어요.</small>";
+  } else {
+    body = `<div class="notify-field">받을 휴대폰 번호${notifyPhoneFields(method.id, profile.phone)}</div><small>${method.id === "sms" ? "학원에서 문자 발송을 연결하면 받을 수 있어요." : "학원에서 카카오 알림톡을 연결하면 받을 수 있어요."} (유료 서비스 · 준비 중)</small>`;
+  }
+  return `<section class="notify-detail" data-notify-detail="${method.id}"><h4><span class="notify-icon ${method.id}">${method.icon}</span>${method.name}</h4>${body}</section>`;
+}
+/** @returns {void} 알림 방법 선택 칸과 고른 방법별 입력 영역을 그린다. */
+function renderNotify() {
+  document.querySelector("#notifyOptions").innerHTML = NOTIFY_METHODS.map((method) => `<label class="notify-option${notifyDraft.methods.includes(method.id) ? " checked" : ""}"><input type="checkbox" value="${method.id}" data-notify-method${notifyDraft.methods.includes(method.id) ? " checked" : ""} /><span class="notify-icon ${method.id}">${method.icon}</span><span class="notify-text"><strong>${method.name}</strong><small>${method.desc}</small></span><em class="notify-chip${method.paid ? " paid" : ""}">${method.chip}</em><i class="notify-check" aria-hidden="true"></i></label>`).join("");
+  const selected = NOTIFY_METHODS.filter((method) => notifyDraft.methods.includes(method.id));
+  document.querySelector("#notifyDetails").innerHTML = selected.length ? selected.map(notifyDetail).join("") : `<p class="notify-empty">위에서 알림 받을 방법을 골라주세요.</p>`;
+  syncNotifyFooter();
+}
+/** @returns {void} 지금 역할(학생/선생님)의 내 정보를 그린다. */
+function renderMyInfo() {
+  const student = role === "student";
+  const profile = ACCOUNT_PROFILES[student ? "student" : "admin"];
+  document.querySelector("#myInfoAvatar").textContent = profile.name[0];
+  document.querySelector("#myInfoName").textContent = profile.name;
+  document.querySelector("#myInfoRole").textContent = profile.role;
+  document.querySelector("#myInfoAcademy").textContent = profile.academy;
+  document.querySelector("#myInfoEmail").textContent = profile.email;
+  document.querySelector("#myInfoPhone").textContent = maskPhone(profile.phone);
+  document.querySelector("#myInfoClassLabel").textContent = profile.classLabel;
+  document.querySelector("#myInfoClass").textContent = profile.className;
+  document.querySelector("#myInfoJoined").textContent = profile.joined;
+  document.querySelector("#pageSubtitle").textContent = student ? "계정 정보와 알림 받는 방법을 관리합니다." : "계정 정보와 비밀번호를 관리합니다.";
+  if (student) renderNotify();
+}
+document.querySelector("#notifyOptions").addEventListener("change", (event) => {
+  const box = event.target.closest("[data-notify-method]");
+  if (!box) return;
+  const methods = new Set(notifyDraft.methods);
+  if (box.checked) methods.add(box.value); else methods.delete(box.value);
+  notifyDraft.methods = NOTIFY_METHODS.map((method) => method.id).filter((id) => methods.has(id));
+  renderNotify();
+});
+document.querySelector("#notifyDetails").addEventListener("input", (event) => {
+  if (event.target.matches("[data-notify-email]")) notifyDraft.email = event.target.value.trim();
+  else if (event.target.matches("[data-notify-phone]")) notifyDraft[event.target.dataset.notifyPhone].phone = event.target.value.trim();
+  else return;
+  syncNotifyFooter();
+});
+document.querySelector("#notifyDetails").addEventListener("change", (event) => {
+  const radio = event.target.closest("[data-notify-phone-mode]");
+  if (!radio) return;
+  notifyDraft[radio.dataset.notifyPhoneMode].useVerified = radio.value === "verified";
+  renderNotify();
+});
+document.querySelector("#notifyDetails").addEventListener("click", (event) => {
+  if (!event.target.closest("[data-push-toggle]")) return;
+  notifyDraft.pushAllowed = !notifyDraft.pushAllowed;
+  if (notifyDraft.pushAllowed) sysToast("이 기기에서 알림을 허용했습니다. (데모)");
+  renderNotify();
+});
+document.querySelector("#notifyReset").addEventListener("click", () => { notifyDraft = structuredClone(accountStore.notify); renderNotify(); });
+document.querySelector("#notifySave").addEventListener("click", () => {
+  const methods = new Set(notifyDraft.methods);
+  let message = "";
+  if (methods.has("email") && !EMAIL_PATTERN.test(notifyDraft.email)) message = "받을 이메일 주소를 확인해주세요.";
+  else if (methods.has("push") && !notifyDraft.pushAllowed) message = "앱 푸시를 받으려면 이 기기에서 알림을 허용해주세요.";
+  else if (["sms","kakao"].some((id) => methods.has(id) && !notifyDraft[id].useVerified && !PHONE_PATTERN.test(notifyDraft[id].phone))) message = "받을 휴대폰 번호를 확인해주세요.";
+  if (message) { sysToast(message, true); return; }
+  ["sms","kakao"].forEach((id) => { if (!notifyDraft[id].useVerified) notifyDraft[id].phone = formatPhone(notifyDraft[id].phone); });
+  accountStore.notify = structuredClone(notifyDraft);
+  writeAccountStore(); renderNotify();
+  sysToast("알림 받는 방법을 저장했습니다.");
+});
+document.querySelector("#myInfoPhoneChange").addEventListener("click", () => sysToast("번호를 바꾸려면 새 번호로 본인인증을 다시 합니다. (준비 중)"));
+document.querySelector("#passwordForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const next = document.querySelector("#pwNext").value;
+  let message = "";
+  if (!document.querySelector("#pwCurrent").value) message = "현재 비밀번호를 입력해주세요.";
+  else if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(next)) message = "새 비밀번호는 8자 이상, 영문과 숫자를 섞어주세요.";
+  else if (next !== document.querySelector("#pwConfirm").value) message = "새 비밀번호 확인이 일치하지 않습니다.";
+  document.querySelector("#pwError").textContent = message;
+  if (message) return;
+  event.target.reset();
+  sysToast("비밀번호를 변경했습니다. (데모)");
+});
 syncSignupType();
 renderApprovals();
 
