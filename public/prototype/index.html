@@ -6,7 +6,7 @@
     <title>쪽지시험 | 단답형 채점 관리</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=58" />
+    <link rel="stylesheet" href="./styles.css?v=59" />
   </head>
   <body>
     <aside class="sidebar">
@@ -35,7 +35,10 @@
       </nav>
       <div class="sidebar-bottom">
         <div class="academy-mini"><span class="mini-label">현재 학원</span><strong>라온 과학학원</strong><span>전체 권한</span></div>
-        <button class="profile-button" type="button"><span class="avatar">전</span><span><strong id="profileName">전선생</strong><small id="profileRole">academy admin</small></span><span>⋯</span></button>
+        <div class="profile-row">
+          <button class="profile-button" type="button"><span class="avatar">전</span><span><strong id="profileName">전선생</strong><small id="profileRole">academy admin</small></span></button>
+          <button class="profile-more" type="button" id="profileMenuToggle" aria-haspopup="menu" aria-expanded="false" aria-controls="profileMenu" aria-label="계정 메뉴">⋯</button>
+        </div>
         <div class="mode-switch" role="group" aria-label="화면 모드 전환">
           <button class="active" type="button" data-role="admin">선생님 모드</button>
           <button type="button" data-role="student">학생 모드</button>
@@ -50,6 +53,7 @@
         <div class="header-actions">
           <button class="primary-button header-new-template hidden" type="button" data-new-template>＋ 새 시험지 양식</button>
         </div>
+        <button class="topbar-logout" type="button" data-logout>로그아웃</button>
       </header>
 
       <section class="app-page active" data-page-panel="dashboard">
@@ -334,8 +338,83 @@
         <footer><button class="outline-button" type="button" data-sys-confirm-cancel>취소</button><button class="danger-button" type="button" id="sysConfirmOk">삭제</button></footer>
       </section>
     </div>
+    <div class="auth-screen" id="authScreen" hidden>
+      <aside class="auth-brand" aria-label="서비스 소개">
+        <div class="auth-logo"><strong>쪽지시험</strong><span>단답형 채점 관리</span></div>
+        <div class="auth-brand-copy"><h2>시험지는 찍기만,<br />채점은 OCR이.</h2><p>학원 코드로 가입하고 선생님 승인을 받으면<br />바로 시험지를 올릴 수 있어요.</p></div>
+        <ol class="auth-flow"><li><b>1</b>정보 입력</li><li><b>2</b>본인인증</li><li><b>3</b>선생님 승인</li></ol>
+      </aside>
+      <section class="auth-main">
+        <div class="auth-card" data-auth-view="login">
+          <p class="eyebrow mint">WELCOME BACK</p><h2>로그인</h2>
+          <form class="auth-form" id="loginForm" novalidate>
+            <label>이메일<input type="email" id="loginEmail" autocomplete="username" placeholder="example@email.com" /></label>
+            <label>비밀번호<input type="password" id="loginPassword" autocomplete="current-password" placeholder="비밀번호" /></label>
+            <p class="auth-error" id="loginError" role="alert"></p>
+            <button class="primary-button auth-submit" type="submit">로그인</button>
+          </form>
+          <p class="auth-switch">아직 계정이 없나요? <button class="text-button" type="button" data-auth-go="signup">회원가입</button></p>
+          <p class="auth-demo">화면 기획용입니다. 아무 이메일·비밀번호로 들어갈 수 있고, 승인 대기 중인 이메일로 로그인하면 대기 안내가 나옵니다.</p>
+          <button class="text-button auth-back" type="button" data-auth-close>← 화면 둘러보기로 돌아가기</button>
+        </div>
+
+        <div class="auth-card" data-auth-view="signup" hidden>
+          <ol class="auth-steps" id="signupSteps" aria-label="가입 단계"><li data-step="1"><b>1</b>기본 정보</li><li data-step="2"><b>2</b>본인인증</li><li data-step="3"><b>3</b>승인 대기</li></ol>
+
+          <form class="auth-form" id="signupInfoForm" data-signup-step="1" novalidate>
+            <h2>회원가입</h2>
+            <div class="auth-type" role="radiogroup" aria-label="가입 유형">
+              <label><input type="radio" name="signupType" value="student" checked /><span><strong>학생</strong><small>시험지를 올리고 채점 결과를 받아요</small></span></label>
+              <label><input type="radio" name="signupType" value="teacher" /><span><strong>선생님</strong><small>시험지를 만들고 채점을 관리해요</small></span></label>
+            </div>
+            <label>학원 코드<span class="auth-inline"><input id="signupAcademyCode" class="mono" placeholder="예: RAON" autocomplete="off" /><button class="outline-button" type="button" id="signupAcademyCheck">확인</button></span><small class="auth-help" id="signupAcademyResult">학원에서 받은 코드를 입력하세요.</small></label>
+            <div class="auth-row">
+              <label>이름<input id="signupName" autocomplete="name" placeholder="실명" /></label>
+              <label data-student-field>학년<select id="signupGrade"><option value="">학년 선택</option><option>중1</option><option>중2</option><option>중3</option><option>고1</option><option>고2</option><option>고3</option></select></label>
+            </div>
+            <label>이메일 (아이디)<input type="email" id="signupEmail" autocomplete="email" placeholder="example@email.com" /></label>
+            <div class="auth-row">
+              <label>비밀번호<input type="password" id="signupPassword" autocomplete="new-password" placeholder="8자 이상, 영문·숫자 포함" /></label>
+              <label>비밀번호 확인<input type="password" id="signupPasswordConfirm" autocomplete="new-password" /></label>
+            </div>
+            <div class="auth-terms">
+              <label class="auth-check all"><input type="checkbox" id="signupAgreeAll" /> 전체 동의</label>
+              <label class="auth-check"><input type="checkbox" data-agree /> [필수] 서비스 이용약관 동의</label>
+              <label class="auth-check"><input type="checkbox" data-agree /> [필수] 개인정보 수집·이용 동의</label>
+            </div>
+            <p class="auth-error" id="signupInfoError" role="alert"></p>
+            <button class="primary-button auth-submit" type="submit">다음 · 본인인증</button>
+            <p class="auth-switch">이미 계정이 있나요? <button class="text-button" type="button" data-auth-go="login">로그인</button></p>
+          </form>
+
+          <form class="auth-form" id="signupVerifyForm" data-signup-step="2" novalidate hidden>
+            <h2>본인인증</h2>
+            <p class="auth-lead">가입한 사람이 본인인지 휴대폰으로 확인합니다. 인증한 번호는 내 정보에서 알림 받을 번호로도 쓸 수 있어요.</p>
+            <label>휴대폰 번호<span class="auth-inline"><input type="tel" id="verifyPhone" inputmode="numeric" placeholder="010-0000-0000" autocomplete="tel" /><button class="outline-button" type="button" id="verifySend">인증번호 받기</button></span></label>
+            <label id="verifyCodeField" hidden>인증번호<span class="auth-inline"><span class="auth-code"><input id="verifyCode" inputmode="numeric" maxlength="6" placeholder="6자리 숫자" autocomplete="one-time-code" /><em id="verifyTimer">03:00</em></span><button class="outline-button" type="button" id="verifyConfirm">확인</button></span><small class="auth-help">데모: 아무 6자리 숫자나 입력하면 통과합니다.</small></label>
+            <div class="verify-done" id="verifyDone" hidden><b>✓</b><span><strong>본인인증이 완료되었습니다</strong><small id="verifyDoneText"></small></span></div>
+            <small class="auth-help" data-student-field>만 14세 미만 학생은 보호자 휴대폰으로 인증하고 보호자 동의를 받습니다.</small>
+            <small class="auth-help">실제 서비스에서는 PASS 등 휴대폰 본인확인 서비스 창이 열립니다.</small>
+            <p class="auth-error" id="signupVerifyError" role="alert"></p>
+            <div class="auth-buttons"><button class="secondary-button" type="button" data-signup-back>이전</button><button class="primary-button" type="submit" id="signupSubmit" disabled>가입 신청</button></div>
+          </form>
+
+          <div class="auth-done" data-signup-step="3" hidden>
+            <span class="auth-done-icon" aria-hidden="true">⏳</span>
+            <h2>가입 신청이 접수되었습니다</h2>
+            <p class="auth-lead" id="signupDoneText"></p>
+            <dl class="auth-summary" id="signupSummary"></dl>
+            <ol class="auth-progress"><li class="done">정보 입력</li><li class="done">본인인증</li><li class="wait" id="signupWaitLabel">선생님 승인 대기</li></ol>
+            <button class="primary-button auth-submit" type="button" data-auth-go="login">로그인 화면으로</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="profile-menu" id="profileMenu" role="menu" aria-label="계정 메뉴" hidden>
+      <button type="button" role="menuitem" data-logout><span>⎋</span>로그아웃</button>
+    </div>
     <div class="sys-toast hidden" id="sysToast" role="status"></div>
-    <div id="printArea" aria-hidden="true"></div>    <div id="printArea" aria-hidden="true"></div>
-    <script src="./app.js?v=58"></script>
+    <div id="printArea" aria-hidden="true"></div>
+    <script src="./app.js?v=59"></script>
   </body>
 </html>
