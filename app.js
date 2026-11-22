@@ -1577,7 +1577,72 @@ document.querySelector("#signupAcademyCheck").addEventListener("click", checkAca
 document.querySelector("#signupAcademyCode").addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); checkAcademyCode(); } });
 document.querySelector("#signupAcademyCode").addEventListener("input", () => { signupDraft.academy = null; document.querySelector("#signupAcademyResult").classList.remove("ok","bad"); });
 document.querySelector("#signupAgreeAll").addEventListener("change", (event) => { authScreen.querySelectorAll("[data-agree]").forEach((box) => { box.checked = event.target.checked; }); });
-authScreen.querySelectorAll("[data-agree]").forEach((box) => box.addEventListener("change", () => { document.querySelector("#signupAgreeAll").checked = [...authScreen.querySelectorAll("[data-agree]")].every((item) => item.checked); }));
+/** @returns {void} 개별 약관 체크에 맞춰 전체 동의 체크를 맞춘다. */
+function syncAgreeAll() { document.querySelector("#signupAgreeAll").checked = [...authScreen.querySelectorAll("[data-agree]")].every((item) => item.checked); }
+authScreen.querySelectorAll("[data-agree]").forEach((box) => box.addEventListener("change", syncAgreeAll));
+
+/* 약관 보기: 가입 화면에서 약관 전문을 띄우고, 창에서 동의하면 해당 항목을 체크한다. (기획용 초안, 법률 검토 전) */
+const TERMS = {
+  service:{
+    title:"서비스 이용약관",
+    body:`<p class="terms-meta">시행일: 정식 서비스 시작일 · 기획용 초안 (법률 검토 전)</p>
+<h3>제1조 (목적)</h3><p>이 약관은 쪽지시험(이하 "서비스")이 제공하는 시험지 업로드·자동 채점 서비스의 이용 조건과 절차, 회원과 서비스의 권리·의무를 정합니다.</p>
+<h3>제2조 (용어)</h3><ol><li>"학원"은 서비스에 등록해 학원 코드를 받은 교육기관을 말합니다.</li><li>"선생님"은 학원 소속으로 시험지를 만들고 채점을 관리하는 회원을 말합니다.</li><li>"학생"은 학원 코드로 가입 신청하고 선생님의 승인을 받은 회원을 말합니다.</li></ol>
+<h3>제3조 (회원 가입과 승인)</h3><ol><li>가입은 기본 정보 입력, 휴대폰 본인인증, 학원(선생님)의 승인을 모두 마치면 완료됩니다.</li><li>학원은 소속을 확인할 수 없거나 정보가 사실과 다르면 가입 신청을 거절할 수 있으며, 거절 사유를 안내합니다.</li><li>만 14세 미만은 법정대리인(보호자)의 동의를 받아야 가입할 수 있습니다.</li></ol>
+<h3>제4조 (계정 관리)</h3><p>회원은 아이디(이메일)와 비밀번호를 직접 관리해야 하며, 계정을 다른 사람에게 빌려주거나 넘길 수 없습니다. 계정이 도용된 것을 알게 되면 바로 학원 또는 서비스에 알려야 합니다.</p>
+<h3>제5조 (서비스 내용)</h3><ol><li>시험지 사진 업로드와 촬영 품질 검사</li><li>OCR을 이용한 답안 인식과 자동 채점, 채점 결과·이력 조회</li><li>채점 결과와 학원 공지 알림 (회원이 고른 방법으로 발송)</li></ol><p>자동 채점 결과는 선생님의 검토를 거쳐 바뀌거나 확정될 수 있습니다.</p>
+<h3>제6조 (회원의 의무)</h3><p>회원은 다른 사람의 시험지를 자기 것처럼 올리거나, 채점 결과를 조작하거나, 서비스 운영을 방해하는 행위를 해서는 안 됩니다.</p>
+<h3>제7조 (업로드한 자료)</h3><p>회원이 올린 시험지 사진과 답안은 채점과 학습 기록 제공에만 사용하며, 그 권리는 회원과 학원에 있습니다.</p>
+<h3>제8조 (이용 제한과 탈퇴)</h3><p>회원은 언제든지 탈퇴할 수 있습니다. 이 약관을 어기면 서비스 이용이 제한될 수 있습니다.</p>
+<h3>제9조 (책임의 제한)</h3><p>손글씨 상태나 촬영 환경에 따라 OCR 인식 오류가 생길 수 있으며, 서비스는 선생님 검토 기능으로 이를 보완합니다. 천재지변 등 불가항력으로 서비스를 제공할 수 없는 경우에는 책임을 지지 않습니다.</p>`
+  },
+  privacy:{
+    title:"개인정보 수집·이용 동의",
+    body:`<p class="terms-meta">기획용 초안 (법률 검토 전)</p>
+<p>쪽지시험은 회원 가입과 서비스 제공을 위해 아래와 같이 개인정보를 수집·이용합니다.</p>
+<table class="terms-table"><thead><tr><th>수집 목적</th><th>수집 항목</th><th>보유 기간</th></tr></thead><tbody>
+<tr><td>회원 가입, 본인 확인, 학원 승인</td><td>이름, 이메일, 비밀번호(암호화 저장), 휴대폰 번호, 학년, 소속 학원</td><td>회원 탈퇴 시까지</td></tr>
+<tr><td>시험지 채점과 결과 제공</td><td>시험지 사진, 답안 인식 결과, 점수, 채점 이력</td><td>회원 탈퇴 시까지</td></tr>
+<tr><td>알림 발송</td><td>알림 받을 이메일·휴대폰 번호, 기기 알림 허용 정보</td><td>알림 해제 또는 탈퇴 시까지</td></tr>
+<tr><td>본인인증 기록</td><td>본인인증 결과, 인증 일시</td><td>관련 법령에서 정한 기간</td></tr>
+</tbody></table>
+<h3>동의를 거부할 권리</h3><p>개인정보 수집·이용에 동의하지 않을 수 있습니다. 다만 위 항목은 서비스 제공에 꼭 필요하므로, 동의하지 않으면 회원 가입을 할 수 없습니다.</p>
+<h3>만 14세 미만 회원</h3><p>만 14세 미만 학생의 개인정보는 법정대리인(보호자)의 동의를 받아 수집하며, 보호자 휴대폰으로 본인인증을 진행합니다.</p>
+<h3>처리 위탁</h3><p>휴대폰 본인인증과 알림 발송은 전문 업체에 맡겨 처리하며, 업체와 맡기는 업무는 개인정보 처리방침에서 안내합니다.</p>`
+  }
+};
+let termsOpenKey = null;
+/**
+ * 약관 창을 연다.
+ * @param {"service"|"privacy"} key - 약관 종류
+ * @returns {void}
+ */
+function openTerms(key) {
+  termsOpenKey = key;
+  document.querySelector("#termsTitle").textContent = TERMS[key].title;
+  const body = document.querySelector("#termsBody");
+  body.innerHTML = TERMS[key].body;
+  body.scrollTop = 0;
+  const agreed = authScreen.querySelector(`[data-agree="${key}"]`).checked;
+  document.querySelector("#termsAgree").textContent = agreed ? "동의함 ✓" : "동의";
+  document.querySelector("#termsModal").classList.remove("hidden");
+  body.focus();
+}
+/** @returns {void} 약관 창을 닫고 보기 버튼으로 초점을 돌린다. */
+function closeTerms() {
+  document.querySelector("#termsModal").classList.add("hidden");
+  authScreen.querySelector(`[data-terms-open="${termsOpenKey}"]`)?.focus();
+  termsOpenKey = null;
+}
+authScreen.querySelectorAll("[data-terms-open]").forEach((button) => button.addEventListener("click", () => openTerms(button.dataset.termsOpen)));
+document.querySelectorAll("[data-terms-close]").forEach((button) => button.addEventListener("click", closeTerms));
+document.querySelector("#termsModal").addEventListener("click", (event) => { if (event.target.id === "termsModal") closeTerms(); });
+document.addEventListener("keydown", (event) => { if (event.key === "Escape" && termsOpenKey) closeTerms(); });
+document.querySelector("#termsAgree").addEventListener("click", () => {
+  authScreen.querySelector(`[data-agree="${termsOpenKey}"]`).checked = true;
+  syncAgreeAll();
+  closeTerms();
+});
 
 document.querySelector("#loginForm").addEventListener("submit", (event) => {
   event.preventDefault();
