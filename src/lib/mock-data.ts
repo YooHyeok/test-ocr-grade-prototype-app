@@ -530,3 +530,19 @@ export const PENDING_SIGNUPS: SignupRequest[] = [
     requestedAt: "2026-11-21 10:03",
   },
 ];
+
+/** 프로필에 아직 없는 내 정보 항목 (본인인증한 휴대폰, 클래스, 가입일). 계정 권한별 예시 */
+export const MY_ACCOUNT_EXTRA = {
+  teacher: {
+    phone: "010-9876-5432",
+    classLabel: "담당 클래스",
+    className: "고2 화학 I 외 2개",
+    joined: "2025-12-15",
+  },
+  student: {
+    phone: "010-1234-5678",
+    classLabel: "클래스",
+    className: "고2 화학 I",
+    joined: "2026-03-02",
+  },
+} as const;

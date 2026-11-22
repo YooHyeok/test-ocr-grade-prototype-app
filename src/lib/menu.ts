@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Plus,
   Settings,
+  UserRound,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -38,6 +39,14 @@ export type MenuEntry = (MenuItem | MenuGroup) & { mode: Mode };
 export const HOME_BY_MODE: Record<Mode, string> = {
   teacher: "/",
   student: "/my-papers",
+};
+
+/** 내 정보 (선생님은 사이드바 계정 메뉴로 들어가고, 학생은 메뉴에도 보인다) */
+const MY_INFO: MenuItem = {
+  to: "/me",
+  label: "내 정보",
+  icon: UserRound,
+  subtitle: "계정 정보와 비밀번호를 관리합니다.",
 };
 
 export const MENU: MenuEntry[] = [
@@ -118,6 +127,10 @@ export const MENU: MenuEntry[] = [
       "시험지 사진과 카테고리를 저장합니다. 채점은 저장 후 별도로 시작합니다.",
     primary: true,
   },
+  {
+    mode: "student",
+    ...MY_INFO,
+  },
 ];
 
 /**
@@ -132,11 +145,17 @@ export function isMenuGroup(entry: MenuItem | MenuGroup): entry is MenuGroup {
 /**
  * 경로에 해당하는 메뉴 항목을 찾는다. 그룹 하위 항목까지 탐색한다.
  * 그룹 하위 항목은 헤더에 "그룹명 · 항목명" 형태로 표시되도록 label을 합쳐 반환한다.
+ * 모드를 주면 그 모드의 메뉴만 보고, 없으면 메뉴 밖 화면(내 정보)까지 찾는다.
  * @param {string} pathname - 현재 경로
+ * @param {Mode} [mode] - 화면 모드
  * @returns {MenuItem | undefined} 일치하는 메뉴 항목
  */
-export function findMenuItem(pathname: string): MenuItem | undefined {
+export function findMenuItem(
+  pathname: string,
+  mode?: Mode,
+): MenuItem | undefined {
   for (const entry of MENU) {
+    if (mode && entry.mode !== mode) continue;
     if (!isMenuGroup(entry)) {
       if (entry.to === pathname) return entry;
       continue;
@@ -144,5 +163,5 @@ export function findMenuItem(pathname: string): MenuItem | undefined {
     const child = entry.children.find((item) => item.to === pathname);
     if (child) return { ...child, label: `${entry.label} · ${child.label}` };
   }
-  return undefined;
+  return pathname === MY_INFO.to ? MY_INFO : undefined;
 }

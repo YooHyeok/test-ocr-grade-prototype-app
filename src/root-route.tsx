@@ -24,10 +24,12 @@ const SettingsPage = lazy(() => import("@/pages/settings-page"));
 const MyPapersPage = lazy(() => import("@/pages/my-papers-page"));
 const UploadPage = lazy(() => import("@/pages/upload-page"));
 const SystemSettingsPage = lazy(() => import("@/pages/system-settings-page"));
+const MyInfoPage = lazy(() => import("@/pages/my-info-page"));
 
 /**
  * 라우트 정의. 메뉴 구성(제목/설명/아이콘)은 src/lib/menu.ts에서 관리한다.
  * - 비로그인: 로그인·회원가입 화면만 접근
+ * - 내 정보: 선생님·학생 공통
  * - 로그인: 모드(선생님/학생)별 화면만 접근, 다른 모드 주소는 자기 첫 화면으로 이동
  * - 시스템 설정: 시스템 관리자(profiles.is_admin)만 접근
  * - 로그인 후 화면은 AppLayout 안에서 지연 로딩한다. (사이드바·헤더는 유지)
@@ -57,6 +59,7 @@ export default function RootRoute() {
 
       <Route element={<MemberOnlyLayout />}>
         <Route element={<AppLayout />}>
+          <Route path="/me" element={<MyInfoPage />} />
           <Route element={<RoleOnlyLayout mode="teacher" />}>
             <Route path="/" element={<DashboardPage />} />
             <Route

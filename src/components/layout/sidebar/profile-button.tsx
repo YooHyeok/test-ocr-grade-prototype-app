@@ -1,5 +1,6 @@
-import { useCallback } from "react";
-import { Ellipsis, LogOut } from "lucide-react";
+import { useCallback, useState } from "react";
+import { Link } from "react-router";
+import { Ellipsis, LogOut, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import {
   Popover,
@@ -16,7 +17,7 @@ import { useSession } from "@/store/session";
 const ROLE_LABEL = { teacher: "선생님", student: "학생" } as const;
 
 /**
- * 로그인 사용자 프로필 버튼. 누르면 계정 정보와 로그아웃 메뉴를 띄운다.
+ * 로그인 사용자 프로필 버튼. 누르면 계정 정보와 내 정보·로그아웃 메뉴를 띄운다. (어느 화면에서든 로그아웃)
  * 아이콘 전용 사이드바에서는 아바타만 표시한다.
  * @returns {JSX.Element}
  */
@@ -24,18 +25,23 @@ export default function ProfileButton() {
   const compact = useSidebarCompact();
   const session = useSession();
   const profile = useCurrentProfile();
+  const [open, setOpen] = useState(false);
   const { mutate: signOut, isPending } = useSignOut({
     onError: (error) =>
       toast.error(getErrorMessage(error), { position: "top-center" }),
   });
 
-  const handleSignOut = useCallback(() => signOut(), [signOut]);
+  const handleSignOut = useCallback(() => {
+    setOpen(false);
+    signOut();
+  }, [signOut]);
+  const handleClose = useCallback(() => setOpen(false), []);
 
   const name = profile?.name || session?.user.email || "사용자";
   const roleLabel = profile ? ROLE_LABEL[profile.role] : "";
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
           type="button"
@@ -68,11 +74,18 @@ export default function ProfileButton() {
             {session?.user.email}
           </small>
         </div>
+        <Link
+          to="/me"
+          onClick={handleClose}
+          className="hover:bg-muted mt-1 flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm"
+        >
+          <UserRound className="size-4" />내 정보
+        </Link>
         <button
           type="button"
           onClick={handleSignOut}
           disabled={isPending}
-          className="hover:bg-muted mt-1 flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm disabled:opacity-50"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm text-[#c0392b] hover:bg-[#fdecea] disabled:opacity-50"
         >
           <LogOut className="size-4" />
           로그아웃
