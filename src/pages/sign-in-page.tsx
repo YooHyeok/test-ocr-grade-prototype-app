@@ -1,4 +1,5 @@
 import { useCallback, useState, type ChangeEvent, type FormEvent } from "react";
+import { Link } from "react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,8 @@ import { DEMO_ACCOUNTS } from "@/lib/backend/mock";
 
 /**
  * 로그인 페이지. 계정은 학원에서 발급한 이메일·비밀번호를 사용한다.
- * TODO: 비밀번호 찾기, 학생 계정 발급 흐름(기획 확정 후)
+ * 계정이 없으면 회원가입(학원 코드·본인인증·선생님 승인)으로 이동한다.
+ * TODO: 비밀번호 찾기
  * @returns {JSX.Element}
  */
 export default function SignInPage() {
@@ -47,7 +49,7 @@ export default function SignInPage() {
         <p className="eyebrow">SIGN IN</p>
         <h1 className="mb-1 text-2xl font-bold">쪽지시험 로그인</h1>
         <p className="text-muted-foreground mb-6 text-sm">
-          학원에서 발급받은 계정으로 로그인하세요.
+          가입 승인을 받은 계정으로 로그인하세요.
         </p>
 
         <form onSubmit={handleSubmit} className="grid gap-2.5">
@@ -73,6 +75,16 @@ export default function SignInPage() {
             {isPending ? "로그인 중..." : "로그인"}
           </Button>
         </form>
+
+        <p className="text-muted-foreground mt-4.5 text-center text-[13px]">
+          아직 계정이 없나요?{" "}
+          <Link
+            to="/sign-up"
+            className="text-primary font-bold hover:underline"
+          >
+            회원가입
+          </Link>
+        </p>
 
         {appConfig.backend === "mock" && (
           <div className="bg-muted text-muted-foreground mt-5 rounded-lg p-3 text-xs">

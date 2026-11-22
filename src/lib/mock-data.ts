@@ -9,6 +9,7 @@ import type {
   MyPaper,
   ObjectiveQuestion,
   Student,
+  SignupRequest,
   SubjectiveQuestion,
   TeacherAssignment,
 } from "@/type";
@@ -494,4 +495,38 @@ export const GRADING_POLICIES = [
   "OCR 결과는 학생이 `채점하기` 버튼을 누른 뒤에만 처리",
   "채점 완료된 시험지는 이미지 교체 금지",
   "낮은 신뢰도의 화학식은 선생님 검토 대상으로 이동",
+];
+
+/** 본인인증을 마치고 가입 승인을 기다리는 학생 (학생 관리 › 가입 승인) */
+export const PENDING_SIGNUPS: SignupRequest[] = [
+  {
+    id: 1,
+    type: "student",
+    name: "이서연",
+    grade: "중3",
+    academy: "라온 과학학원",
+    email: "seoyeon@student.kr",
+    phone: "010-2345-6789",
+    requestedAt: "2026-11-20 18:42",
+  },
+  {
+    id: 2,
+    type: "student",
+    name: "최민준",
+    grade: "고1",
+    academy: "라온 과학학원",
+    email: "minjun@student.kr",
+    phone: "010-3456-7890",
+    requestedAt: "2026-11-21 09:15",
+  },
+  {
+    id: 3,
+    type: "student",
+    name: "정하은",
+    grade: "고2",
+    academy: "라온 과학학원",
+    email: "haeun@student.kr",
+    phone: "010-4567-8901",
+    requestedAt: "2026-11-21 10:03",
+  },
 ];

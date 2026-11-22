@@ -9,6 +9,7 @@ import GlobalLoader from "@/components/global-loader";
 
 // 페이지는 처음 방문할 때 코드를 내려받는다. (첫 로딩 번들 크기 축소)
 const SignInPage = lazy(() => import("@/pages/sign-in-page"));
+const SignUpPage = lazy(() => import("@/pages/sign-up-page"));
 const DashboardPage = lazy(() => import("@/pages/dashboard-page"));
 const ExamSheetSubjectivePage = lazy(
   () => import("@/pages/exam-sheet-subjective-page"),
@@ -26,7 +27,7 @@ const SystemSettingsPage = lazy(() => import("@/pages/system-settings-page"));
 
 /**
  * 라우트 정의. 메뉴 구성(제목/설명/아이콘)은 src/lib/menu.ts에서 관리한다.
- * - 비로그인: 로그인 화면만 접근
+ * - 비로그인: 로그인·회원가입 화면만 접근
  * - 로그인: 모드(선생님/학생)별 화면만 접근, 다른 모드 주소는 자기 첫 화면으로 이동
  * - 시스템 설정: 시스템 관리자(profiles.is_admin)만 접근
  * - 로그인 후 화면은 AppLayout 안에서 지연 로딩한다. (사이드바·헤더는 유지)
@@ -41,6 +42,14 @@ export default function RootRoute() {
           element={
             <Suspense fallback={<GlobalLoader />}>
               <SignInPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/sign-up"
+          element={
+            <Suspense fallback={<GlobalLoader />}>
+              <SignUpPage />
             </Suspense>
           }
         />
