@@ -29,6 +29,10 @@ export type Student = {
   name: string;
   className: string;
   needsReview: boolean;
+  /** 가입 승인으로 막 추가된 학생 (신규 가입 배지) */
+  isNew?: boolean;
+  /** 카드 아래 안내 문구. 없으면 채점 상태를 보여준다. */
+  note?: string;
 };
 
 /** 시험지 양식 (주관식/객관식 공통) */
