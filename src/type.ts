@@ -94,3 +94,43 @@ export type TeacherAssignment = {
   teacher: string;
   role: "주 담당" | "보조";
 };
+
+/** 가입 유형 */
+export type SignupType = "student" | "teacher";
+
+/** 가입 신청. 본인인증을 마치고 학원(선생님)의 승인을 기다린다. */
+export type SignupRequest = {
+  id: number;
+  type: SignupType;
+  name: string;
+  /** 학생만 (선생님은 빈 문자열) */
+  grade: string;
+  academy: string;
+  email: string;
+  /** 본인인증한 휴대폰 번호 (010-0000-0000) */
+  phone: string;
+  /** 신청 시각 "YYYY-MM-DD HH:MM" */
+  requestedAt: string;
+};
+
+/** 알림 받는 방법 */
+export type NotifyMethod = "email" | "push" | "sms" | "kakao";
+
+/** 문자·카카오톡 받을 번호 */
+export type NotifyPhone = {
+  /** true면 본인인증한 번호로 받는다. */
+  useVerified: boolean;
+  /** 다른 번호로 받을 때 입력한 번호 */
+  phone: string;
+};
+
+/** 학생의 알림 받는 방법 설정 (여러 개 선택) */
+export type NotifyPrefs = {
+  methods: NotifyMethod[];
+  /** 알림 받을 이메일 */
+  email: string;
+  /** 이 기기에서 브라우저 알림을 허용했는지 */
+  pushAllowed: boolean;
+  sms: NotifyPhone;
+  kakao: NotifyPhone;
+};
