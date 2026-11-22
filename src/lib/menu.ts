@@ -130,6 +130,7 @@ export const MENU: MenuEntry[] = [
   {
     mode: "student",
     ...MY_INFO,
+    subtitle: "계정 정보와 알림 받는 방법을 관리합니다.",
   },
 ];
 
