@@ -259,6 +259,18 @@ function bindInlineTemplateEditor() {
     setInlineEditMode(true);
   }));
 }
+/**
+ * 드래그로 크기를 바꾸는 동안 문항 요약의 W·H 칸을 바로 맞춘다. (놓을 때까지 기다리지 않음)
+ * @param {boolean} isModal - 양식 편집 창(오른쪽 설정)인지, 바깥 화면(왼쪽 문항 요약)인지
+ * @param {number} width - 영역 너비(px)
+ * @param {number} height - 영역 높이(px)
+ * @returns {void}
+ */
+function syncRegionSizeFields(isModal,width,height) {
+  if (isModal) { document.querySelector("#modalRegionW").value=width; document.querySelector("#modalRegionH").value=height; return; }
+  const coordinateInputs=document.querySelectorAll(".region-editor .coordinate-grid input");
+  coordinateInputs[2].value=width; coordinateInputs[3].value=height;
+}
 function startRegionResize(event,handle,isModal=true) {
   event.preventDefault();
   event.stopPropagation();
@@ -277,7 +289,7 @@ function startRegionResize(event,handle,isModal=true) {
     const height=Math.min(maxH,Math.max(34,Math.round(startH + moveEvent.clientY - startY)));
     box.style.width=`${width}px`; box.style.height=`${height}px`;
     templateRegions[number].w=width; templateRegions[number].h=height;
-    if (isModal) { document.querySelector("#modalRegionW").value=width; document.querySelector("#modalRegionH").value=height; }
+    syncRegionSizeFields(isModal,width,height);
   };
   const onUp=() => { window.removeEventListener("pointermove",onMove); window.removeEventListener("pointerup",onUp); };
   window.addEventListener("pointermove",onMove); window.addEventListener("pointerup",onUp);
