@@ -85,6 +85,7 @@ function showPage(name) {
   document.querySelector("#pageTitle").textContent = pageTitles[name] || "케미체크";
   document.querySelector("#pageSubtitle").textContent = pageSubtitles[name] || "";
   document.querySelector(".header-new-template").classList.toggle("hidden",name !== "templates");
+  document.querySelector(".header-new-mc").classList.toggle("hidden",name !== "templates-mc");
   // 아코디언 메뉴(시험지 관리·설정): 하위 화면에 있으면 펼치고 상위 메뉴를 강조한다.
   document.querySelectorAll("[data-nav-group]").forEach((group) => {
     const inGroup = Boolean(group.querySelector(`[data-page="${name}"]`));
@@ -876,87 +877,285 @@ document.querySelector("[data-sidebar-toggle]").addEventListener("click", (event
   event.currentTarget.setAttribute("aria-label",collapsed ? "사이드바 펼치기" : "사이드바 접기");
 });
 const mcTemplates = [
-  { id:1, name:"산화 환원 객관식 미니테스트", category:"화학 I · 산화 환원", subject:"화학 I", count:5 },
-  { id:2, name:"이온과 앙금 객관식", category:"중등 화학 · 이온", subject:"중등 화학", count:5 },
-  { id:3, name:"물질의 규칙성 객관식", category:"통합과학 · 물질", subject:"통합과학", count:5 }
+  { id:1, name:"산화 환원 객관식 미니테스트", category:"화학 I · 산화 환원", subject:"화학 I", choiceCount:4 },
+  { id:2, name:"이온과 앙금 객관식", category:"중등 화학 · 이온", subject:"중등 화학", choiceCount:4 },
+  { id:3, name:"물질의 규칙성 객관식", category:"통합과학 · 물질", subject:"통합과학", choiceCount:5 }
 ];
+/** 문항별 질문·보기·정답(보기 순번, 여러 개 가능) */
 const mcQuestions = {
   1: [
-    { q:"전자를 잃는 반응을 무엇이라 하는가?", choices:["환원","산화","중화","연소"], answer:1 },
-    { q:"전자를 얻는 반응을 무엇이라 하는가?", choices:["산화","환원","분해","치환"], answer:1 },
-    { q:"원소의 산화 상태를 나타내는 값은?", choices:["원자량","산화수","몰수","질량수"], answer:1 },
-    { q:"산화와 환원이 동시에 일어나는 반응은?", choices:["중화 반응","산화 환원 반응","분해 반응","앙금 생성"], answer:1 },
-    { q:"산소를 잃는 반응은?", choices:["산화","환원","연소","부식"], answer:1 }
+    { q:"전자를 잃는 반응을 무엇이라 하는가?", choices:["환원","산화","중화","연소"], answers:[1] },
+    { q:"전자를 얻는 반응을 무엇이라 하는가?", choices:["산화","환원","분해","치환"], answers:[1] },
+    { q:"원소의 산화 상태를 나타내는 값은?", choices:["원자량","산화수","몰수","질량수"], answers:[1] },
+    { q:"산화와 환원이 동시에 일어나는 반응은?", choices:["중화 반응","산화 환원 반응","분해 반응","앙금 생성"], answers:[1] },
+    { q:"산화 반응을 모두 고르시오.", choices:["철이 녹스는 반응","구리가 산소와 결합","산화 구리가 구리로","메테인이 연소"], answers:[0,1,3] }
   ],
   2: [
-    { q:"+전하를 띤 이온을 무엇이라 하는가?", choices:["음이온","양이온","중성자","분자"], answer:1 },
-    { q:"−전하를 띤 이온을 무엇이라 하는가?", choices:["양이온","음이온","원자핵","전자쌍"], answer:1 },
-    { q:"두 용액을 섞을 때 생기는 침전물은?", choices:["기체","앙금","용매","결정"], answer:1 },
-    { q:"수용액에서 전류가 흐르는 물질은?", choices:["비전해질","전해질","절연체","촉매"], answer:1 },
-    { q:"Na⁺의 이름은?", choices:["칼륨 이온","나트륨 이온","칼슘 이온","수소 이온"], answer:1 }
+    { q:"+전하를 띤 이온을 무엇이라 하는가?", choices:["음이온","양이온","중성자","분자"], answers:[1] },
+    { q:"−전하를 띤 이온을 무엇이라 하는가?", choices:["양이온","음이온","원자핵","전자쌍"], answers:[1] },
+    { q:"두 용액을 섞을 때 생기는 침전물은?", choices:["기체","앙금","용매","결정"], answers:[1] },
+    { q:"수용액에서 전류가 흐르는 물질은?", choices:["비전해질","전해질","절연체","촉매"], answers:[1] },
+    { q:"Na⁺의 이름은?", choices:["칼륨 이온","나트륨 이온","칼슘 이온","수소 이온"], answers:[1] }
   ],
   3: [
-    { q:"우주 초기에 만들어진 원소는?", choices:["산소","수소","철","규소"], answer:1 },
-    { q:"별 내부에서 일어나는 반응은?", choices:["핵분열","핵융합","연소","산화"], answer:1 },
-    { q:"지각에 가장 많은 원소는?", choices:["규소","산소","알루미늄","철"], answer:1 },
-    { q:"주기율표의 세로줄을 무엇이라 하는가?", choices:["주기","족","계열","군"], answer:1 },
-    { q:"주기율표의 가로줄을 무엇이라 하는가?", choices:["족","주기","구역","블록"], answer:1 }
+    { q:"우주 초기에 만들어진 원소를 모두 고르시오.", choices:["산소","수소","헬륨","철","규소"], answers:[1,2] },
+    { q:"별 내부에서 일어나는 반응은?", choices:["핵분열","핵융합","연소","산화","중화"], answers:[1] },
+    { q:"지각에 가장 많은 원소는?", choices:["규소","산소","알루미늄","철","칼슘"], answers:[1] },
+    { q:"주기율표의 세로줄을 무엇이라 하는가?", choices:["주기","족","계열","군","블록"], answers:[1] },
+    { q:"주기율표의 가로줄을 무엇이라 하는가?", choices:["족","주기","구역","블록","계열"], answers:[1] }
   ]
 };
 const mcChoiceMarks = ["①","②","③","④","⑤"];
+const mcCategories = ["화학 I · 산화 환원","화학 I · 몰","화학 I · 중화 반응","중등 화학 · 이온","중등 화학 · 산과 염기","통합과학 · 물질"];
 let mcSelectedId = 1;
 let mcSelectedQ = 0;
+/** 편집 중인 시험지 사본 (편집 중이 아니면 null). 저장해야 원본에 반영된다. */
+let mcDraft = null;
 /**
- * 객관식 등록 시험지 목록을 렌더링한다.
+ * 화면에 쓸 문자열의 특수 문자를 바꾼다. (입력값을 value·본문에 넣을 때)
+ * @param {string} text - 원본
+ * @returns {string}
+ */
+function mcEscape(text) {
+  return String(text ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+}
+/**
+ * 지금 보여줄 시험지 정보와 문항. 편집 중이면 사본을 돌려준다.
+ * @returns {{template: object, questions: Array<object>}}
+ */
+function mcCurrent() {
+  if (mcDraft) return { template:mcDraft.template, questions:mcDraft.questions };
+  return { template:mcTemplates.find((item) => item.id === mcSelectedId), questions:mcQuestions[mcSelectedId] || [] };
+}
+/**
+ * 객관식 등록 시험지 목록을 렌더링한다. 새 양식을 작성 중이면 맨 위에 작성 중 항목을 보여준다.
  * @returns {void}
  */
 function renderMcList() {
   document.querySelector('[data-page-panel="templates-mc"] .template-list-title small').textContent = `총 ${mcTemplates.length}개`;
-  document.querySelector("#mcListItems").innerHTML = mcTemplates.map((template) => `<button class="template-item ${template.id === mcSelectedId ? "active" : ""}" type="button" data-mc-id="${template.id}"><span class="template-icon">▤</span><span><strong>${template.name}</strong><small>${template.category} · ${template.count}문항</small></span></button>`).join("");
+  const drafting = mcDraft?.isNew ? `<button class="template-item active" type="button" disabled><span class="template-icon">＋</span><span><strong>${mcEscape(mcDraft.template.name) || "새 객관식 양식"}</strong><small>작성 중 · ${mcDraft.questions.length}문항</small></span></button>` : "";
+  document.querySelector("#mcListItems").innerHTML = drafting + mcTemplates.map((template) => `<button class="template-item ${!mcDraft?.isNew && template.id === mcSelectedId ? "active" : ""}" type="button" data-mc-id="${template.id}"><span class="template-icon">▤</span><span><strong>${mcEscape(template.name)}</strong><small>${template.category} · ${template.choiceCount}지선다 · ${(mcQuestions[template.id] || []).length}문항</small></span></button>`).join("");
 }
 /**
- * 선택된 객관식 시험지 미리보기(문항 + 보기 + 정답)를 렌더링한다.
+ * 문항 하나 (보기 모드: 보기와 정답 표시 / 편집 모드: 질문·보기 입력, 보기 번호를 눌러 정답 지정).
+ * @param {object} item - 문항
+ * @param {number} index - 문항 순번(0부터)
+ * @param {boolean} editing - 편집 모드인지
+ * @returns {string} HTML
+ */
+function mcQuestionMarkup(item, index, editing) {
+  const active = index === mcSelectedQ ? "active" : "";
+  const multi = item.answers.length > 1 ? `<em class="mc-multi">정답 ${item.answers.length}개</em>` : "";
+  if (!editing) return `<div class="mc-question ${active}" data-mc-q="${index}"><div class="mc-q-text">${index + 1}. ${mcEscape(item.q)}${multi}</div><div class="mc-choices">${item.choices.map((choice,ci) => `<div class="mc-choice ${item.answers.includes(ci) ? "correct" : ""}"><span class="mc-num">${mcChoiceMarks[ci]}</span><span>${mcEscape(choice)}</span></div>`).join("")}</div></div>`;
+  const choices = item.choices.map((choice,ci) => {
+    const correct = item.answers.includes(ci);
+    return `<div class="mc-choice editing ${correct ? "correct" : ""}"><button class="mc-num mc-answer-toggle" type="button" data-mc-answer="${index}:${ci}" aria-pressed="${correct}" title="${correct ? "정답 해제" : "정답으로 지정"}">${mcChoiceMarks[ci]}</button><input class="mc-choice-input" data-mc-choice="${index}:${ci}" value="${mcEscape(choice)}" placeholder="보기 ${ci + 1}" aria-label="${index + 1}번 문항 보기 ${ci + 1}" /></div>`;
+  }).join("");
+  return `<div class="mc-question editing ${active}" data-mc-q="${index}"><div class="mc-q-row"><span class="mc-q-num">${index + 1}.</span><input class="mc-q-input" data-mc-q-text="${index}" value="${mcEscape(item.q)}" placeholder="문항 질문을 입력하세요" aria-label="${index + 1}번 문항 질문" />${multi}<button class="mc-q-delete" type="button" data-mc-delete="${index}" aria-label="${index + 1}번 문항 삭제">×</button></div><div class="mc-choices">${choices}</div></div>`;
+}
+/**
+ * 선택된 객관식 시험지 미리보기(문항 + 보기 + 정답)를 렌더링한다. 편집 중이면 입력 칸으로 그린다.
  * @returns {void}
  */
 function renderMcPreview() {
-  const template = mcTemplates.find((item) => item.id === mcSelectedId);
-  const questions = mcQuestions[mcSelectedId] || [];
-  const body = questions.map((item,index) => `<div class="mc-question ${index === mcSelectedQ ? "active" : ""}" data-mc-q="${index}"><div class="mc-q-text">${index + 1}. ${item.q}</div><div class="mc-choices">${item.choices.map((choice,ci) => `<div class="mc-choice ${ci === item.answer ? "correct" : ""}"><span class="mc-num">${mcChoiceMarks[ci]}</span><span>${choice}</span></div>`).join("")}</div></div>`).join("");
-  document.querySelector("#mcPreview").innerHTML = `<div class="fiducials"><i></i><i></i><i></i><i></i></div><div class="mc-head"><div><strong>${template?.name || "객관식 시험지"}</strong><span>${template?.category || ""} · ${template?.subject || ""}</span></div><span>이름 ____________</span></div><p class="mc-paper-sub">다음 문항에서 알맞은 답을 하나 고르세요.</p>${body}`;
+  const { template, questions } = mcCurrent();
+  const editing = Boolean(mcDraft);
+  const head = editing
+    ? `<div class="mc-head mc-head-edit"><div><input class="mc-title-input" data-mc-field="name" value="${mcEscape(template.name)}" placeholder="시험지 이름을 입력하세요" aria-label="시험지 이름" /><select data-mc-field="category" aria-label="시험 카테고리">${mcCategories.map((category) => `<option ${category === template.category ? "selected" : ""}>${category}</option>`).join("")}</select></div><span>이름 ____________</span></div>`
+    : `<div class="mc-head"><div><strong>${mcEscape(template?.name) || "객관식 시험지"}</strong><span>${template?.category || ""} · ${template?.subject || ""}</span></div><span>이름 ____________</span></div>`;
+  const guide = editing ? "보기 번호(①②…)를 누르면 정답으로 지정됩니다. 정답은 여러 개 고를 수 있어요." : "다음 문항에서 알맞은 답을 고르세요. 정답이 여러 개인 문항은 모두 고르세요.";
+  document.querySelector("#mcPreview").innerHTML = `<div class="fiducials"><i></i><i></i><i></i><i></i></div>${head}<p class="mc-paper-sub">${guide}</p>${questions.map((item,index) => mcQuestionMarkup(item,index,editing)).join("")}`;
 }
 /**
- * 선택된 문항의 보기/정답 요약을 좌측 패널에 표시한다.
+ * 선택된 문항의 보기/정답 요약을 좌측 패널에 표시한다. 편집 중에는 입력하는 대로 바뀐다.
  * @returns {void}
  */
 function renderMcSummary() {
-  const item = (mcQuestions[mcSelectedId] || [])[mcSelectedQ];
+  const item = mcCurrent().questions[mcSelectedQ];
   document.querySelector("#mcSelectedQuestion").textContent = mcSelectedQ + 1;
-  document.querySelector("#mcSummaryBody").innerHTML = item ? `<p class="mc-summary-q">${item.q}</p><ul class="mc-summary-choices">${item.choices.map((choice,ci) => `<li class="${ci === item.answer ? "correct" : ""}"><span>${mcChoiceMarks[ci]}</span><span>${choice}</span>${ci === item.answer ? '<em>정답</em>' : ""}</li>`).join("")}</ul>` : "";
+  if (!item) { document.querySelector("#mcSummaryBody").innerHTML = ""; return; }
+  const answerNote = item.answers.length === 0
+    ? '<p class="mc-summary-meta warn">정답을 지정해주세요.</p>'
+    : item.answers.length > 1 ? `<p class="mc-summary-meta">복수 정답 ${item.answers.length}개 · 고른 답이 정답과 모두 같아야 정답</p>` : "";
+  document.querySelector("#mcSummaryBody").innerHTML = `<p class="mc-summary-q">${mcEscape(item.q) || '<span class="mc-empty">(질문 없음)</span>'}</p><ul class="mc-summary-choices">${item.choices.map((choice,ci) => `<li class="${item.answers.includes(ci) ? "correct" : ""}"><span>${mcChoiceMarks[ci]}</span><span>${mcEscape(choice) || '<span class="mc-empty">(비어 있음)</span>'}</span>${item.answers.includes(ci) ? "<em>정답</em>" : ""}</li>`).join("")}</ul>${answerNote}`;
 }
 /**
- * 객관식 시험지를 선택한다.
+ * 편집 모드 여부에 맞춰 도구 버튼·문항 추가 줄을 바꾼다.
+ * @returns {void}
+ */
+function syncMcToolbar() {
+  const editing = Boolean(mcDraft);
+  document.querySelector('[data-page-panel="templates-mc"] .template-canvas-card').classList.toggle("mc-editing", editing);
+  document.querySelectorAll("[data-mc-view-only]").forEach((el) => { el.hidden = editing; });
+  document.querySelectorAll("[data-mc-edit-only]").forEach((el) => { el.hidden = !editing; });
+  if (editing) document.querySelector("#mcChoiceCount").value = String(mcDraft.template.choiceCount);
+  document.querySelector("#mcToolbarTitle").textContent = editing ? (mcDraft.isNew ? "새 객관식 양식 만들기" : "객관식 시험지 편집") : "객관식 시험지 미리보기";
+  document.querySelector("#mcToolbarHint").textContent = editing ? "질문과 보기를 바로 고치고, 보기 번호를 눌러 정답을 지정하세요." : "문항을 선택하면 좌측에 보기·정답이 표시됩니다.";
+}
+/** @returns {void} 목록·미리보기·요약·도구를 모두 다시 그린다. */
+function renderMc() { renderMcList(); renderMcPreview(); renderMcSummary(); syncMcToolbar(); }
+/**
+ * 객관식 시험지를 선택한다. 편집 중에는 바꾸지 않는다.
  * @param {number} id - 시험지 id
  * @returns {void}
  */
 function selectMcTemplate(id) {
+  if (mcDraft) { sysToast("편집 중입니다. 저장하거나 취소해주세요.", true); return; }
   mcSelectedId = id; mcSelectedQ = 0;
-  renderMcList(); renderMcPreview(); renderMcSummary();
+  renderMc();
 }
 /**
- * 객관식 시험지를 인쇄한다(보기 포함, 정답 미표시).
+ * 빈 문항 하나를 만든다.
+ * @param {number} choiceCount - 보기 수 (4 또는 5)
+ * @returns {object}
+ */
+function mcBlankQuestion(choiceCount) { return { q:"", choices:Array(choiceCount).fill(""), answers:[] }; }
+/** @returns {void} 선택된 시험지를 편집 모드로 연다. (사본을 고치고, 저장해야 반영) */
+function startMcEdit() {
+  const template = mcTemplates.find((item) => item.id === mcSelectedId);
+  mcDraft = { isNew:false, template:{ ...template }, questions:structuredClone(mcQuestions[mcSelectedId] || []) };
+  renderMc();
+}
+/** @returns {void} 새 객관식 양식을 빈 문항 하나로 시작한다. */
+function startMcNew() {
+  if (mcDraft) { sysToast("편집 중입니다. 저장하거나 취소해주세요.", true); return; }
+  mcDraft = { isNew:true, template:{ id:null, name:"", category:mcCategories[0], subject:mcCategories[0].split(" · ")[0], choiceCount:4 }, questions:[mcBlankQuestion(4)] };
+  mcSelectedQ = 0;
+  renderMc();
+  document.querySelector('#mcPreview [data-mc-field="name"]').focus();
+}
+/** @returns {void} 편집을 취소한다. (사본을 버린다) */
+function cancelMcEdit() {
+  mcDraft = null; mcSelectedQ = 0;
+  renderMc();
+}
+/**
+ * 저장 전 검사. 첫 번째 문제를 알려준다.
+ * @returns {{message: string, index: number | null} | null} 문제가 없으면 null
+ */
+function validateMcDraft() {
+  if (!mcDraft.template.name.trim()) return { message:"시험지 이름을 입력해주세요.", index:null };
+  for (const [index, item] of mcDraft.questions.entries()) {
+    if (!item.q.trim()) return { message:`${index + 1}번 문항 질문을 입력해주세요.`, index };
+    const empty = item.choices.findIndex((choice) => !choice.trim());
+    if (empty >= 0) return { message:`${index + 1}번 문항 ${mcChoiceMarks[empty]} 보기를 입력해주세요.`, index };
+    if (item.answers.length === 0) return { message:`${index + 1}번 문항 정답을 지정해주세요.`, index };
+  }
+  return null;
+}
+/** @returns {void} 검사 후 원본에 반영하고 보기 모드로 돌아간다. */
+function saveMcEdit() {
+  const problem = validateMcDraft();
+  if (problem) {
+    if (problem.index !== null) { mcSelectedQ = problem.index; renderMcPreview(); renderMcSummary(); }
+    sysToast(problem.message, true);
+    const target = problem.index === null ? '[data-mc-field="name"]' : `[data-mc-q="${problem.index}"]`;
+    document.querySelector(`#mcPreview ${target}`)?.scrollIntoView({ block:"center", behavior:"smooth" });
+    return;
+  }
+  const template = { ...mcDraft.template, name:mcDraft.template.name.trim(), subject:mcDraft.template.category.split(" · ")[0] };
+  const questions = mcDraft.questions.map((item) => ({ q:item.q.trim(), choices:item.choices.map((choice) => choice.trim()), answers:[...item.answers].sort((a,b) => a - b) }));
+  if (mcDraft.isNew) {
+    template.id = Math.max(0, ...mcTemplates.map((item) => item.id)) + 1;
+    mcTemplates.push(template);
+  } else {
+    Object.assign(mcTemplates.find((item) => item.id === template.id), template);
+  }
+  mcQuestions[template.id] = questions;
+  mcSelectedId = template.id;
+  mcDraft = null;
+  renderMc();
+  sysToast("객관식 시험지를 저장했습니다.");
+}
+/**
+ * 보기 수(4지/5지)를 바꾼다. 줄이면 모든 문항의 마지막 보기와 그 정답 지정이 빠진다.
+ * @param {number} count - 4 또는 5
+ * @returns {void}
+ */
+function changeMcChoiceCount(count) {
+  const before = mcDraft.template.choiceCount;
+  if (count === before) return;
+  const removed = mcDraft.questions.filter((item) => item.choices.length > count && (item.choices[count].trim() || item.answers.includes(count))).length;
+  mcDraft.template.choiceCount = count;
+  mcDraft.questions.forEach((item) => {
+    item.choices = count > item.choices.length ? [...item.choices, ...Array(count - item.choices.length).fill("")] : item.choices.slice(0, count);
+    item.answers = item.answers.filter((ci) => ci < count);
+  });
+  renderMc();
+  if (removed) sysToast(`${removed}개 문항의 ⑤번 보기를 지웠습니다. 취소하면 되돌아갑니다.`);
+}
+/**
+ * 객관식 시험지를 인쇄한다(보기 포함, 정답 미표시). 정답이 여러 개인 문항에는 '모두 고르시오'를 붙인다.
  * @returns {void}
  */
 function printMc() {
   const template = mcTemplates.find((item) => item.id === mcSelectedId);
   const questions = mcQuestions[mcSelectedId] || [];
-  const lines = questions.map((item,index) => `<div class="mc-print-q"><div class="mc-print-text">${index + 1}. ${item.q}</div><div class="mc-print-choices">${item.choices.map((choice,ci) => `<span class="mc-print-choice">${mcChoiceMarks[ci]} ${choice}</span>`).join("")}</div></div>`).join("");
-  document.querySelector("#printArea").innerHTML = `<div class="print-sheet"><div class="fiducials"><i></i><i></i><i></i><i></i></div><div class="print-head"><div><strong>${template?.name || "객관식 시험지"}</strong><span>시험 카테고리: ${template?.category || ""}${template?.subject ? ` · 과목: ${template.subject}` : ""}</span></div><span>이름 ____________</span></div><p class="print-sub">다음 문항에서 알맞은 답을 하나 고르세요.</p>${lines}</div>`;
+  const lines = questions.map((item,index) => `<div class="mc-print-q"><div class="mc-print-text">${index + 1}. ${mcEscape(item.q)}${item.answers.length > 1 ? " (모두 고르시오)" : ""}</div><div class="mc-print-choices">${item.choices.map((choice,ci) => `<span class="mc-print-choice">${mcChoiceMarks[ci]} ${mcEscape(choice)}</span>`).join("")}</div></div>`).join("");
+  document.querySelector("#printArea").innerHTML = `<div class="print-sheet"><div class="fiducials"><i></i><i></i><i></i><i></i></div><div class="print-head"><div><strong>${mcEscape(template?.name) || "객관식 시험지"}</strong><span>시험 카테고리: ${template?.category || ""}${template?.subject ? ` · 과목: ${template.subject}` : ""}</span></div><span>이름 ____________</span></div><p class="print-sub">다음 문항에서 알맞은 답을 고르세요.</p>${lines}</div>`;
   document.body.classList.add("print-record");
   window.print();
 }
+const mcPreview = document.querySelector("#mcPreview");
 document.querySelector("#mcListItems").addEventListener("click", (event) => { const button = event.target.closest("[data-mc-id]"); if (button) selectMcTemplate(Number(button.dataset.mcId)); });
-document.querySelector("#mcPreview").addEventListener("click", (event) => { const question = event.target.closest("[data-mc-q]"); if (!question) return; mcSelectedQ = Number(question.dataset.mcQ); renderMcPreview(); renderMcSummary(); });
+mcPreview.addEventListener("click", (event) => {
+  const answer = event.target.closest("[data-mc-answer]");
+  if (answer && mcDraft) {
+    const [index, ci] = answer.dataset.mcAnswer.split(":").map(Number);
+    const item = mcDraft.questions[index];
+    item.answers = item.answers.includes(ci) ? item.answers.filter((value) => value !== ci) : [...item.answers, ci];
+    mcSelectedQ = index;
+    renderMcPreview(); renderMcSummary();
+    mcPreview.querySelector(`[data-mc-answer="${index}:${ci}"]`)?.focus();
+    return;
+  }
+  const remove = event.target.closest("[data-mc-delete]");
+  if (remove && mcDraft) {
+    if (mcDraft.questions.length === 1) { sysToast("문항이 하나 이상 있어야 합니다.", true); return; }
+    mcDraft.questions.splice(Number(remove.dataset.mcDelete), 1);
+    mcSelectedQ = Math.min(mcSelectedQ, mcDraft.questions.length - 1);
+    renderMc();
+    return;
+  }
+  const question = event.target.closest("[data-mc-q]");
+  if (!question) return;
+  mcSelectedQ = Number(question.dataset.mcQ);
+  // 편집 중에는 입력 칸 초점이 사라지지 않게 강조만 바꾼다.
+  if (mcDraft) mcPreview.querySelectorAll("[data-mc-q]").forEach((el) => el.classList.toggle("active", el === question));
+  else renderMcPreview();
+  renderMcSummary();
+});
+mcPreview.addEventListener("input", (event) => {
+  if (!mcDraft) return;
+  const target = event.target;
+  if (target.dataset.mcField === "name") { mcDraft.template.name = target.value; if (mcDraft.isNew) renderMcList(); return; }
+  if (target.dataset.mcQText !== undefined) mcDraft.questions[Number(target.dataset.mcQText)].q = target.value;
+  else if (target.dataset.mcChoice !== undefined) { const [index, ci] = target.dataset.mcChoice.split(":").map(Number); mcDraft.questions[index].choices[ci] = target.value; }
+  else return;
+  renderMcSummary();
+});
+mcPreview.addEventListener("change", (event) => { if (mcDraft && event.target.dataset.mcField === "category") mcDraft.template.category = event.target.value; });
+mcPreview.addEventListener("focusin", (event) => {
+  const question = event.target.closest("[data-mc-q]");
+  if (!mcDraft || !question || Number(question.dataset.mcQ) === mcSelectedQ) return;
+  mcSelectedQ = Number(question.dataset.mcQ);
+  mcPreview.querySelectorAll("[data-mc-q]").forEach((el) => el.classList.toggle("active", el === question));
+  renderMcSummary();
+});
 document.querySelector("#mcPrint").addEventListener("click", printMc);
+document.querySelector("#mcEdit").addEventListener("click", startMcEdit);
+document.querySelector("#mcCancel").addEventListener("click", cancelMcEdit);
+document.querySelector("#mcSave").addEventListener("click", saveMcEdit);
+document.querySelector("#mcChoiceCount").addEventListener("change", (event) => changeMcChoiceCount(Number(event.target.value)));
+document.querySelector("#mcAddQuestion").addEventListener("click", () => {
+  mcDraft.questions.push(mcBlankQuestion(mcDraft.template.choiceCount));
+  mcSelectedQ = mcDraft.questions.length - 1;
+  renderMc();
+  const input = mcPreview.querySelector(`[data-mc-q-text="${mcSelectedQ}"]`);
+  input?.scrollIntoView({ block:"center", behavior:"smooth" });
+  input?.focus();
+});
+document.querySelector("[data-new-mc]").addEventListener("click", startMcNew);
 /* ── 대시보드: 이번 주 현황·검토 대기·최근 기록·클래스별 평균 ── */
 const weeklyGrading = [["월",18,2],["화",22,4],["수",15,1],["목",27,3],["금",21,2],["토",9,1],["일",24,3]];
 const classAverages = [["고2 화학 I",84,46],["중3 화학 심화",79,38],["고1 통합과학 A",88,41],["고1 통합과학 B",72,29]];
@@ -1946,7 +2145,7 @@ syncSignupType();
 renderApprovals();
 
 renderRecords(); renderStaticCards(); renderTemplateList(); renderAnswerOverview(); updateHistoryPeriodOptions(); syncOuterTemplatePreview(); setInlineEditMode(false); selectRegion(document.querySelector('#printableTemplate [data-region="1"]'));
-renderMcList(); renderMcPreview(); renderMcSummary();
+renderMc();
 syncRoleToViewport();
 // 기획 확인용: 주소 끝에 #login, #signup을 붙이면 해당 화면이 바로 열린다.
 if (["#login","#signup"].includes(location.hash)) openAuth(location.hash.slice(1));

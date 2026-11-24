@@ -52,6 +52,7 @@
         <div class="topbar-titles"><h1 id="pageTitle">대시보드</h1><p id="pageSubtitle"></p></div>
         <div class="header-actions">
           <button class="primary-button header-new-template hidden" type="button" data-new-template>＋ 새 시험지 양식</button>
+          <button class="primary-button header-new-mc hidden" type="button" data-new-mc>＋ 새 객관식 양식</button>
         </div>
         <button class="topbar-logout" type="button" data-logout>로그아웃</button>
       </header>
@@ -171,10 +172,14 @@
             </aside>
           </div>
           <section class="template-canvas-card">
-            <div class="canvas-toolbar"><div><strong>객관식 시험지 미리보기</strong><small>문항을 선택하면 좌측에 보기·정답이 표시됩니다.</small></div><div class="canvas-actions"><button class="secondary-button" type="button" id="mcPrint">인쇄</button></div></div>
+            <div class="canvas-toolbar"><div><strong id="mcToolbarTitle">객관식 시험지 미리보기</strong><small id="mcToolbarHint">문항을 선택하면 좌측에 보기·정답이 표시됩니다.</small></div><div class="canvas-actions">
+              <button class="primary-button" type="button" id="mcEdit" data-mc-view-only>편집하기</button><button class="secondary-button" type="button" id="mcPrint" data-mc-view-only>인쇄</button>
+              <label class="mc-count-field" data-mc-edit-only hidden>보기 수<select id="mcChoiceCount"><option value="4">4지선다</option><option value="5">5지선다</option></select></label><button class="outline-button" type="button" id="mcCancel" data-mc-edit-only hidden>취소</button><button class="primary-button" type="button" id="mcSave" data-mc-edit-only hidden>저장</button>
+            </div></div>
             <div class="template-canvas-viewport">
               <div class="template-canvas" id="mcPreview"></div>
             </div>
+            <div class="canvas-footer"><button class="add-question" type="button" id="mcAddQuestion">＋ 문항 추가</button></div>
           </section>
         </div>
       </section>
