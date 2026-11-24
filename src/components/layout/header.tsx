@@ -38,8 +38,9 @@ export default function Header() {
           </p>
         )}
       </div>
+      {/* 버튼이 있어도 헤더 높이가 다른 화면과 같도록 위아래를 제목 줄 높이에 맞춘다. */}
       {pathname === "/exam-sheets/subjective" && (
-        <Button className="max-sm:hidden">
+        <Button className="-my-1 max-sm:hidden">
           <Plus />새 시험지 양식
         </Button>
       )}

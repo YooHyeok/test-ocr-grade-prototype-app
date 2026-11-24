@@ -105,6 +105,8 @@ h1, h2, p { margin-top: 0; }
 h1 { margin-bottom: 0; font-size: 20px; letter-spacing: -.6px; }
 h2 { margin-bottom: 9px; font-size: 23px; letter-spacing: -.7px; }
 .header-actions { display: flex; gap: 10px; align-items: center; }
+/* 버튼이 있어도 헤더 높이가 다른 화면과 같도록 (제목 줄 높이에 맞춤) */
+.header-actions .primary-button { margin-block: -8px; }
 .primary-button, .dark-button, .secondary-button {
   padding: 11px 16px; border-radius: 8px; font-size: 13px; font-weight: 700;
 }
@@ -616,6 +618,7 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 }
 @media (max-width: 600px) {
   body { padding-bottom: 70px; }
+  .header-actions .primary-button { margin-block: 0; }
   .sidebar { display: none; }
   .page-shell { --shell-px: 15px; margin-left: 0; padding: 0 15px 22px; }
   .topbar { align-items: flex-start; gap: 15px; flex-direction: column; }
