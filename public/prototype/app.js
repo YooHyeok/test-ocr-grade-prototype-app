@@ -20,8 +20,8 @@ const pageSubtitles = {
   records:"학원, 클래스, 카테고리, 학생별로 시험지 원본과 결과를 관리합니다.",
   templates:"주관식(단답형) 양식을 만들고, 문항별 OCR 인식 영역과 기준 답안을 설정합니다.",
   "templates-mc":"객관식 양식을 만들고, 문항별 보기와 정답을 설정합니다.",
-  students:"학생 명부와 학생 가입 승인을 관리합니다.",
-  teachers:"선생님 계정과 선생님 가입 승인을 관리합니다. (관리자)",
+  students:"학생 명부와 가입 승인, 학생 계정 추가, 로그인 잠금 해제를 관리합니다.",
+  teachers:"선생님 계정과 가입 승인, 선생님 계정 추가, 로그인 잠금 해제를 관리합니다. (관리자)",
   categories:"학교급, 과목, 단원을 기준으로 시험지를 체계적으로 분류합니다.",
   settings:"학원 정보와 채점 정책을 관리합니다.",
   "system-settings":"모든 학원에 공통 적용되는 설정을 그룹별로 추가·수정·삭제하고 변경 이력을 봅니다.",
@@ -155,7 +155,11 @@ function renderStaticCards() {
   const students = records.filter((record) => { if (seenStudents.has(record.student)) return false; seenStudents.add(record.student); return true; });
   // 가입 승인을 마친 학생은 목록 앞에 '신규 가입'으로 보인다.
   const joined = accountStore.signups.filter((item) => item.type === "student" && item.status === "approved").reverse();
-  document.querySelector("#studentCards").innerHTML = joined.map((item) => `<article class="manage-card"><span class="avatar">${escapeHtml(item.name[0])}</span><div><h3>${escapeHtml(item.name)} <span class="new-badge">신규 가입</span></h3><p>${escapeHtml(item.className)}</p><small>${escapeHtml(item.decidedAt)} 승인</small></div><button type="button" data-student-detail="${escapeHtml(item.name)}">상세 보기</button></article>`).join("") + students.map((record) => { const note = record.status === "검토 필요" ? "검토 필요 1건" : "최근 채점 완료"; return `<article class="manage-card"><span class="avatar">${record.student[0]}</span><div><h3>${record.student}</h3><p>${record.className}</p><small>${note}</small></div><button type="button" data-student-detail="${record.student}">상세 보기</button></article>`; }).join("");
+  // 데모 학생 계정 student@demo.com = 유재혁 (로그인 잠금 표시용)
+  const lockOf = (email) => (email && accountStore.locks[email]?.lockedAt ? '<span class="account-badge locked">잠김</span>' : "");
+  const action = (name, email) => (email && accountStore.locks[email]?.lockedAt ? `<button class="unlock-button" type="button" data-unlock-email="${escapeHtml(email)}">잠금 해제</button>` : `<button type="button" data-student-detail="${escapeHtml(name)}">상세 보기</button>`);
+  const added = accountStore.users.filter((item) => item.role === "student").slice().reverse();
+  document.querySelector("#studentCards").innerHTML = added.map((item) => `<article class="manage-card"><span class="avatar">${escapeHtml(item.name[0])}</span><div><h3>${escapeHtml(item.name)}${item.mustChange ? '<span class="account-badge first">첫 로그인 전</span>' : ""}${lockOf(item.email)}</h3><p>${escapeHtml(item.className)}</p><small>${escapeHtml(item.joinedAt)} 계정 추가</small></div>${action(item.name, item.email)}</article>`).join("") + joined.map((item) => `<article class="manage-card"><span class="avatar">${escapeHtml(item.name[0])}</span><div><h3>${escapeHtml(item.name)} <span class="new-badge">신규 가입</span>${lockOf(item.email)}</h3><p>${escapeHtml(item.className)}</p><small>${escapeHtml(item.decidedAt)} 승인</small></div>${action(item.name, item.email)}</article>`).join("") + students.map((record) => { const email = record.student === "유재혁" ? "student@demo.com" : null; const note = record.status === "검토 필요" ? "검토 필요 1건" : "최근 채점 완료"; return `<article class="manage-card"><span class="avatar">${record.student[0]}</span><div><h3>${record.student}${lockOf(email)}</h3><p>${record.className}</p><small>${note}</small></div>${action(record.student, email)}</article>`; }).join("");
   document.querySelector("#categoryCards").innerHTML = ["중등 과학|화학 반응 · 이온 · 기체","통합과학|물질의 규칙성 · 화학 변화","화학 I|몰 · 산화 환원 · 중화 반응"].map((item) => { const [title,units]=item.split("|"); return `<article class="category-card"><span>▦</span><h3>${title}</h3><p>${units}</p><button>카테고리 관리</button></article>`; }).join("");
 }
 function renderAnswerOverview() {
@@ -1716,11 +1720,13 @@ function readAccountStore() {
       { id:3, type:"student", name:"정하은", grade:"고2", academy:"라온 과학학원", email:"haeun@student.kr", phone:"01045678901", requestedAt:"2026-11-21 10:03", status:"pending" },
       { id:4, type:"teacher", name:"박선생", grade:"", academy:"라온 과학학원", email:"park@teacher.kr", phone:"01056789012", requestedAt:"2026-11-22 11:30", status:"pending" }
     ],
+    users:[],
+    locks:{},
     notify:defaultNotify()
   };
   try {
     const saved = JSON.parse(localStorage.getItem(ACCOUNT_STORE_KEY));
-    return saved && Array.isArray(saved.signups) ? { signups:saved.signups, notify:{ ...seed.notify, ...saved.notify } } : seed;
+    return saved && Array.isArray(saved.signups) ? { signups:saved.signups, users:saved.users ?? [], locks:saved.locks ?? {}, notify:{ ...seed.notify, ...saved.notify } } : seed;
   } catch { return seed; }
 }
 const accountStore = readAccountStore();
@@ -1909,20 +1915,133 @@ document.querySelector("#termsAgree").addEventListener("click", () => {
   closeTerms();
 });
 
+/** 데모 계정 (비밀번호 확인·잠금 대상). 관리자는 잠그지 않는다. */
+const DEMO_LOGINS = { "teacher@demo.com":{ password:"demo1234", admin:true, role:"admin" }, "student@demo.com":{ password:"demo1234", admin:false, role:"student" } };
+/** 임시 비밀번호로 로그인한 직접 추가 계정 (비밀번호 변경 화면용) */
+let changingUser = null;
 document.querySelector("#loginForm").addEventListener("submit", (event) => {
   event.preventDefault();
   const email = document.querySelector("#loginEmail").value.trim().toLowerCase();
+  const password = document.querySelector("#loginPassword").value;
   const error = document.querySelector("#loginError");
-  if (!EMAIL_PATTERN.test(email) || !document.querySelector("#loginPassword").value) { error.textContent = "이메일과 비밀번호를 입력해주세요."; return; }
+  if (!EMAIL_PATTERN.test(email) || !password) { error.textContent = "이메일과 비밀번호를 입력해주세요."; return; }
+  const added = accountStore.users.find((item) => item.email === email);
+  const known = added ? { password:added.password, admin:false, role:added.role === "teacher" ? "admin" : "student" } : DEMO_LOGINS[email];
+  if (known) {
+    const lock = accountStore.locks[email] ?? { failed:0, lockedAt:null };
+    if (lock.lockedAt && !known.admin) { error.textContent = "비밀번호를 5회 틀려 계정이 잠겼습니다. 선생님이나 관리자에게 잠금 해제를 요청해주세요."; return; }
+    if (password !== known.password) {
+      document.querySelector("#loginPassword").value = "";
+      if (known.admin) { error.textContent = "이메일 또는 비밀번호가 올바르지 않습니다."; return; }
+      lock.failed += 1;
+      if (lock.failed >= 5) lock.lockedAt = nowStamp();
+      accountStore.locks[email] = lock;
+      writeAccountStore(); renderUsers();
+      error.textContent = lock.lockedAt ? "비밀번호를 5회 틀려 계정이 잠겼습니다. 선생님이나 관리자에게 잠금 해제를 요청해주세요." : `이메일 또는 비밀번호가 올바르지 않습니다. (${5 - lock.failed}번 더 틀리면 계정이 잠깁니다)`;
+      return;
+    }
+    delete accountStore.locks[email];
+    writeAccountStore();
+    if (added?.mustChange) {
+      changingUser = added;
+      error.textContent = "";
+      openAuth("change-password");
+      return;
+    }
+  }
   const signup = accountStore.signups.find((item) => item.email === email);
   if (signup?.status === "pending") { error.textContent = `${signup.academy} ${signup.type === "teacher" ? "관리자" : "선생님"}의 가입 승인을 기다리고 있습니다. 승인 전에는 학원 화면을 쓸 수 없어요.`; return; }
   if (signup?.status === "rejected") { error.textContent = `가입이 거절되었습니다. (${signup.rejectReason}) 학원에 문의해주세요.`; return; }
   error.textContent = "";
   closeAuth();
-  let nextRole = role;
+  let nextRole = known?.role ?? role;
   if (signup?.status === "approved") nextRole = signup.type === "teacher" ? "admin" : "student";
   applyRole(nextRole);
   sysToast("로그인했습니다. (데모)");
+});
+document.querySelector("#changePasswordForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const next = document.querySelector("#firstPassword").value;
+  let message = "";
+  if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(next)) message = "새 비밀번호는 8자 이상, 영문과 숫자를 섞어주세요.";
+  else if (next !== document.querySelector("#firstPasswordConfirm").value) message = "새 비밀번호 확인이 일치하지 않습니다.";
+  else if (changingUser && next === changingUser.password) message = "임시 비밀번호와 다른 비밀번호로 바꿔주세요.";
+  document.querySelector("#changePasswordError").textContent = message;
+  if (message || !changingUser) return;
+  Object.assign(changingUser, { password:next, mustChange:false });
+  writeAccountStore(); renderUsers();
+  event.target.reset();
+  closeAuth();
+  applyRole(changingUser.role === "teacher" ? "admin" : "student");
+  changingUser = null;
+  sysToast("비밀번호를 바꿨습니다. 시작해볼까요?");
+});
+
+/* ── 사용자 관리 › 계정 직접 추가 (임시 비밀번호) ── */
+/**
+ * 임시 비밀번호를 만든다. 12자, 영문·숫자를 섞고 헷갈리는 글자(0·O·1·l·I)는 쓰지 않는다.
+ * @returns {string}
+ */
+function makeTempPassword() {
+  const letters = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ", digits = "23456789", all = letters + digits;
+  const pick = (chars) => chars[Math.floor(Math.random() * chars.length)];
+  const chars = [pick(letters), pick(digits), ...Array.from({ length:10 }, () => pick(all))];
+  for (let i = chars.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [chars[i], chars[j]] = [chars[j], chars[i]]; }
+  return chars.join("");
+}
+let addingRole = "student";
+/** @returns {void} 계정 추가 창을 연다. (지금 보고 있는 종류) */
+function openAddAccount() {
+  addingRole = userRole;
+  const student = addingRole === "student";
+  document.querySelector("#addAccountTitle").textContent = student ? "학생 계정 추가" : "선생님 계정 추가";
+  document.querySelector("#addAccountForm").reset();
+  document.querySelector("#addAccountForm").hidden = false;
+  document.querySelector("#tempPasswordPanel").hidden = true;
+  document.querySelector("#addAccountSubmit").hidden = false;
+  document.querySelector("#addAccountCancel").textContent = "취소";
+  document.querySelector("#addAccountError").textContent = "";
+  document.querySelectorAll("[data-add-student]").forEach((field) => { field.hidden = !student; });
+  document.querySelector("#addAccountClass").innerHTML = `<option value="">클래스 선택</option>${CLASS_OPTIONS.map((name) => `<option>${name}</option>`).join("")}`;
+  document.querySelector("#addAccountModal").classList.remove("hidden");
+  document.querySelector("#addAccountName").focus();
+}
+/** @returns {void} */
+function closeAddAccount() { document.querySelector("#addAccountModal").classList.add("hidden"); }
+document.querySelector("#addAccountButton").addEventListener("click", openAddAccount);
+document.querySelectorAll("[data-add-account-close]").forEach((button) => button.addEventListener("click", closeAddAccount));
+document.querySelector("#addAccountGrade").addEventListener("change", (event) => {
+  const select = document.querySelector("#addAccountClass");
+  if (!select.value) select.value = CLASS_OPTIONS.find((name) => name.startsWith(event.target.value)) ?? "";
+});
+document.querySelector("#addAccountForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const value = (id) => document.querySelector(`#${id}`).value.trim();
+  const student = addingRole === "student";
+  const email = value("addAccountEmail").toLowerCase();
+  const taken = [...Object.keys(DEMO_LOGINS), ...accountStore.users.map((item) => item.email), ...accountStore.signups.map((item) => item.email)].includes(email);
+  let message = "";
+  if (!value("addAccountName")) message = "이름을 입력해주세요.";
+  else if (student && !value("addAccountGrade")) message = "학년을 선택해주세요.";
+  else if (!EMAIL_PATTERN.test(email)) message = "이메일 형식을 확인해주세요.";
+  else if (taken) message = "이미 가입한 이메일입니다. 다른 이메일을 입력해주세요.";
+  else if (student && !value("addAccountClass")) message = "클래스를 배정해주세요.";
+  else if (value("addAccountPhone") && !PHONE_PATTERN.test(value("addAccountPhone"))) message = "휴대폰 번호 형식을 확인해주세요.";
+  document.querySelector("#addAccountError").textContent = message;
+  if (message) return;
+  const password = makeTempPassword();
+  accountStore.users.push({ id:Date.now(), role:addingRole, name:value("addAccountName"), email, grade:student ? value("addAccountGrade") : "", className:student ? value("addAccountClass") : "", phone:value("addAccountPhone") ? formatPhone(value("addAccountPhone")) : "", password, mustChange:true, joinedAt:nowStamp() });
+  writeAccountStore(); renderUsers();
+  document.querySelector("#addAccountForm").hidden = true;
+  document.querySelector("#tempPasswordPanel").hidden = false;
+  document.querySelector("#addAccountSubmit").hidden = true;
+  document.querySelector("#addAccountCancel").textContent = "확인";
+  document.querySelector("#tempPasswordEmail").textContent = email;
+  document.querySelector("#tempPasswordValue").textContent = password;
+});
+document.querySelector("#tempPasswordCopy").addEventListener("click", () => {
+  const value = document.querySelector("#tempPasswordValue").textContent;
+  (navigator.clipboard?.writeText(value) ?? Promise.reject()).then(() => sysToast("임시 비밀번호를 복사했습니다."), () => sysToast("복사하지 못했습니다. 직접 적어주세요.", true));
 });
 
 document.querySelector("#signupInfoForm").addEventListener("submit", (event) => {
@@ -1980,11 +2099,12 @@ function renderApprovals() {
   document.querySelector("#approvalEmpty").hidden = pending.length > 0;
   document.querySelector("#approvalBody").innerHTML = pending.map((item) => `<tr data-signup-id="${item.id}"><td class="nowrap">${escapeHtml(item.requestedAt)}</td><td><strong>${escapeHtml(item.name)}</strong></td>${student ? `<td>${escapeHtml(item.grade)}</td>` : ""}<td>${escapeHtml(item.email)}</td><td class="nowrap">${item.phone ? maskPhone(item.phone) : "-"}</td>${student ? `<td><select data-approval-class aria-label="${escapeHtml(item.name)} 클래스 배정"><option value="">클래스 선택</option>${CLASS_OPTIONS.map((name) => `<option${name.startsWith(item.grade) ? " selected" : ""}>${name}</option>`).join("")}</select></td>` : ""}<td class="nowrap"><button class="primary-button small" type="button" data-approve>승인</button> <button class="outline-button small" type="button" data-reject>거절</button></td></tr>`).join("");
 }
-/** @returns {void} 선생님 계정 카드 (관리자 배지) */
+/** @returns {void} 선생님 계정 카드 (관리자·첫 로그인 전·잠김 배지, 잠금 해제) */
 function renderTeacherCards() {
   const teachers = [{ name:"전선생", email:"teacher@demo.com", admin:true, note:"2025-12-15 등록" }]
     .concat(accountStore.signups.filter((item) => item.type === "teacher" && item.status === "approved").map((item) => ({ name:item.name, email:item.email, note:`${item.decidedAt} 승인` })))
-  document.querySelector("#teacherCards").innerHTML = teachers.map((item) => `<article class="manage-card"><span class="avatar">${escapeHtml(item.name[0])}</span><div><h3>${escapeHtml(item.name)}${item.admin ? '<span class="account-badge admin">관리자</span>' : ""}</h3><p>${escapeHtml(item.email)}</p><small>${escapeHtml(item.note)}</small></div></article>`).join("");
+    .concat(accountStore.users.filter((item) => item.role === "teacher").map((item) => ({ name:item.name, email:item.email, first:item.mustChange, note:`${item.joinedAt} 계정 추가` })));
+  document.querySelector("#teacherCards").innerHTML = teachers.map((item) => { const locked = accountStore.locks[item.email]?.lockedAt; return `<article class="manage-card"><span class="avatar">${escapeHtml(item.name[0])}</span><div><h3>${escapeHtml(item.name)}${item.admin ? '<span class="account-badge admin">관리자</span>' : ""}${item.first ? '<span class="account-badge first">첫 로그인 전</span>' : ""}${locked ? '<span class="account-badge locked">잠김</span>' : ""}</h3><p>${escapeHtml(item.email)}</p><small>${escapeHtml(item.note)}</small></div>${locked ? `<button class="unlock-button" type="button" data-unlock-email="${escapeHtml(item.email)}">잠금 해제</button>` : ""}</article>`; }).join("");
 }
 /**
  * 사용자 종류(학생/선생님)를 바꾼다.
@@ -1994,6 +2114,7 @@ function renderTeacherCards() {
 function showUserRole(type) {
   userRole = type;
   document.querySelector("#userListTab").textContent = type === "student" ? "학생 목록" : "선생님 목록";
+  document.querySelector("#addAccountButton").textContent = type === "student" ? "＋ 학생 추가" : "＋ 선생님 추가";
   document.querySelector("#studentCards").hidden = type !== "student";
   document.querySelector("#teacherCards").hidden = type !== "teacher";
   renderApprovals(); renderTeacherCards();
@@ -2001,6 +2122,14 @@ function showUserRole(type) {
 }
 /** @returns {void} 학생·선생님 목록을 다시 그린다. */
 function renderUsers() { renderStaticCards(); renderTeacherCards(); renderApprovals(); }
+// 잠금 해제 (학생·선생님 카드)
+document.querySelector('[data-page-panel="students"]').addEventListener("click", (event) => {
+  const button = event.target.closest("[data-unlock-email]");
+  if (!button) return;
+  delete accountStore.locks[button.dataset.unlockEmail];
+  writeAccountStore(); renderUsers();
+  sysToast(`${button.dataset.unlockEmail} 계정의 로그인 잠금을 풀었습니다.`);
+});
 /**
  * 학생 관리 탭(학생 목록/가입 승인)을 바꾼다.
  * @param {"list"|"approvals"} tab - 보여줄 탭

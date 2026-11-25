@@ -6,7 +6,7 @@
     <title>쪽지시험 | 단답형 채점 관리</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=65" />
+    <link rel="stylesheet" href="./styles.css?v=68" />
   </head>
   <body>
     <aside class="sidebar">
@@ -75,7 +75,7 @@
         <section class="quick-grid">
           <button class="quick-card" type="button" data-page="templates"><span>▧</span><div><strong>시험지 관리</strong><small>양식 이미지와 OCR 영역 설정</small></div></button>
           <button class="quick-card" type="button" data-page="records"><span>▤</span><div><strong>채점 관리</strong><small>전체 시험지 이력 확인</small></div></button>
-          <button class="quick-card" type="button" data-page="students"><span>♧</span><div><strong>학생 관리</strong><small>클래스별 학생 관리</small></div></button>
+          <button class="quick-card" type="button" data-page="students"><span>♧</span><div><strong>사용자 관리</strong><small>학생·선생님 계정과 가입 승인</small></div></button>
           <button class="quick-card" type="button" data-page="categories"><span>▦</span><div><strong>그룹 관리</strong><small>학교급 · 과목 · 단원 분류</small></div></button>
         </section>
         <section class="dash-row">
@@ -104,12 +104,13 @@
       </section>
 
       <section class="app-page" data-page-panel="students">
-        <div class="section-heading"><div><p class="eyebrow">USERS</p><h2>사용자 관리</h2><p>학생·선생님 계정과 가입 승인을 관리합니다.</p></div></div>
+        <div class="section-heading"><div><p class="eyebrow">USERS</p><h2>사용자 관리</h2><p>학생·선생님 계정과 가입 승인, 계정 추가, 로그인 잠금 해제를 관리합니다.</p></div></div>
         <div class="user-toolbar">
           <div class="view-tabs" role="tablist" aria-label="목록·가입 승인">
             <button type="button" role="tab" aria-selected="true" data-student-tab="list" id="userListTab">학생 목록</button>
             <button type="button" role="tab" aria-selected="false" data-student-tab="approvals">가입 승인 <span class="tab-count" id="approvalCount">0</span></button>
           </div>
+          <button class="primary-button" type="button" id="addAccountButton">＋ 학생 추가</button>
         </div>
         <div data-student-panel="list"><div class="content-grid" id="studentCards"></div><div class="content-grid" id="teacherCards" hidden></div></div>
         <div data-student-panel="approvals" hidden>
@@ -423,6 +424,17 @@
           <button class="text-button auth-back" type="button" data-auth-close>← 화면 둘러보기로 돌아가기</button>
         </div>
 
+        <div class="auth-card" data-auth-view="change-password" hidden>
+          <p class="eyebrow mint">FIRST SIGN IN</p><h2>비밀번호를 바꿔주세요</h2>
+          <p class="auth-lead">관리자가 만든 임시 비밀번호로 로그인했습니다. 새 비밀번호로 바꾸면 시작할 수 있어요.</p>
+          <form class="auth-form" id="changePasswordForm" novalidate>
+            <label>새 비밀번호<input type="password" id="firstPassword" autocomplete="new-password" placeholder="8자 이상, 영문·숫자 포함" /></label>
+            <label>새 비밀번호 확인<input type="password" id="firstPasswordConfirm" autocomplete="new-password" /></label>
+            <p class="auth-error" id="changePasswordError" role="alert"></p>
+            <button class="primary-button auth-submit" type="submit">비밀번호 변경</button>
+          </form>
+        </div>
+
         <div class="auth-card" data-auth-view="signup" hidden>
           <ol class="auth-steps" id="signupSteps" aria-label="가입 단계"><li data-step="1"><b>1</b>기본 정보</li><li data-step="2"><b>2</b>승인 대기</li></ol>
 
@@ -476,8 +488,27 @@
         <footer><button class="outline-button" type="button" data-terms-close>닫기</button><button class="primary-button" type="button" id="termsAgree">동의</button></footer>
       </section>
     </div>
+    <div class="modal-backdrop hidden" id="addAccountModal">
+      <section class="sys-modal" role="dialog" aria-modal="true" aria-labelledby="addAccountTitle">
+        <header><h2 id="addAccountTitle">학생 계정 추가</h2><button class="sys-close" type="button" data-add-account-close aria-label="닫기">×</button></header>
+        <form class="auth-form add-account-form" id="addAccountForm" novalidate>
+          <p class="auth-help">임시 비밀번호로 계정을 만듭니다. 사용자는 첫 로그인 때 비밀번호를 바꿉니다.</p>
+          <label>이름<input id="addAccountName" placeholder="실명" /></label>
+          <label data-add-student>학년<select id="addAccountGrade"><option value="">학년 선택</option><option>중1</option><option>중2</option><option>중3</option><option>고1</option><option>고2</option><option>고3</option></select></label>
+          <label>이메일 (아이디)<input type="email" id="addAccountEmail" placeholder="example@email.com" /></label>
+          <label data-add-student>클래스<select id="addAccountClass"></select></label>
+          <label>휴대폰 번호 <small class="auth-optional">(선택)</small><input type="tel" id="addAccountPhone" inputmode="numeric" placeholder="010-0000-0000" /></label>
+          <p class="auth-error" id="addAccountError" role="alert"></p>
+        </form>
+        <div class="temp-password-panel" id="tempPasswordPanel" hidden>
+          <dl class="auth-summary"><div><dt>아이디</dt><dd id="tempPasswordEmail"></dd></div><div><dt>임시 비밀번호</dt><dd><code id="tempPasswordValue"></code> <button class="outline-button small" type="button" id="tempPasswordCopy">복사</button></dd></div></dl>
+          <p class="contact-warning">이 비밀번호는 지금만 보여줍니다. 창을 닫으면 다시 볼 수 없습니다.</p>
+        </div>
+        <footer><button class="outline-button" type="button" data-add-account-close id="addAccountCancel">취소</button><button class="primary-button" type="submit" form="addAccountForm" id="addAccountSubmit">계정 만들기</button></footer>
+      </section>
+    </div>
     <div class="sys-toast hidden" id="sysToast" role="status"></div>
     <div id="printArea" aria-hidden="true"></div>
-    <script src="./app.js?v=65"></script>
+    <script src="./app.js?v=68"></script>
   </body>
 </html>
