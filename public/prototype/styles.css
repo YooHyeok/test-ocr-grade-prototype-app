@@ -343,6 +343,8 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .pagination button { width: 32px; height: 32px; border: 1px solid var(--line); border-radius: 7px; color: #76827d; background: var(--white); font-size: 12px; font-weight: 700; }
 .pagination button.active { color: var(--white); border-color: var(--green); background: var(--green); }
 .empty-history { grid-column: 1 / -1; padding: 30px; border: 1px dashed var(--line); border-radius: 11px; color: var(--muted); background: var(--white); text-align: center; font-size: 13px; }
+/* 새 양식 버튼은 헤더가 아니라 화면 위 도구 줄 오른쪽 (객관식은 탭이 없어 오른쪽 정렬만) */
+.template-page-tools.mc-page-tools { justify-content: flex-end; }
 .template-page-tools { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-top: -3px; }.template-page-tools p { margin: 0; color: var(--muted); font-size: 13px; }.template-tabs { display: inline-flex; flex: none; gap: 4px; padding: 4px; border-radius: 9px; background: #e9eeeb; }.template-tabs button { padding: 8px 13px; border-radius: 6px; color: #7b8984; background: transparent; font-size: 12px; font-weight: 700; }.template-tabs button.active { color: var(--green); background: var(--white); box-shadow: 0 2px 6px rgba(31,49,43,.08); }
 .answer-overview { margin-top: 16px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--white); }.answer-overview-heading { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 16px; border-bottom: 1px solid var(--line); }.answer-overview-heading h3 { margin: 0 0 5px; font-size: 15px; }.answer-overview-heading p { margin: 0; color: var(--muted); font-size: 12px; }.answer-overview-heading select { width: auto; min-width: 210px; }.answer-overview-list { display: grid; gap: 8px; padding: 15px; }
 .answer-overview-item { display: grid; grid-template-columns: 46px minmax(0,1fr) minmax(150px,220px); gap: 12px; align-items: center; padding: 11px 12px; border: 1px solid #edf0ee; border-radius: 8px; }.answer-overview-item > strong { color: var(--green); font-size: 12px; }.answer-overview-item p { margin: 0; color: #56635e; font-size: 13px; }.answer-overview-item small { color: #8c9994; font-size: 11px; }
@@ -405,6 +407,8 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .template-canvas-viewport { flex: 1; min-height: 0; overflow: auto; padding: 17px; }
 .canvas-footer { display: none; flex: none; padding: 11px 15px; border-top: 1px solid var(--line); background: var(--white); border-radius: 0 0 12px 12px; }
 .inline-editing .canvas-footer { display: block; }
+/* 편집 중에는 객관식처럼 취소 · 저장 순서 */
+.inline-editing [data-inline-cancel] { order: -1; }
 .template-canvas { width: 100%; min-width: 520px; min-height: 630px; padding: 29px 34px; border: 1px solid #e6e0d4; color: #57534b; background: #fff; box-shadow: 0 4px 12px rgba(58,70,64,.05); font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif; font-size: 13px; }
 #printableTemplate { pointer-events: none; }
 #printableTemplate .ocr-region { pointer-events: auto; cursor: pointer; }
@@ -691,7 +695,7 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
   #mobileNav .teacher-only { display: none; }
   #mobileNav .student-only { display: grid; order: 1; }
   #mobileNav [data-open-upload] { order: 2; }
-  .header-manage, .header-new-template, .header-new-mc { display: none; }
+  .header-manage { display: none; }
   .app-page.active { display: none; }
   .app-page[data-page-panel="my-papers"] { display: block; }
   footer { padding-bottom: 10px; }

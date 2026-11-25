@@ -76,6 +76,8 @@ function regionsFromQuestions(list) {
   return regions;
 }
 let selectedTemplateId = 1;
+/** 편집·저장한 주관식 문항(영역 포함)을 시험지별로 보관한다. 다시 고르면 이 내용을 불러온다. */
+const savedTemplateRegions = {};
 let draftTemplate = null;
 const MAX_REGION_H = 220;
 
@@ -84,8 +86,6 @@ function showPage(name) {
   document.querySelectorAll("[data-page]").forEach((button) => button.classList.toggle("active", button.dataset.page === name));
   document.querySelector("#pageTitle").textContent = pageTitles[name] || "케미체크";
   document.querySelector("#pageSubtitle").textContent = pageSubtitles[name] || "";
-  document.querySelector(".header-new-template").classList.toggle("hidden",name !== "templates");
-  document.querySelector(".header-new-mc").classList.toggle("hidden",name !== "templates-mc");
   // 아코디언 메뉴(시험지 관리·설정): 하위 화면에 있으면 펼치고 상위 메뉴를 강조한다.
   document.querySelectorAll("[data-nav-group]").forEach((group) => {
     const inGroup = Boolean(group.querySelector(`[data-page="${name}"]`));
@@ -157,9 +157,18 @@ function renderStaticCards() {
 function renderAnswerOverview() {
   document.querySelector("#answerOverviewList").innerHTML=Object.entries(templateRegions).map(([number,region]) => `<article class="answer-overview-item"><strong>${number}번</strong><p>${region.question}</p><small>정답: <b>${region.answer || "미입력"}</b>${region.aliases ? ` · 허용: ${region.aliases}` : ""}</small></article>`).join("");
 }
+/**
+ * 시험지의 실제 문항 수. 저장한 문항이 있으면 그 수, 없으면 등록된 예시 문항 수.
+ * @param {object} template - 시험지
+ * @returns {number}
+ */
+function templateQuestionCount(template) {
+  if (savedTemplateRegions[template.id]) return Object.keys(savedTemplateRegions[template.id]).length;
+  return (templateQuestions[template.id] || []).length || template.count;
+}
 function renderTemplateList() {
   document.querySelector(".template-list-title small").textContent=`총 ${templates.length}개`;
-  document.querySelector("#templateListItems").innerHTML=templates.map((template) => `<button class="template-item ${template.id === selectedTemplateId ? "active" : ""}" type="button" data-template-id="${template.id}"><span class="template-icon">▧</span><span><strong>${template.name}</strong><small>${template.category} · ${template.count}문항</small></span></button>`).join("");
+  document.querySelector("#templateListItems").innerHTML=templates.map((template) => `<button class="template-item ${template.id === selectedTemplateId ? "active" : ""}" type="button" data-template-id="${template.id}"><span class="template-icon">▧</span><span><strong>${template.name}</strong><small>${template.category} · ${templateQuestionCount(template)}문항</small></span></button>`).join("");
 }
 function createQuestionMarkup(number) {
   const region=templateRegions[number] || { question:"문항 질문을 입력하세요.", answer:"" };
@@ -240,8 +249,40 @@ function setInlineEditMode(enabled) {
   document.querySelectorAll(".region-editor input").forEach((input) => { input.disabled = !enabled; });
   if (enabled) outer.querySelectorAll("[tabindex]").forEach((element) => element.removeAttribute("tabindex"));
   if (enabled) bindInlineTemplateEditor();
-  document.querySelectorAll("[data-toggle-inline-edit]").forEach((button) => button.textContent=enabled ? "편집 완료" : button.classList.contains("full-button") ? "미리보기에서 편집" : "편집하기");
-  document.querySelector("[data-inline-cancel]").textContent=enabled ? "취소" : "인쇄";
+  document.querySelectorAll("[data-toggle-inline-edit]").forEach((button) => button.textContent=enabled ? "저장" : button.classList.contains("full-button") ? "미리보기에서 편집" : "편집하기");
+  const cancel=document.querySelector("[data-inline-cancel]");
+  cancel.textContent=enabled ? "취소" : "인쇄";
+  cancel.classList.toggle("outline-button",enabled); cancel.classList.toggle("secondary-button",!enabled);
+  document.querySelector("#saToolbarTitle").textContent=enabled ? "주관식 시험지 편집" : "주관식 시험지 미리보기";
+  document.querySelector("#saToolbarHint").textContent=enabled ? "문항 질문과 기준 답안을 바로 고치고, 답 영역 모서리를 끌어 OCR 영역 크기를 조절하세요." : "편집하기를 누르면 이 화면에서 문항과 OCR 영역을 바로 수정할 수 있습니다.";
+}
+/**
+ * 주관식 문항 저장 전 검사. 첫 번째 문제를 알려준다. (객관식과 같은 기준: 질문·답이 비어 있으면 저장하지 않음)
+ * @returns {{message: string, number: string} | null} 문제가 없으면 null
+ */
+function validateTemplateRegions() {
+  for (const [number, region] of Object.entries(templateRegions)) {
+    const question=(region.question || "").trim();
+    if (!question || question === "문항 질문을 입력하세요.") return { message:`${number}번 문항 질문을 입력해주세요.`, number };
+    if (!(region.answer || "").trim()) return { message:`${number}번 문항 기준 답안을 입력해주세요.`, number };
+  }
+  return null;
+}
+/**
+ * 검사에 걸린 문항을 선택하고 화면 가운데로 보여준다.
+ * @param {{message: string, number: string}} problem - 검사 결과
+ * @param {string} root - 문항을 찾을 영역 선택자
+ * @returns {void}
+ */
+function showTemplateProblem(problem,root) {
+  const region=document.querySelector(`${root} [data-region="${problem.number}"]`);
+  if (region) { if (root === "#printableTemplate") selectRegion(region); else selectModalRegion(region); region.scrollIntoView({ block:"center", behavior:"smooth" }); }
+  sysToast(problem.message,true);
+}
+/** @returns {void} 지금 문항을 선택된 시험지에 보관하고 목록 문항 수를 맞춘다. */
+function storeTemplateRegions() {
+  savedTemplateRegions[selectedTemplateId]=structuredClone(templateRegions);
+  renderTemplateList();
 }
 function bindInlineTemplateEditor() {
   const outer=document.querySelector("#printableTemplate");
@@ -453,6 +494,7 @@ document.querySelector("#historyPeriod").addEventListener("change", () => { pape
 document.querySelector("#historyStatus").addEventListener("change", () => { paperPage=1; renderMyPapers(); });
 bindTemplateRegionInputs();
 function createBlankTemplate() {
+  if (inlineEditing) { sysToast("편집 중입니다. 저장하거나 취소해주세요.", true); return; }
   const id=Date.now();
   const name="새 쪽지시험";
   const category="화학 I · 산화 환원";
@@ -474,7 +516,14 @@ document.querySelectorAll("[data-template-tab]").forEach((button) => button.addE
   document.querySelectorAll("[data-template-panel]").forEach((panel) => panel.classList.toggle("hidden",panel.dataset.templatePanel !== button.dataset.templateTab));
   if (button.dataset.templateTab === "answers") renderAnswerOverview();
 }));
-document.querySelectorAll("[data-toggle-inline-edit]").forEach((button) => button.addEventListener("click", () => setInlineEditMode(!inlineEditing)));
+document.querySelectorAll("[data-toggle-inline-edit]").forEach((button) => button.addEventListener("click", () => {
+  if (!inlineEditing) { setInlineEditMode(true); return; }
+  const problem=validateTemplateRegions();
+  if (problem) { showTemplateProblem(problem,"#printableTemplate"); return; }
+  setInlineEditMode(false);
+  storeTemplateRegions();
+  sysToast("주관식 시험지를 저장했습니다.");
+}));
 document.querySelector("[data-inline-cancel]").addEventListener("click", () => {
   if (!inlineEditing) { printTemplate(); return; }
   inlineEditing=false;
@@ -488,11 +537,10 @@ document.querySelector("[data-inline-cancel]").addEventListener("click", () => {
  * @returns {void}
  */
 function loadTemplate(id) {
-  if (inlineEditing) setInlineEditMode(false);
+  if (inlineEditing) { sysToast("편집 중입니다. 저장하거나 취소해주세요.", true); return; }
   selectedTemplateId = id;
-  const questions = templateQuestions[id] || templateQuestions[1];
   Object.keys(templateRegions).forEach((key) => delete templateRegions[key]);
-  Object.assign(templateRegions, regionsFromQuestions(questions));
+  Object.assign(templateRegions, savedTemplateRegions[id] ? structuredClone(savedTemplateRegions[id]) : regionsFromQuestions(templateQuestions[id] || templateQuestions[1]));
   const template = templates.find((item) => item.id === id);
   const categorySelect = document.querySelector("#printableTemplate [data-paper-category]");
   const subjectSelect = document.querySelector("#printableTemplate [data-paper-subject]");
@@ -549,7 +597,10 @@ document.querySelectorAll("[data-print-template]").forEach((button) => button.ad
 document.querySelector("#templatePreviewTitle").addEventListener("input", (event) => { const template=draftTemplate?.id === selectedTemplateId ? draftTemplate : templates.find((item) => item.id === selectedTemplateId); if (template) { template.name=event.target.value || "새 쪽지시험"; if (!draftTemplate) renderTemplateList(); } });
 document.querySelector("[data-save-new-template]").addEventListener("click", () => {
   if (!draftTemplate) return;
+  const problem=validateTemplateRegions();
+  if (problem) { showTemplateProblem(problem,"#largeTemplatePreview"); return; }
   draftTemplate.count=Object.keys(templateRegions).length;
+  savedTemplateRegions[draftTemplate.id]=structuredClone(templateRegions);
   templates.unshift(draftTemplate);
   selectedTemplateId=draftTemplate.id;
   draftTemplate=null;
@@ -558,6 +609,7 @@ document.querySelector("[data-save-new-template]").addEventListener("click", () 
   renderTemplateList();
   document.querySelector("[data-save-new-template]").classList.add("hidden");
   templatePreviewModal.classList.add("hidden");
+  sysToast("새 주관식 시험지를 저장했습니다.");
 });
 document.querySelector("#modalRegionQuestion").addEventListener("input", (event) => { const number=document.querySelector("#modalSelectedQuestion").textContent; templateRegions[number].question=event.target.value; document.querySelector(`#largeTemplatePreview [data-paper-question-input="${number}"]`).value=event.target.value; });
 document.querySelector("#modalRegionAnswer").addEventListener("input", (event) => { const number=document.querySelector("#modalSelectedQuestion").textContent; templateRegions[number].answer=event.target.value; document.querySelector(`#largeTemplatePreview [data-paper-answer-input="${number}"]`).value=event.target.value; });

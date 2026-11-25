@@ -6,7 +6,7 @@
     <title>쪽지시험 | 단답형 채점 관리</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=62" />
+    <link rel="stylesheet" href="./styles.css?v=63" />
   </head>
   <body>
     <aside class="sidebar">
@@ -51,8 +51,6 @@
       <header class="topbar">
         <div class="topbar-titles"><h1 id="pageTitle">대시보드</h1><p id="pageSubtitle"></p></div>
         <div class="header-actions">
-          <button class="primary-button header-new-template hidden" type="button" data-new-template>＋ 새 시험지 양식</button>
-          <button class="primary-button header-new-mc hidden" type="button" data-new-mc>＋ 새 객관식 양식</button>
         </div>
         <button class="topbar-logout" type="button" data-logout>로그아웃</button>
       </header>
@@ -116,11 +114,11 @@
         <div class="template-page-tools"><div class="template-tabs" role="tablist" aria-label="시험지 관리 보기">
           <button class="active" type="button" data-template-tab="editor">양식 편집</button>
           <button type="button" data-template-tab="answers">답안만 보기</button>
-        </div></div>
+        </div><button class="primary-button" type="button" data-new-template>＋ 새 주관식 양식</button></div>
         <div class="template-workspace">
           <div class="template-side">
             <aside class="template-list">
-              <div class="template-list-title"><strong>등록된 시험지 양식</strong><small>3개 양식</small></div>
+              <div class="template-list-title"><strong>등록된 주관식 시험지</strong><small>총 0개</small></div>
               <div id="templateListItems"></div>
             </aside>
             <aside class="region-editor" data-template-panel="editor">
@@ -131,7 +129,7 @@
             </aside>
           </div>
           <section class="template-canvas-card" data-template-panel="editor">
-            <div class="canvas-toolbar"><div><strong>시험지 양식 미리보기</strong><small>편집하기를 누르면 이 화면에서 문항과 OCR 영역을 바로 수정할 수 있습니다.</small></div><div class="canvas-actions"><button class="primary-button" type="button" data-toggle-inline-edit>편집하기</button><button class="secondary-button" type="button" data-inline-cancel>인쇄</button></div></div>
+            <div class="canvas-toolbar"><div><strong id="saToolbarTitle">주관식 시험지 미리보기</strong><small id="saToolbarHint">편집하기를 누르면 이 화면에서 문항과 OCR 영역을 바로 수정할 수 있습니다.</small></div><div class="canvas-actions"><button class="primary-button" type="button" data-toggle-inline-edit>편집하기</button><button class="secondary-button" type="button" data-inline-cancel>인쇄</button></div></div>
             <div class="template-canvas-viewport">
             <div class="template-canvas" id="printableTemplate">
               <div class="fiducials"><i></i><i></i><i></i><i></i></div>
@@ -160,6 +158,7 @@
       </section>
 
       <section class="app-page" data-page-panel="templates-mc">
+        <div class="template-page-tools mc-page-tools"><button class="primary-button" type="button" data-new-mc>＋ 새 객관식 양식</button></div>
         <div class="template-workspace">
           <div class="template-side">
             <aside class="template-list">
@@ -480,6 +479,6 @@
     </div>
     <div class="sys-toast hidden" id="sysToast" role="status"></div>
     <div id="printArea" aria-hidden="true"></div>
-    <script src="./app.js?v=62"></script>
+    <script src="./app.js?v=63"></script>
   </body>
 </html>
