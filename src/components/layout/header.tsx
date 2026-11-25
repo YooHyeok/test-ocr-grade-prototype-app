@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useLocation } from "react-router";
-import { LogOut, Plus } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { findMenuItem } from "@/lib/menu";
@@ -9,7 +9,7 @@ import { useCurrentMode } from "@/hooks/use-current-mode";
 import { useSignOut } from "@/hooks/mutations/auth/use-sign-out";
 
 /**
- * 상단 헤더. 현재 화면의 제목/설명과 화면별 액션 버튼을 표시한다.
+ * 상단 헤더. 현재 화면의 제목/설명을 표시한다. (화면별 버튼은 각 화면 본문에 둔다)
  * 모바일은 사이드바(계정 메뉴)가 없으므로 오른쪽 위에 로그아웃을 항상 보여준다.
  * @returns {JSX.Element}
  */
@@ -38,12 +38,6 @@ export default function Header() {
           </p>
         )}
       </div>
-      {/* 버튼이 있어도 헤더 높이가 다른 화면과 같도록 위아래를 제목 줄 높이에 맞춘다. */}
-      {pathname === "/exam-sheets/subjective" && (
-        <Button className="-my-1 max-sm:hidden">
-          <Plus />새 시험지 양식
-        </Button>
-      )}
       <Button
         variant="outline"
         size="sm"

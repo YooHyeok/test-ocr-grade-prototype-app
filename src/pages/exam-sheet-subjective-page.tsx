@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileText } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SegmentedTabs, { type TabOption } from "@/components/segmented-tabs";
 import SheetWorkspace from "@/components/exam-sheet/sheet-workspace";
@@ -35,17 +35,23 @@ export default function ExamSheetSubjectivePage() {
 
   return (
     <>
-      <SegmentedTabs
-        options={VIEW_TABS}
-        value={view}
-        onChange={setView}
-        ariaLabel="시험지 관리 보기"
-      />
+      {/* 새 양식 버튼은 헤더가 아니라 보기 탭 줄 오른쪽 (눈에 잘 띄도록) */}
+      <div className="flex items-center justify-between gap-4 max-sm:flex-col max-sm:items-start">
+        <SegmentedTabs
+          options={VIEW_TABS}
+          value={view}
+          onChange={setView}
+          ariaLabel="시험지 관리 보기"
+        />
+        <Button className="max-sm:hidden">
+          <Plus />새 주관식 양식
+        </Button>
+      </div>
       <SheetWorkspace
         side={
           <>
             <SheetList
-              title="등록된 시험지 양식"
+              title="등록된 주관식 시험지"
               sheets={SUBJECTIVE_SHEETS}
               selectedId={selectedId}
               onSelect={selectSheet}
@@ -62,7 +68,7 @@ export default function ExamSheetSubjectivePage() {
       >
         {view === "editor" ? (
           <PreviewCard
-            title="시험지 양식 미리보기"
+            title="주관식 시험지 미리보기"
             description="편집하기를 누르면 이 화면에서 문항과 OCR 영역을 바로 수정할 수 있습니다."
             actions={
               <>
