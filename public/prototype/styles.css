@@ -739,6 +739,9 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .auth-demo { margin: 16px 0 0; padding: 10px 12px; border-radius: 8px; color: #765d29; background: #fff8e8; font-size: 12px; line-height: 1.5; }
 .auth-back { display: block; margin: 18px auto 0; color: var(--muted); font-weight: 500; }
 .auth-lead { margin: -8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.contact-warning { margin: 0; padding: 10px 12px; border: 1px solid #f0d69d; border-radius: 10px; color: #765d29; background: #fff8e8; font-size: 12px; line-height: 1.5; }
+.myinfo-card .contact-warning { margin: -4px 0 16px; }
+.auth-optional { color: var(--muted); font-weight: 400; }
 .auth-type { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .auth-type label { position: relative; cursor: pointer; }.auth-type input { position: absolute; opacity: 0; }
 .auth-type span { display: grid; gap: 4px; height: 100%; padding: 13px 14px; border: 1.5px solid #d9dfdc; border-radius: 10px; background: var(--white); }.auth-type strong { font-size: 14px; }.auth-type small { color: var(--muted); font-size: 12px; font-weight: 400; line-height: 1.4; }
@@ -770,7 +773,7 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .auth-done .auth-lead { margin: 0; }
 .auth-summary { display: grid; width: 100%; margin: 4px 0 0; padding: 4px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); text-align: left; }
 .auth-summary div { display: grid; grid-template-columns: 80px 1fr; gap: 10px; padding: 9px 0; border-top: 1px solid #eef1ee; font-size: 13px; }.auth-summary div:first-child { border-top: 0; }.auth-summary dt { color: var(--muted); }.auth-summary dd { margin: 0; color: var(--ink); font-weight: 600; word-break: break-all; }
-.auth-progress { display: grid; width: 100%; grid-template-columns: repeat(3, 1fr); margin: 0; padding: 0; list-style: none; }
+.auth-progress { display: grid; width: 100%; grid-template-columns: repeat(2, 1fr); margin: 0; padding: 0; list-style: none; }
 .auth-progress li { position: relative; display: grid; justify-items: center; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 700; }
 .auth-progress li::before { content: "✓"; position: relative; z-index: 1; display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; color: var(--white); background: #6fb293; font-size: 12px; }
 .auth-progress li + li::after { content: ""; position: absolute; top: 12px; right: 50%; width: 100%; height: 2px; background: #cfe3d9; }

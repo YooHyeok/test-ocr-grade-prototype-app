@@ -1758,8 +1758,7 @@ function nowStamp() {
 
 /* ── 로그인 · 회원가입 화면 ── */
 const authScreen = document.querySelector("#authScreen");
-const signupDraft = { type:"student", academy:null, name:"", grade:"", email:"", phone:"", verified:false };
-let verifyTimer;
+const signupDraft = { type:"student", academy:null };
 /**
  * 로그인/회원가입 화면을 연다.
  * @param {"login"|"signup"} view - 보여줄 화면
@@ -1776,12 +1775,11 @@ function openAuth(view) {
 function closeAuth() {
   authScreen.hidden = true;
   document.body.classList.remove("auth-open");
-  clearInterval(verifyTimer);
   if (location.hash) history.replaceState(null, "", location.pathname + location.search);
 }
 /**
  * 회원가입 단계를 바꾼다.
- * @param {number} step - 1 기본 정보, 2 본인인증, 3 승인 대기
+ * @param {number} step - 1 기본 정보, 2 승인 대기
  * @returns {void}
  */
 function showSignupStep(step) {
@@ -1851,7 +1849,7 @@ const TERMS = {
     body:`<p class="terms-meta">시행일: 정식 서비스 시작일 · 기획용 초안 (법률 검토 전)</p>
 <h3>제1조 (목적)</h3><p>이 약관은 쪽지시험(이하 "서비스")이 제공하는 시험지 업로드·자동 채점 서비스의 이용 조건과 절차, 회원과 서비스의 권리·의무를 정합니다.</p>
 <h3>제2조 (용어)</h3><ol><li>"학원"은 서비스에 등록해 학원 코드를 받은 교육기관을 말합니다.</li><li>"선생님"은 학원 소속으로 시험지를 만들고 채점을 관리하는 회원을 말합니다.</li><li>"학생"은 학원 코드로 가입 신청하고 선생님의 승인을 받은 회원을 말합니다.</li></ol>
-<h3>제3조 (회원 가입과 승인)</h3><ol><li>가입은 기본 정보 입력, 휴대폰 본인인증, 학원(선생님)의 승인을 모두 마치면 완료됩니다.</li><li>학원은 소속을 확인할 수 없거나 정보가 사실과 다르면 가입 신청을 거절할 수 있으며, 거절 사유를 안내합니다.</li><li>만 14세 미만은 법정대리인(보호자)의 동의를 받아야 가입할 수 있습니다.</li></ol>
+<h3>제3조 (회원 가입과 승인)</h3><ol><li>가입은 기본 정보를 입력해 신청하고, 학원(선생님)이 승인하면 완료됩니다.</li><li>학원은 소속을 확인할 수 없거나 정보가 사실과 다르면 가입 신청을 거절할 수 있으며, 거절 사유를 안내합니다.</li><li>만 14세 미만은 법정대리인(보호자)의 동의를 받아야 가입할 수 있습니다.</li></ol>
 <h3>제4조 (계정 관리)</h3><p>회원은 아이디(이메일)와 비밀번호를 직접 관리해야 하며, 계정을 다른 사람에게 빌려주거나 넘길 수 없습니다. 계정이 도용된 것을 알게 되면 바로 학원 또는 서비스에 알려야 합니다.</p>
 <h3>제5조 (서비스 내용)</h3><ol><li>시험지 사진 업로드와 촬영 품질 검사</li><li>OCR을 이용한 답안 인식과 자동 채점, 채점 결과·이력 조회</li><li>채점 결과와 학원 공지 알림 (회원이 고른 방법으로 발송)</li></ol><p>자동 채점 결과는 선생님의 검토를 거쳐 바뀌거나 확정될 수 있습니다.</p>
 <h3>제6조 (회원의 의무)</h3><p>회원은 다른 사람의 시험지를 자기 것처럼 올리거나, 채점 결과를 조작하거나, 서비스 운영을 방해하는 행위를 해서는 안 됩니다.</p>
@@ -1864,14 +1862,13 @@ const TERMS = {
     body:`<p class="terms-meta">기획용 초안 (법률 검토 전)</p>
 <p>쪽지시험은 회원 가입과 서비스 제공을 위해 아래와 같이 개인정보를 수집·이용합니다.</p>
 <table class="terms-table"><thead><tr><th>수집 목적</th><th>수집 항목</th><th>보유 기간</th></tr></thead><tbody>
-<tr><td>회원 가입, 본인 확인, 학원 승인</td><td>이름, 이메일, 비밀번호(암호화 저장), 휴대폰 번호, 학년, 소속 학원</td><td>회원 탈퇴 시까지</td></tr>
+<tr><td>회원 가입, 본인 확인, 학원 승인</td><td>이름, 이메일, 비밀번호(암호화 저장), 휴대폰 번호(선택), 학년, 소속 학원</td><td>회원 탈퇴 시까지</td></tr>
 <tr><td>시험지 채점과 결과 제공</td><td>시험지 사진, 답안 인식 결과, 점수, 채점 이력</td><td>회원 탈퇴 시까지</td></tr>
 <tr><td>알림 발송</td><td>알림 받을 이메일·휴대폰 번호, 기기 알림 허용 정보</td><td>알림 해제 또는 탈퇴 시까지</td></tr>
-<tr><td>본인인증 기록</td><td>본인인증 결과, 인증 일시</td><td>관련 법령에서 정한 기간</td></tr>
 </tbody></table>
 <h3>동의를 거부할 권리</h3><p>개인정보 수집·이용에 동의하지 않을 수 있습니다. 다만 위 항목은 서비스 제공에 꼭 필요하므로, 동의하지 않으면 회원 가입을 할 수 없습니다.</p>
-<h3>만 14세 미만 회원</h3><p>만 14세 미만 학생의 개인정보는 법정대리인(보호자)의 동의를 받아 수집하며, 보호자 휴대폰으로 본인인증을 진행합니다.</p>
-<h3>처리 위탁</h3><p>휴대폰 본인인증과 알림 발송은 전문 업체에 맡겨 처리하며, 업체와 맡기는 업무는 개인정보 처리방침에서 안내합니다.</p>`
+<h3>만 14세 미만 회원</h3><p>만 14세 미만 학생의 개인정보는 법정대리인(보호자)의 동의를 받아 수집합니다.</p>
+<h3>처리 위탁</h3><p>알림 발송은 전문 업체에 맡겨 처리하며, 업체와 맡기는 업무는 개인정보 처리방침에서 안내합니다.</p>`
   }
 };
 let termsOpenKey = null;
@@ -1934,87 +1931,27 @@ document.querySelector("#signupInfoForm").addEventListener("submit", (event) => 
   else if (!value("signupName")) message = "이름을 입력해주세요.";
   else if (signupDraft.type === "student" && !value("signupGrade")) message = "학년을 선택해주세요.";
   else if (!EMAIL_PATTERN.test(email)) message = "이메일 형식을 확인해주세요.";
-  else if (accountStore.signups.some((item) => item.email === email && item.status !== "rejected")) message = "이미 가입 신청한 이메일입니다.";
+  else if (value("signupPhone") && !PHONE_PATTERN.test(value("signupPhone"))) message = "휴대폰 번호 형식을 확인해주세요. (예: 010-1234-5678)";
+  else if (accountStore.signups.some((item) => item.email === email && item.status !== "rejected")) message = "이미 가입한 이메일입니다.";
   else if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) message = "비밀번호는 8자 이상, 영문과 숫자를 섞어주세요.";
   else if (password !== document.querySelector("#signupPasswordConfirm").value) message = "비밀번호 확인이 일치하지 않습니다.";
   else if (![...authScreen.querySelectorAll("[data-agree]")].every((box) => box.checked)) message = "필수 약관에 동의해주세요.";
   document.querySelector("#signupInfoError").textContent = message;
   if (message) return;
-  Object.assign(signupDraft, { name:value("signupName"), grade:signupDraft.type === "student" ? value("signupGrade") : "", email });
-  showSignupStep(2);
-});
-document.querySelector("[data-signup-back]").addEventListener("click", () => showSignupStep(1));
-
-/** @returns {void} 인증번호 입력 제한 시간(3분)을 센다. */
-function startVerifyTimer() {
-  clearInterval(verifyTimer);
-  let left = 180;
-  const timer = document.querySelector("#verifyTimer");
-  const tick = () => {
-    timer.textContent = `${String(Math.floor(left / 60)).padStart(2,"0")}:${String(left % 60).padStart(2,"0")}`;
-    timer.classList.toggle("expired", left === 0);
-    if (left === 0) clearInterval(verifyTimer);
-    left -= 1;
-  };
-  tick();
-  verifyTimer = setInterval(tick, 1000);
-}
-document.querySelector("#verifySend").addEventListener("click", (event) => {
-  const phone = document.querySelector("#verifyPhone").value.trim();
-  const error = document.querySelector("#signupVerifyError");
-  if (!PHONE_PATTERN.test(phone)) { error.textContent = "휴대폰 번호를 확인해주세요."; return; }
-  error.textContent = "";
-  signupDraft.phone = formatPhone(phone);
-  signupDraft.verified = false;
-  document.querySelector("#verifyPhone").value = signupDraft.phone;
-  document.querySelector("#verifyCodeField").hidden = false;
-  document.querySelector("#verifyDone").hidden = true;
-  document.querySelector("#signupSubmit").disabled = true;
-  document.querySelector("#verifyCode").value = "";
-  event.currentTarget.textContent = "다시 받기";
-  startVerifyTimer();
-  sysToast("인증번호를 보냈습니다. (데모)");
-});
-document.querySelector("#verifyConfirm").addEventListener("click", () => {
-  const error = document.querySelector("#signupVerifyError");
-  if (document.querySelector("#verifyTimer").classList.contains("expired")) { error.textContent = "입력 시간이 지났습니다. 인증번호를 다시 받아주세요."; return; }
-  if (!/^\d{6}$/.test(document.querySelector("#verifyCode").value)) { error.textContent = "인증번호 6자리를 입력해주세요."; return; }
-  clearInterval(verifyTimer);
-  error.textContent = "";
-  signupDraft.verified = true;
-  document.querySelector("#verifyCodeField").hidden = true;
-  document.querySelector("#verifyDone").hidden = false;
-  document.querySelector("#verifyDoneText").textContent = `${signupDraft.name} · ${signupDraft.phone}`;
-  document.querySelector("#signupSubmit").disabled = false;
-});
-document.querySelector("#verifyPhone").addEventListener("input", () => {
-  if (!signupDraft.verified) return;
-  signupDraft.verified = false;
-  document.querySelector("#verifyDone").hidden = true;
-  document.querySelector("#signupSubmit").disabled = true;
-});
-document.querySelector("#signupVerifyForm").addEventListener("submit", (event) => {
-  event.preventDefault();
-  if (!signupDraft.verified) return;
-  const signup = { id:Date.now(), type:signupDraft.type, name:signupDraft.name, grade:signupDraft.grade, academy:signupDraft.academy, email:signupDraft.email, phone:signupDraft.phone, requestedAt:nowStamp(), status:"pending" };
+  // 본인인증 없이 바로 가입 신청한다. (휴대폰은 선택, 입력값 그대로)
+  const phone = value("signupPhone") ? formatPhone(value("signupPhone")) : "";
+  const signup = { id:Date.now(), type:signupDraft.type, name:value("signupName"), grade:signupDraft.type === "student" ? value("signupGrade") : "", academy:signupDraft.academy, email, phone, requestedAt:nowStamp(), status:"pending" };
   accountStore.signups.push(signup);
   writeAccountStore();
   renderApprovals();
   const teacher = signup.type === "teacher";
-  document.querySelector("#signupDoneText").textContent = teacher
-    ? `${signup.academy} 관리자가 승인하면 가입이 완료됩니다. 승인되면 이메일로 알려드려요.`
-    : `${signup.academy} 선생님이 승인하면 가입이 완료됩니다. 승인되면 이메일로 알려드려요.`;
+  document.querySelector("#signupDoneText").textContent = `${signup.academy} ${teacher ? "관리자가" : "선생님이"} 승인하면 가입이 완료됩니다. 승인 전에 로그인하면 승인 대기 안내가 보여요.`;
   document.querySelector("#signupWaitLabel").textContent = teacher ? "학원 관리자 승인 대기" : "선생님 승인 대기";
-  document.querySelector("#signupSummary").innerHTML = [["이름",signup.name],["학원",signup.academy],["가입 유형",teacher ? "선생님" : `학생 · ${signup.grade}`],["이메일",signup.email],["휴대폰",`${maskPhone(signup.phone)} (인증 완료)`]].map(([term,detail]) => `<div><dt>${term}</dt><dd>${escapeHtml(detail)}</dd></div>`).join("");
+  document.querySelector("#signupSummary").innerHTML = [["이름",signup.name],["학원",signup.academy],["가입 유형",teacher ? "선생님" : `학생 · ${signup.grade}`],["이메일",signup.email],["휴대폰",phone ? maskPhone(phone) : "입력 안 함"]].map(([term,detail]) => `<div><dt>${term}</dt><dd>${escapeHtml(detail)}</dd></div>`).join("");
   document.querySelector("#signupInfoForm").reset();
-  document.querySelector("#signupVerifyForm").reset();
-  document.querySelector("#verifyCodeField").hidden = true;
-  document.querySelector("#verifyDone").hidden = true;
-  document.querySelector("#verifySend").textContent = "인증번호 받기";
-  document.querySelector("#signupSubmit").disabled = true;
-  Object.assign(signupDraft, { type:"student", academy:null, phone:"", verified:false });
+  Object.assign(signupDraft, { type:"student", academy:null });
   checkAcademyCode(); syncSignupType();
-  showSignupStep(3);
+  showSignupStep(2);
 });
 
 /* ── 학생 관리 › 가입 승인 ── */
@@ -2028,7 +1965,7 @@ function renderApprovals() {
   count.textContent = pending.length;
   count.hidden = pending.length === 0;
   document.querySelector("#approvalEmpty").hidden = pending.length > 0;
-  document.querySelector("#approvalBody").innerHTML = pending.map((item) => `<tr data-signup-id="${item.id}"><td class="nowrap">${escapeHtml(item.requestedAt)}</td><td><strong>${escapeHtml(item.name)}</strong></td><td>${escapeHtml(item.grade)}</td><td>${escapeHtml(item.email)}</td><td class="nowrap">${maskPhone(item.phone)}</td><td><span class="verify-badge">✓ 완료</span></td><td><select data-approval-class aria-label="${escapeHtml(item.name)} 클래스 배정"><option value="">클래스 선택</option>${CLASS_OPTIONS.map((name) => `<option${name.startsWith(item.grade) ? " selected" : ""}>${name}</option>`).join("")}</select></td><td class="nowrap"><button class="primary-button small" type="button" data-approve>승인</button> <button class="outline-button small" type="button" data-reject>거절</button></td></tr>`).join("");
+  document.querySelector("#approvalBody").innerHTML = pending.map((item) => `<tr data-signup-id="${item.id}"><td class="nowrap">${escapeHtml(item.requestedAt)}</td><td><strong>${escapeHtml(item.name)}</strong></td><td>${escapeHtml(item.grade)}</td><td>${escapeHtml(item.email)}</td><td class="nowrap">${item.phone ? maskPhone(item.phone) : "-"}</td><td><select data-approval-class aria-label="${escapeHtml(item.name)} 클래스 배정"><option value="">클래스 선택</option>${CLASS_OPTIONS.map((name) => `<option${name.startsWith(item.grade) ? " selected" : ""}>${name}</option>`).join("")}</select></td><td class="nowrap"><button class="primary-button small" type="button" data-approve>승인</button> <button class="outline-button small" type="button" data-reject>거절</button></td></tr>`).join("");
 }
 /**
  * 학생 관리 탭(학생 목록/가입 승인)을 바꾼다.
@@ -2089,14 +2026,14 @@ function syncNotifyFooter() {
   hint.classList.toggle("warn", notifyDraft.methods.length === 0);
 }
 /**
- * 문자·카카오톡 받을 번호 입력 (본인인증한 번호 / 다른 번호).
+ * 문자·카카오톡 받을 번호 입력 (내 휴대폰 번호 / 다른 번호).
  * @param {"sms"|"kakao"} id - 알림 방법
- * @param {string} verifiedPhone - 본인인증한 번호
+ * @param {string} verifiedPhone - 내 휴대폰 번호 (가입할 때 넣은 번호)
  * @returns {string} HTML
  */
 function notifyPhoneFields(id, verifiedPhone) {
   const target = notifyDraft[id];
-  return `<div class="notify-radios"><label><input type="radio" name="${id}Phone" value="verified" data-notify-phone-mode="${id}"${target.useVerified ? " checked" : ""} /> 본인인증한 번호 <b>${maskPhone(verifiedPhone)}</b></label><label><input type="radio" name="${id}Phone" value="other" data-notify-phone-mode="${id}"${target.useVerified ? "" : " checked"} /> 다른 번호</label></div>${target.useVerified ? "" : `<input type="tel" inputmode="numeric" class="notify-input" data-notify-phone="${id}" value="${escapeHtml(target.phone)}" placeholder="010-0000-0000" aria-label="받을 휴대폰 번호" />`}`;
+  return `<div class="notify-radios"><label><input type="radio" name="${id}Phone" value="verified" data-notify-phone-mode="${id}"${target.useVerified ? " checked" : ""} /> 내 휴대폰 번호 <b>${maskPhone(verifiedPhone)}</b></label><label><input type="radio" name="${id}Phone" value="other" data-notify-phone-mode="${id}"${target.useVerified ? "" : " checked"} /> 다른 번호</label></div>${target.useVerified ? "" : `<input type="tel" inputmode="numeric" class="notify-input" data-notify-phone="${id}" value="${escapeHtml(target.phone)}" placeholder="010-0000-0000" aria-label="받을 휴대폰 번호" />`}`;
 }
 /**
  * 고른 알림 방법 하나의 입력 영역.
@@ -2180,7 +2117,7 @@ document.querySelector("#notifySave").addEventListener("click", () => {
   writeAccountStore(); renderNotify();
   sysToast("알림 받는 방법을 저장했습니다.");
 });
-document.querySelector("#myInfoPhoneChange").addEventListener("click", () => sysToast("번호를 바꾸려면 새 번호로 본인인증을 다시 합니다. (준비 중)"));
+document.querySelector("#myInfoPhoneChange").addEventListener("click", () => sysToast("휴대폰 번호 변경은 준비 중입니다. 학원에 요청해주세요."));
 document.querySelector("#passwordForm").addEventListener("submit", (event) => {
   event.preventDefault();
   const next = document.querySelector("#pwNext").value;
