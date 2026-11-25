@@ -14,13 +14,14 @@ let myPapers = [
   { id:6, title:"물질의 규칙성 주간 테스트", category:"통합과학 · 물질", uploaded:"04.27 18:30", date:"2026-04-27", status:"채점 완료", score:95 },
   { id:7, title:"산과 염기 개념 점검", category:"중등 화학 · 산과 염기", uploaded:"04.18 13:22", date:"2026-04-18", status:"채점 완료", score:70 }
 ];
-const pageTitles = { dashboard:"대시보드", records:"채점 관리", templates:"시험지 관리 · 주관식", "templates-mc":"시험지 관리 · 객관식", students:"학생 관리", categories:"그룹 관리", settings:"설정 · 채점 정책", "system-settings":"설정 · 시스템", "my-papers":"내 시험지", "my-info":"내 정보" };
+const pageTitles = { dashboard:"대시보드", records:"채점 관리", templates:"시험지 관리 · 주관식", "templates-mc":"시험지 관리 · 객관식", students:"사용자 관리 · 학생 관리", teachers:"사용자 관리 · 선생님 관리", categories:"그룹 관리", settings:"설정 · 채점 정책", "system-settings":"설정 · 시스템", "my-papers":"내 시험지", "my-info":"내 정보" };
 const pageSubtitles = {
   dashboard:"",
   records:"학원, 클래스, 카테고리, 학생별로 시험지 원본과 결과를 관리합니다.",
   templates:"주관식(단답형) 양식을 만들고, 문항별 OCR 인식 영역과 기준 답안을 설정합니다.",
   "templates-mc":"객관식 양식을 만들고, 문항별 보기와 정답을 설정합니다.",
-  students:"학원과 클래스별 학생 계정, 최근 성적, 업로드 현황을 관리합니다.",
+  students:"학생 명부와 학생 가입 승인을 관리합니다.",
+  teachers:"선생님 계정과 선생님 가입 승인을 관리합니다. (관리자)",
   categories:"학교급, 과목, 단원을 기준으로 시험지를 체계적으로 분류합니다.",
   settings:"학원 정보와 채점 정책을 관리합니다.",
   "system-settings":"모든 학원에 공통 적용되는 설정을 그룹별로 추가·수정·삭제하고 변경 이력을 봅니다.",
@@ -82,7 +83,9 @@ let draftTemplate = null;
 const MAX_REGION_H = 220;
 
 function showPage(name) {
-  document.querySelectorAll("[data-page-panel]").forEach((panel) => panel.classList.toggle("active", panel.dataset.pagePanel === name));
+  // 학생 관리·선생님 관리는 같은 사용자 관리 화면을 종류만 바꿔 쓴다.
+  const panelName = name === "teachers" ? "students" : name;
+  document.querySelectorAll("[data-page-panel]").forEach((panel) => panel.classList.toggle("active", panel.dataset.pagePanel === panelName));
   document.querySelectorAll("[data-page]").forEach((button) => button.classList.toggle("active", button.dataset.page === name));
   document.querySelector("#pageTitle").textContent = pageTitles[name] || "케미체크";
   document.querySelector("#pageSubtitle").textContent = pageSubtitles[name] || "";
@@ -93,6 +96,7 @@ function showPage(name) {
     group.querySelector(".nav-parent").classList.toggle("active", inGroup);
   });
   document.body.dataset.currentPage = name;
+  if (panelName === "students") showUserRole(name === "teachers" ? "teacher" : "student");
   if (name === "my-info") renderMyInfo();
   window.scrollTo({ top:0, behavior:"smooth" });
 }
@@ -1674,7 +1678,7 @@ document.querySelector("#sysHistPages").addEventListener("click", (event) => { c
 renderSys();
 
 /* ───────── 회원가입 · 가입 승인 · 내 정보 (화면 기획용 목업: 실제 인증·발송·저장 없음) ───────── */
-const ACCOUNT_STORE_KEY = "prototype-account-v1";
+const ACCOUNT_STORE_KEY = "prototype-account-v2";
 /** 데모 학원 코드 → 학원명 */
 const ACADEMY_CODES = { RAON:"라온 과학학원", BRIDGE:"브릿지 사이언스" };
 const CLASS_OPTIONS = ["중3 화학 심화","고1 통합과학 A","고2 화학 I"];
@@ -1709,7 +1713,8 @@ function readAccountStore() {
     signups:[
       { id:1, type:"student", name:"이서연", grade:"중3", academy:"라온 과학학원", email:"seoyeon@student.kr", phone:"01023456789", requestedAt:"2026-11-20 18:42", status:"pending" },
       { id:2, type:"student", name:"최민준", grade:"고1", academy:"라온 과학학원", email:"minjun@student.kr", phone:"01034567890", requestedAt:"2026-11-21 09:15", status:"pending" },
-      { id:3, type:"student", name:"정하은", grade:"고2", academy:"라온 과학학원", email:"haeun@student.kr", phone:"01045678901", requestedAt:"2026-11-21 10:03", status:"pending" }
+      { id:3, type:"student", name:"정하은", grade:"고2", academy:"라온 과학학원", email:"haeun@student.kr", phone:"01045678901", requestedAt:"2026-11-21 10:03", status:"pending" },
+      { id:4, type:"teacher", name:"박선생", grade:"", academy:"라온 과학학원", email:"park@teacher.kr", phone:"01056789012", requestedAt:"2026-11-22 11:30", status:"pending" }
     ],
     notify:defaultNotify()
   };
@@ -1910,7 +1915,7 @@ document.querySelector("#loginForm").addEventListener("submit", (event) => {
   const error = document.querySelector("#loginError");
   if (!EMAIL_PATTERN.test(email) || !document.querySelector("#loginPassword").value) { error.textContent = "이메일과 비밀번호를 입력해주세요."; return; }
   const signup = accountStore.signups.find((item) => item.email === email);
-  if (signup?.status === "pending") { error.textContent = `${signup.academy} 선생님의 가입 승인을 기다리고 있습니다. 승인되면 이메일로 알려드려요.`; return; }
+  if (signup?.status === "pending") { error.textContent = `${signup.academy} ${signup.type === "teacher" ? "관리자" : "선생님"}의 가입 승인을 기다리고 있습니다. 승인 전에는 학원 화면을 쓸 수 없어요.`; return; }
   if (signup?.status === "rejected") { error.textContent = `가입이 거절되었습니다. (${signup.rejectReason}) 학원에 문의해주세요.`; return; }
   error.textContent = "";
   closeAuth();
@@ -1958,15 +1963,44 @@ document.querySelector("#signupInfoForm").addEventListener("submit", (event) => 
 let rejectTargetId = null;
 /** @returns {object[]} 승인을 기다리는 학생 가입 신청 */
 function pendingStudentSignups() { return accountStore.signups.filter((item) => item.type === "student" && item.status === "pending"); }
-/** @returns {void} 가입 승인 표와 탭의 대기 건수를 그린다. */
+/** 사용자 관리에서 보고 있는 종류 (학생 / 선생님) */
+let userRole = "student";
+/** @returns {object[]} 지금 보고 있는 종류의 승인 대기 신청 */
+function pendingSignupsOf(type) { return accountStore.signups.filter((item) => item.type === type && item.status === "pending"); }
+/** @returns {void} 가입 승인 표와 탭의 대기 건수를 그린다. (학생은 학년·클래스 배정, 선생님은 승인만) */
 function renderApprovals() {
-  const pending = pendingStudentSignups();
+  const pending = pendingSignupsOf(userRole);
+  const student = userRole === "student";
   const count = document.querySelector("#approvalCount");
   count.textContent = pending.length;
   count.hidden = pending.length === 0;
+  document.querySelector("#approvalGuideTitle").textContent = `우리 학원 코드로 들어온 ${student ? "학생" : "선생님"} 가입 신청입니다.`;
+  document.querySelector("#approvalGuideText").textContent = student ? "본인인증을 하지 않으므로 이름·학년을 확인한 뒤, 클래스를 배정하고 승인하면 학생 목록에 추가되고 학생이 로그인할 수 있습니다." : "선생님 가입은 관리자만 승인합니다. 승인하면 선생님 권한으로 학원 화면을 쓸 수 있습니다.";
+  document.querySelector("#approvalHead").innerHTML = (student ? ["신청일","이름","학년","이메일","휴대폰","클래스 배정","처리"] : ["신청일","이름","이메일","휴대폰","처리"]).map((head) => `<th>${head}</th>`).join("");
   document.querySelector("#approvalEmpty").hidden = pending.length > 0;
-  document.querySelector("#approvalBody").innerHTML = pending.map((item) => `<tr data-signup-id="${item.id}"><td class="nowrap">${escapeHtml(item.requestedAt)}</td><td><strong>${escapeHtml(item.name)}</strong></td><td>${escapeHtml(item.grade)}</td><td>${escapeHtml(item.email)}</td><td class="nowrap">${item.phone ? maskPhone(item.phone) : "-"}</td><td><select data-approval-class aria-label="${escapeHtml(item.name)} 클래스 배정"><option value="">클래스 선택</option>${CLASS_OPTIONS.map((name) => `<option${name.startsWith(item.grade) ? " selected" : ""}>${name}</option>`).join("")}</select></td><td class="nowrap"><button class="primary-button small" type="button" data-approve>승인</button> <button class="outline-button small" type="button" data-reject>거절</button></td></tr>`).join("");
+  document.querySelector("#approvalBody").innerHTML = pending.map((item) => `<tr data-signup-id="${item.id}"><td class="nowrap">${escapeHtml(item.requestedAt)}</td><td><strong>${escapeHtml(item.name)}</strong></td>${student ? `<td>${escapeHtml(item.grade)}</td>` : ""}<td>${escapeHtml(item.email)}</td><td class="nowrap">${item.phone ? maskPhone(item.phone) : "-"}</td>${student ? `<td><select data-approval-class aria-label="${escapeHtml(item.name)} 클래스 배정"><option value="">클래스 선택</option>${CLASS_OPTIONS.map((name) => `<option${name.startsWith(item.grade) ? " selected" : ""}>${name}</option>`).join("")}</select></td>` : ""}<td class="nowrap"><button class="primary-button small" type="button" data-approve>승인</button> <button class="outline-button small" type="button" data-reject>거절</button></td></tr>`).join("");
 }
+/** @returns {void} 선생님 계정 카드 (관리자 배지) */
+function renderTeacherCards() {
+  const teachers = [{ name:"전선생", email:"teacher@demo.com", admin:true, note:"2025-12-15 등록" }]
+    .concat(accountStore.signups.filter((item) => item.type === "teacher" && item.status === "approved").map((item) => ({ name:item.name, email:item.email, note:`${item.decidedAt} 승인` })))
+  document.querySelector("#teacherCards").innerHTML = teachers.map((item) => `<article class="manage-card"><span class="avatar">${escapeHtml(item.name[0])}</span><div><h3>${escapeHtml(item.name)}${item.admin ? '<span class="account-badge admin">관리자</span>' : ""}</h3><p>${escapeHtml(item.email)}</p><small>${escapeHtml(item.note)}</small></div></article>`).join("");
+}
+/**
+ * 사용자 종류(학생/선생님)를 바꾼다.
+ * @param {"student"|"teacher"} type - 종류
+ * @returns {void}
+ */
+function showUserRole(type) {
+  userRole = type;
+  document.querySelector("#userListTab").textContent = type === "student" ? "학생 목록" : "선생님 목록";
+  document.querySelector("#studentCards").hidden = type !== "student";
+  document.querySelector("#teacherCards").hidden = type !== "teacher";
+  renderApprovals(); renderTeacherCards();
+  showStudentTab("list");
+}
+/** @returns {void} 학생·선생님 목록을 다시 그린다. */
+function renderUsers() { renderStaticCards(); renderTeacherCards(); renderApprovals(); }
 /**
  * 학생 관리 탭(학생 목록/가입 승인)을 바꾼다.
  * @param {"list"|"approvals"} tab - 보여줄 탭
@@ -1982,14 +2016,14 @@ document.querySelector("#approvalBody").addEventListener("click", (event) => {
   if (!row) return;
   const signup = accountStore.signups.find((item) => item.id === Number(row.dataset.signupId));
   if (event.target.closest("[data-approve]")) {
-    const className = row.querySelector("[data-approval-class]").value;
-    if (!className) { sysToast("클래스를 먼저 배정해주세요.", true); return; }
+    const className = signup.type === "student" ? row.querySelector("[data-approval-class]").value : "";
+    if (signup.type === "student" && !className) { sysToast("클래스를 먼저 배정해주세요.", true); return; }
     Object.assign(signup, { status:"approved", className, decidedAt:nowStamp() });
-    writeAccountStore(); renderApprovals(); renderStaticCards();
-    sysToast(`${signup.name} 학생의 가입을 승인했습니다. (${className})`);
+    writeAccountStore(); renderUsers();
+    sysToast(signup.type === "student" ? `${signup.name} 학생의 가입을 승인했습니다. (${className})` : `${signup.name} 선생님의 가입을 승인했습니다.`);
   } else if (event.target.closest("[data-reject]")) {
     rejectTargetId = signup.id;
-    document.querySelector("#rejectText").textContent = `${signup.name} (${signup.grade} · ${signup.email}) 학생의 가입 신청을 거절합니다.`;
+    document.querySelector("#rejectText").textContent = signup.type === "student" ? `${signup.name} (${signup.grade} · ${signup.email}) 학생의 가입 신청을 거절합니다.` : `${signup.name} (${signup.email}) 선생님의 가입 신청을 거절합니다.`;
     document.querySelector("#rejectForm").reset();
     document.querySelector("#rejectEtcLabel").hidden = true;
     document.querySelector("#rejectModal").classList.remove("hidden");
@@ -2008,7 +2042,7 @@ document.querySelector("#rejectForm").addEventListener("submit", (event) => {
   if (!reason) { sysToast("거절 사유를 입력해주세요.", true); return; }
   Object.assign(signup, { status:"rejected", rejectReason:reason, decidedAt:nowStamp() });
   writeAccountStore(); renderApprovals(); closeRejectModal();
-  sysToast(`${signup.name} 학생의 가입을 거절했습니다.`);
+  sysToast(`${signup.name} ${signup.type === "student" ? "학생" : "선생님"}의 가입을 거절했습니다.`);
 });
 
 /* ── 내 정보 ── */
@@ -2131,7 +2165,7 @@ document.querySelector("#passwordForm").addEventListener("submit", (event) => {
   sysToast("비밀번호를 변경했습니다. (데모)");
 });
 syncSignupType();
-renderApprovals();
+renderUsers();
 
 renderRecords(); renderStaticCards(); renderTemplateList(); renderAnswerOverview(); updateHistoryPeriodOptions(); syncOuterTemplatePreview(); setInlineEditMode(false); selectRegion(document.querySelector('#printableTemplate [data-region="1"]'));
 renderMc();

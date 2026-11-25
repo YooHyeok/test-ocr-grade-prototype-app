@@ -6,7 +6,7 @@
     <title>쪽지시험 | 단답형 채점 관리</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=64" />
+    <link rel="stylesheet" href="./styles.css?v=65" />
   </head>
   <body>
     <aside class="sidebar">
@@ -21,7 +21,13 @@
           </div>
         </div>
         <button class="nav-link teacher-only" type="button" data-page="records" data-tooltip="채점 관리"><span>▤</span>채점 관리</button>
-        <button class="nav-link teacher-only" type="button" data-page="students" data-tooltip="학생 관리"><span>♧</span>학생 관리</button>
+        <div class="nav-group teacher-only" data-nav-group="users">
+          <button class="nav-link nav-parent" type="button" data-accordion-toggle="users" data-tooltip="사용자 관리"><span>♧</span>사용자 관리<i class="nav-caret"></i></button>
+          <div class="nav-children" data-accordion="users">
+            <button class="nav-link nav-child" type="button" data-page="students" data-tooltip="학생 관리">학생 관리</button>
+            <button class="nav-link nav-child" type="button" data-page="teachers" data-tooltip="선생님 관리">선생님 관리</button>
+          </div>
+        </div>
         <button class="nav-link teacher-only" type="button" data-page="categories" data-tooltip="그룹 관리"><span>▦</span>그룹 관리</button>
         <div class="nav-group teacher-only" data-nav-group="settings">
           <button class="nav-link nav-parent" type="button" data-accordion-toggle="settings" data-tooltip="설정"><span>⚙</span>설정<i class="nav-caret"></i></button>
@@ -98,15 +104,17 @@
       </section>
 
       <section class="app-page" data-page-panel="students">
-        <div class="section-heading"><div><p class="eyebrow">STUDENT DIRECTORY</p><h2>학생 관리</h2><p>학원과 클래스별 학생 계정, 최근 성적, 업로드 현황을 관리합니다.</p></div><button class="primary-button">＋ 학생 등록</button></div>
-        <div class="sys-tabs student-tabs" role="tablist" aria-label="학생 관리 탭">
-          <button type="button" role="tab" aria-selected="true" data-student-tab="list">학생 목록</button>
-          <button type="button" role="tab" aria-selected="false" data-student-tab="approvals">가입 승인 <span class="tab-count" id="approvalCount">0</span></button>
+        <div class="section-heading"><div><p class="eyebrow">USERS</p><h2>사용자 관리</h2><p>학생·선생님 계정과 가입 승인을 관리합니다.</p></div></div>
+        <div class="user-toolbar">
+          <div class="view-tabs" role="tablist" aria-label="목록·가입 승인">
+            <button type="button" role="tab" aria-selected="true" data-student-tab="list" id="userListTab">학생 목록</button>
+            <button type="button" role="tab" aria-selected="false" data-student-tab="approvals">가입 승인 <span class="tab-count" id="approvalCount">0</span></button>
+          </div>
         </div>
-        <div data-student-panel="list"><div class="content-grid" id="studentCards"></div></div>
+        <div data-student-panel="list"><div class="content-grid" id="studentCards"></div><div class="content-grid" id="teacherCards" hidden></div></div>
         <div data-student-panel="approvals" hidden>
-          <div class="approval-guide"><strong>우리 학원 코드로 들어온 학생 가입 신청입니다.</strong><span>본인인증을 하지 않으므로 이름·학년을 확인한 뒤, 클래스를 배정하고 승인하면 학생 목록에 추가되고 학생이 로그인할 수 있습니다.</span></div>
-          <div class="sys-table-wrap"><table class="sys-table approval-table"><thead><tr><th>신청일</th><th>이름</th><th>학년</th><th>이메일</th><th>휴대폰</th><th>클래스 배정</th><th>처리</th></tr></thead><tbody id="approvalBody"></tbody></table><p class="empty-state" id="approvalEmpty" hidden>대기 중인 가입 신청이 없습니다.</p></div>
+          <div class="approval-guide"><strong id="approvalGuideTitle">우리 학원 코드로 들어온 학생 가입 신청입니다.</strong><span id="approvalGuideText">본인인증을 하지 않으므로 이름·학년을 확인한 뒤, 클래스를 배정하고 승인하면 학생 목록에 추가되고 학생이 로그인할 수 있습니다.</span></div>
+          <div class="sys-table-wrap"><table class="sys-table approval-table"><thead><tr id="approvalHead"></tr></thead><tbody id="approvalBody"></tbody></table><p class="empty-state" id="approvalEmpty" hidden>대기 중인 가입 신청이 없습니다.</p></div>
         </div>
       </section>
 
@@ -282,7 +290,7 @@
     </main>
 
     <nav class="mobile-nav" id="mobileNav">
-      <button class="active teacher-only" type="button" data-page="dashboard"><span>⌂</span>홈</button><button class="teacher-only" type="button" data-page="records"><span>▤</span>기록</button><button type="button" data-open-upload><span>＋</span><strong>시험지 첨부</strong></button><button class="teacher-only" type="button" data-page="students"><span>♧</span>학생</button><button class="teacher-only" type="button" data-page="settings"><span>⚙</span>설정</button><button class="student-only" type="button" data-page="my-papers"><span>▤</span>내 시험지</button><button class="student-only mobile-myinfo" type="button" data-page="my-info"><span>☺</span>내 정보</button>
+      <button class="active teacher-only" type="button" data-page="dashboard"><span>⌂</span>홈</button><button class="teacher-only" type="button" data-page="records"><span>▤</span>기록</button><button type="button" data-open-upload><span>＋</span><strong>시험지 첨부</strong></button><button class="teacher-only" type="button" data-page="students"><span>♧</span>사용자</button><button class="teacher-only" type="button" data-page="settings"><span>⚙</span>설정</button><button class="student-only" type="button" data-page="my-papers"><span>▤</span>내 시험지</button><button class="student-only mobile-myinfo" type="button" data-page="my-info"><span>☺</span>내 정보</button>
     </nav>
 
     <div class="modal-backdrop hidden" id="uploadModal">
@@ -411,7 +419,7 @@
             <button class="primary-button auth-submit" type="submit">로그인</button>
           </form>
           <p class="auth-switch">아직 계정이 없나요? <button class="text-button" type="button" data-auth-go="signup">회원가입</button></p>
-          <p class="auth-demo">화면 기획용입니다. 아무 이메일·비밀번호로 들어갈 수 있고, 승인 대기 중인 이메일로 로그인하면 대기 안내가 나옵니다.</p>
+          <p class="auth-demo">화면 기획용입니다. 데모 계정 teacher@demo.com(관리자)·student@demo.com의 비밀번호는 demo1234이고, 5번 틀리면 잠깁니다(관리자 제외, 사용자 관리에서 해제). 그 밖의 이메일은 아무 비밀번호로 들어가지고, 승인 대기 중인 이메일은 대기 안내가 나옵니다.</p>
           <button class="text-button auth-back" type="button" data-auth-close>← 화면 둘러보기로 돌아가기</button>
         </div>
 
@@ -470,6 +478,6 @@
     </div>
     <div class="sys-toast hidden" id="sysToast" role="status"></div>
     <div id="printArea" aria-hidden="true"></div>
-    <script src="./app.js?v=64"></script>
+    <script src="./app.js?v=65"></script>
   </body>
 </html>

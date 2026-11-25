@@ -739,6 +739,14 @@ footer { display: flex; justify-content: space-between; margin-top: auto; paddin
 .auth-demo { margin: 16px 0 0; padding: 10px 12px; border-radius: 8px; color: #765d29; background: #fff8e8; font-size: 12px; line-height: 1.5; }
 .auth-back { display: block; margin: 18px auto 0; color: var(--muted); font-weight: 500; }
 .auth-lead { margin: -8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+/* 사용자 관리: 목록·가입 승인 보기 전환(세그먼트) */
+.user-toolbar { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+[data-page-panel="students"] [data-student-panel="approvals"] { margin-top: 18px; }
+.view-tabs { display: inline-flex; gap: 4px; padding: 3px; border-radius: 9px; background: #eef1ee; }
+.view-tabs button { display: inline-flex; gap: 6px; align-items: center; padding: 8px 13px; border-radius: 6px; color: #7b8984; background: transparent; font-size: 13px; font-weight: 700; }
+.view-tabs button[aria-selected="true"] { color: var(--green); background: var(--white); box-shadow: 0 2px 6px rgba(31,49,43,.08); }
+.account-badge { display: inline-flex; margin-left: 4px; padding: 2px 7px; border-radius: 999px; font-size: 10px; font-weight: 700; vertical-align: middle; }
+.account-badge.admin { color: var(--green); background: #e6f3ec; }
 .contact-warning { margin: 0; padding: 10px 12px; border: 1px solid #f0d69d; border-radius: 10px; color: #765d29; background: #fff8e8; font-size: 12px; line-height: 1.5; }
 .myinfo-card .contact-warning { margin: -4px 0 16px; }
 .auth-optional { color: var(--muted); font-weight: 400; }
